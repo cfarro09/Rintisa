@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginBottom="5dp">
+    <TextView
+        android:id="@+id/item_product"
+        android:text="MIMASKOT PERRO ADULT ddddddddd O RMG CORDERO 15 KG "
+        android:layout_width="wrap_content"
+        android:layout_centerVertical="true"
+        android:textColor="#000"
+        android:labelFor="@+id/item_checkbox"
+        android:layout_height="wrap_content" />
+    <CheckBox
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="5dp"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/item_checkbox"
+        android:scaleX="1.1"
+        android:scaleY="1.1"
+        android:layout_alignEnd="@+id/item_product"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>

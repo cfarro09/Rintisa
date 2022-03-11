@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/VCA/AppData/Local/Android/Sdk/platforms/android-31/data/res/layout/simple_list_item_1.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/AppData/Local/Android/Sdk/platforms/android-31/data/res/layout/simple_spinner_item.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable-v24/back_primary.xml" value="0.196" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable-v24/back_rounded.xml" value="0.196" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable-v24/ic_action_person.xml" value="0.196" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable-v24/input_style.xml" value="0.196" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_date_range_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_lock_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_send_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_shopping_cart_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_baseline_update_24.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/drawable/ic_launcher_background.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_client_detail.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_login2.xml" value="0.18" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_merchant.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_promoter.xml" value="0.19479166666666667" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_splash.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/blank_fragment.xml" value="0.2520833333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_blank.xml" value="0.2520833333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_client_detail.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_materials.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_price.xml" value="0.18802083333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_promoter.xml" value="0.35260416666666666" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_sales.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_stock.xml" value="0.15" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/information_fragment.xml" value="0.25" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_material.xml" value="0.2520833333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_merchandise.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_pdv.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_point_sale.xml" value="0.5" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_product.xml" value="0.33" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_sale.xml" value="0.36614583333333334" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_stock.xml" value="0.33" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_stock_product.xml" value="0.36614583333333334" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_loading_dialog.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_material_register.xml" value="0.2520833333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_product_register.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_sale_register.xml" value="0.36614583333333334" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_stock_promoter_register.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/layout_stock_register.xml" value="0.196875" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/menu/menu_detail_merchant.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/menu/menu_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.258" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/xml/file_paths.xml" value="0.19583333333333333" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

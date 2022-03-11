@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Rintisa</string>
+
+    <string name="email">Correo electronico</string>
+    <string name="document_type">Tipo documento</string>
+    <string name="document_number">Número documento</string>
+    <string name="contrase_a">Contraseña</string>
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="wait_please">Espere un momento por favor.</string>
+    <string name="name">Nombre</string>
+    <string name="last_name">Apellido</string>
+    <string name="document">N° documento</string>
+    <string name="phone">Teléfono</string>
+    <string name="address">Dirección</string>
+    <string name="register">Registrarme</string>
+    <string name="password">Contraseña</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="all_obligatory">Todos los campos son obligatorios.</string>
+    <string name="status">Estado</string>
+    <string name="username">Usuario</string>
+    <string name="title_activity_client_detail">ClientDetail</string>
+    <string name="tab_text_1">Info</string>
+    <string name="tab_text_2">Materiales</string>
+    <string name="tab_text_sales">Ventas</string>
+    <string name="tab_text_stock">Stock</string>
+    <string name="tab_text_3">Enc precio</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="init_image">Foto antes</string>
+    <string name="end_image">Foto después</string>
+    <string name="material">Material</string>
+    <string name="brand">Marca</string>
+    <string name="quantity">Cant</string>
+    <string name="quantity1">Cantidad</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="product">Producto</string>
+    <string name="measure_unit">Unidad medida</string>
+    <string name="price">Precio</string>
+    <string name="title_activity_promoter">PromoterActivity</string>
+    <string name="sale">Venta</string>
+    <string name="category">Categoria</string>
+
+</resources>
