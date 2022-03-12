@@ -245,7 +245,7 @@ class Repository {
                             resultMerchant.materials = response.body().data[1].data.toList().map { r -> Material(r["domainvalue"].toString(),"", 0) }
                         }
                         if (response.body().data[2].success == true) {
-                            resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0, r["competence"].toString()) }
+                            resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0) }
                         }
                         onResult(true, resultMerchant, null)
                     } else {
@@ -293,7 +293,7 @@ class Repository {
                             dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
                         }
                         if (response.body().data[1].success == true) {
-                            dataPromoter.products = response.body().data[1].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0, r["competence"].toString()) }
+                            dataPromoter.products = response.body().data[1].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0) }
                         }
                         if (response.body().data[2].success == true) {
                             val aa = ""

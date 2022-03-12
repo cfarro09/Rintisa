@@ -41,7 +41,6 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
 private const val CODE_RESULT_CAMERA = 10001
 
@@ -70,6 +69,7 @@ class MainActivity : AppCompatActivity() {
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
+                        locationManager?.removeUpdates(locationListener)
                         SharedPrefsCache(this).removeToken()
                         startActivity(Intent(this, LoginActivity::class.java))
                         finish()
@@ -132,7 +132,8 @@ class MainActivity : AppCompatActivity() {
         locationPermissionRequest.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
         ))
 
         rv = findViewById(R.id.main_rv_point_sale)
@@ -162,7 +163,7 @@ class MainActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-//                    pointSale1.management = "INICIADO"
+                    pointSale1.management = "INICIADO"
                     if (pointSale1.management == "VISITADO")
                     {
                         Toast.makeText(this@MainActivity, "El punto de venta ya fue gestionado", Toast.LENGTH_SHORT).show()

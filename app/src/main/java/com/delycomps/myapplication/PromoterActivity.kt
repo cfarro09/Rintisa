@@ -65,6 +65,8 @@ class PromoterActivity : AppCompatActivity() {
                             "productid" to it.productId,
                             "quantity" to it.quantity,
                             "price" to 0,
+                            "merchant" to (it.merchant ?: ""),
+                            "url_evidence" to (it.imageEvidence ?: ""),
                             "total_detail" to 0,
                             "description_detail" to (it.description ?: ""),
                             "status_detail" to "ACTIVO",

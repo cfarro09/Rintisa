@@ -5,29 +5,12 @@
     android:layout_height="match_parent"
     android:padding="8dp"
     tools:context=".ui.promoter.SalesFragment">
-    <RelativeLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_sale"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <androidx.cardview.widget.CardView
-            android:id="@+id/container_merchandise"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_merchandise"
-                android:padding="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/item_merchandise"
-                />
-        </androidx.cardview.widget.CardView>
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_sale"
-            android:layout_below="@+id/container_merchandise"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:listitem="@layout/item_material"
-            />
-    </RelativeLayout>
+        android:layout_height="wrap_content"
+        tools:listitem="@layout/item_material"
+        />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/sale_register"
         android:layout_width="wrap_content"

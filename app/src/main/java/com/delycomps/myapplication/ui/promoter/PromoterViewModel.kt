@@ -9,6 +9,7 @@ import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.Stock
 import com.delycomps.myapplication.model.SurveyProduct
+import java.io.File
 
 class PromoterViewModel : ViewModel() {
 
@@ -32,6 +33,12 @@ class PromoterViewModel : ViewModel() {
 
     private val _closingPromoter: MutableLiveData<Boolean> = MutableLiveData()
     val closingPromoter: LiveData<Boolean> = _closingPromoter
+
+    private val _loadingSelfie: MutableLiveData<Boolean> = MutableLiveData()
+    val loadingSelfie: LiveData<Boolean> = _loadingSelfie
+
+    private val _urlSelfie: MutableLiveData<String> = MutableLiveData()
+    val urlSelfie: LiveData<String> = _urlSelfie
 
     fun getMainMulti(token: String) {
         _loadingInital.value = true
@@ -73,5 +80,21 @@ class PromoterViewModel : ViewModel() {
 
     fun removeProduct (i: Int) {
         _listProductSelected.value = _listProductSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
+    }
+
+    fun setUrlSelfie(url: String) {
+        _urlSelfie.value = url
+    }
+
+    fun uploadSelfie(file: File, token: String) {
+        _loadingSelfie.value = false
+        Repository().uploadImage(file, token) { isSuccess, result, _ ->
+            if (isSuccess) {
+                _urlSelfie.value = result!!
+            } else {
+                _urlSelfie.value = ""
+            }
+            _loadingSelfie.value = true
+        }
     }
 }

@@ -40,5 +40,8 @@
     <string name="title_activity_promoter">PromoterActivity</string>
     <string name="sale">Venta</string>
     <string name="category">Categoria</string>
+    <string name="take_photo">Tomar foto</string>
+    <string name="gallery">Galeria</string>
+    <string name="merchant">Canje</string>
 
 </resources>

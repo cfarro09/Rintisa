@@ -24,9 +24,14 @@ open class SurveyProduct: Parcelable {
     @SerializedName("quantity")
     @Expose
     var quantity: Int
-    @SerializedName("competence")
+
+    @SerializedName("merchant")
     @Expose
-    var competence: String?
+    var merchant: String?
+
+    @SerializedName("image_evidence")
+    @Expose
+    var imageEvidence: String?
 
     constructor(
         productId: Int,
@@ -35,7 +40,8 @@ open class SurveyProduct: Parcelable {
         price: Double,
         measureUnit: String,
         quantity: Int = 0,
-        competence: String? = ""
+        merchant: String? = "",
+        imageEvidence: String? = ""
     ) {
         this.productId = productId
         this.description = description
@@ -43,7 +49,8 @@ open class SurveyProduct: Parcelable {
         this.price = price
         this.measureUnit = measureUnit
         this.quantity = quantity
-        this.competence = competence
+        this.merchant = merchant
+        this.imageEvidence = imageEvidence
     }
     protected constructor(parcel: Parcel) {
         this.productId = parcel.readInt()
@@ -52,7 +59,8 @@ open class SurveyProduct: Parcelable {
         this.price = parcel.readDouble()
         this.measureUnit = parcel.readString()
         this.quantity = parcel.readInt()
-        this.competence = parcel.readString()
+        this.merchant = parcel.readString()
+        this.imageEvidence = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -64,7 +72,8 @@ open class SurveyProduct: Parcelable {
         p0.writeDouble(price)
         p0.writeString(measureUnit)
         p0.writeInt(quantity)
-        p0.writeString(competence)
+        p0.writeString(merchant)
+        p0.writeString(imageEvidence)
     }
     companion object CREATOR : Parcelable.Creator<SurveyProduct> {
         override fun createFromParcel(parcel: Parcel): SurveyProduct {
