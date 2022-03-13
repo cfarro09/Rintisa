@@ -15,11 +15,14 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.SurveyProduct
 
 class AdapterSale(
     private var listSurveyProduct: MutableList<SurveyProduct>,
-    private val refListener: ListAdapterListener
+    private var listMerchandise: List<Merchandise>,
+    private val refListener: ListAdapterListener,
+    private val refListenerMerchant: ListAdapterListenerMerchant
 ) : RecyclerView.Adapter<AdapterSale.OrderViewHolder>() {
     private lateinit var mContext: Context
 
@@ -29,6 +32,10 @@ class AdapterSale(
 
     interface ListAdapterListener { // create an interface
         fun onClickAtDetailProduct(surveyProduct: SurveyProduct, position: Int, type: String)  // create callback function
+    }
+
+    interface ListAdapterListenerMerchant { // create an interface
+        fun onChangeMerchant(surveyProduct: SurveyProduct, position: Int)  // create callback function
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -44,10 +51,11 @@ class AdapterSale(
     fun updateItemProduct(surveyProduct: SurveyProduct, index: Int) {
         listSurveyProduct[index].measureUnit = surveyProduct.measureUnit
         listSurveyProduct[index].brand = surveyProduct.brand
-        listSurveyProduct[index].merchant = surveyProduct.merchant
+//        listSurveyProduct[index].merchant = surveyProduct.merchant
         listSurveyProduct[index].imageEvidence = surveyProduct.imageEvidence
         listSurveyProduct[index].description = surveyProduct.description
         listSurveyProduct[index].price = surveyProduct.price
+        listSurveyProduct[index].quantity = surveyProduct.quantity
 
         notifyItemChanged(index)
     }
@@ -69,8 +77,14 @@ class AdapterSale(
         holder.itemProductQuantity.text = surveyProduct.quantity.toString()
         holder.itemProductProduct.text = surveyProduct.description + " (" + surveyProduct.brand + ")"
 
-        if (surveyProduct.merchant != "") {
-            holder.itemProductMerchant.text = surveyProduct.merchant
+        val brand = surveyProduct.brand
+        val measureUnit = surveyProduct.measureUnit
+        val quantity = surveyProduct.quantity
+
+
+        if ((brand == "RICOCAN" || brand == "RICOCAT") && ((measureUnit == "SACO") || (measureUnit == "KILO" && quantity >= 2))) {
+            holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
+//            holder.itemProductMerchant.text = surveyProduct.merchant
             holder.itemContainerMerchant.visibility = View.VISIBLE
         } else {
             holder.itemContainerMerchant.visibility = View.GONE
@@ -111,12 +125,27 @@ class AdapterSale(
         internal var itemProductProduct: TextView = itemView.findViewById(R.id.item_product)
         internal var itemProductQuantity: TextView = itemView.findViewById(R.id.item_quantity)
         internal var itemContainerMerchant: LinearLayout = itemView.findViewById(R.id.container_merchant)
-        internal var itemProductMerchant: TextView = itemView.findViewById(R.id.item_merchant)
+        internal var itemProductMerchant: Spinner = itemView.findViewById(R.id.item_merchant)
         internal var itemProductImage: ImageView = itemView.findViewById(R.id.view_image_evidence)
         internal var itemProductLoading: ProgressBar = itemView.findViewById(R.id.loading_evidence)
         private var buttonRemove: ImageButton = itemView.findViewById(R.id.button_remove)
 
         init {
+
+            itemProductMerchant.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val merchant = itemProductMerchant.selectedItem.toString()
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        val product = listSurveyProduct[position]
+                        product.merchant = merchant
+                        refListenerMerchant.onChangeMerchant(product, position)
+                    }
+
+                }
+            }
+
             buttonRemove.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {

@@ -64,24 +64,6 @@
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/container_merchant"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:labelFor="@+id/spinner_material"
-                    android:text="@string/merchant" />
-                <TextView
-                    android:id="@+id/item_merchant"
-                    android:text="PALANA"
-                    android:layout_width="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="15sp"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
                 android:layout_marginTop="5dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -122,6 +104,23 @@
                         android:id="@+id/item_quantity"
                         />
                 </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:id="@+id/container_merchant"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/spinner_material"
+                    android:text="@string/merchant" />
+                <Spinner
+                    android:id="@+id/item_merchant"
+                    android:layout_marginStart="-7dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
 

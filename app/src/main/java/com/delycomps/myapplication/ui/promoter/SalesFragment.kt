@@ -141,7 +141,7 @@ class SalesFragment : Fragment() {
 
         val buttonRegister = view.findViewById<FloatingActionButton>(R.id.sale_register)
 
-        rv.adapter = AdapterSale(listProductsSelected, object : AdapterSale.ListAdapterListener {
+        rv.adapter = AdapterSale(listProductsSelected, listMerchandise, object : AdapterSale.ListAdapterListener {
             override fun onClickAtDetailProduct(surveyProduct: SurveyProduct, position: Int, type: String) {
                 indexSelected = position
                 if (type == "UPDATE") {
@@ -190,6 +190,10 @@ class SalesFragment : Fragment() {
                     viewModel.removeProduct(position)
                 }
             }
+        }, object : AdapterSale.ListAdapterListenerMerchant {
+            override fun onChangeMerchant(surveyProduct: SurveyProduct, position: Int) {
+                viewModel.updateProduct(surveyProduct, position)
+            }
         })
 
         buttonRegister.setOnClickListener {
@@ -198,7 +202,7 @@ class SalesFragment : Fragment() {
             dialogProductUI.findViewById<Spinner>(R.id.spinner_product).adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
             dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_merchant).setSelection(0)
+//            dialogProductUI.findViewById<Spinner>(R.id.spinner_merchant).setSelection(0)
             dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("")
 
             loadingEvidence.visibility = View.GONE
@@ -212,8 +216,8 @@ class SalesFragment : Fragment() {
         val spinnerProduct = view.findViewById<Spinner>(R.id.spinner_product)
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
-        val containerMerchant = view.findViewById<LinearLayout>(R.id.container_merchant)
-        val spinnerMerchant = view.findViewById<Spinner>(R.id.spinner_merchant)
+//        val containerMerchant = view.findViewById<LinearLayout>(R.id.container_merchant)
+//        val spinnerMerchant = view.findViewById<Spinner>(R.id.spinner_merchant)
         val buttonTakePhoto = view.findViewById<Button>(R.id.dialog_take_photo_product)
         val buttonSelectImage = view.findViewById<Button>(R.id.dialog_select_gallery_product)
         loadingEvidence = view.findViewById(R.id.loading_evidence)
@@ -230,7 +234,7 @@ class SalesFragment : Fragment() {
 
         spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
 
-        spinnerMerchant.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
+//        spinnerMerchant.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
 
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {
@@ -243,14 +247,14 @@ class SalesFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
 
-                if (brand == "RICOCAN" || brand == "RICOCAT") {
-                    containerMerchant.visibility = View.VISIBLE
-                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
-                } else {
-                    containerMerchant.visibility = View.GONE
-                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, emptyList<String>())
-                }
-                spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
+//                if (brand == "RICOCAN" || brand == "RICOCAT") {
+//                    containerMerchant.visibility = View.VISIBLE
+//                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
+//                } else {
+//                    containerMerchant.visibility = View.GONE
+//                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, emptyList<String>())
+//                }
+                spinnerProduct.adapter = ArrayAdapter<String?>(view!!.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
             }
         }
 
@@ -267,13 +271,13 @@ class SalesFragment : Fragment() {
             val product = spinnerProduct.selectedItem?.toString() ?: ""
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
-            val merchant = spinnerMerchant.selectedItem?.toString() ?: ""
+//            val merchant = spinnerMerchant.selectedItem?.toString() ?: ""
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0 else quantityString.toInt()
 
             if (product != "" && product != "Seleccione" && quantity > 0) {
                 val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
-                val surveyProduct = SurveyProduct(productId, product, brand, 0.0, measureUnit, quantity, merchant, viewModel.urlSelfie.value)
+                val surveyProduct = SurveyProduct(productId, product, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
                 if (indexSelected == -1) {
                     (rv.adapter as AdapterSale).addProduct(surveyProduct)
                     viewModel.addProduct(surveyProduct)

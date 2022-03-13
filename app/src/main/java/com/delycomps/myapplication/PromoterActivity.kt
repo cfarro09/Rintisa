@@ -42,7 +42,6 @@ class PromoterActivity : AppCompatActivity() {
         if (id == R.id.action_one) {
             val listStocks = promoterViewModel.listStockSelected.value ?: emptyList()
             val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
-            val listMerchandise = promoterViewModel.dataMerchandise.value ?: emptyList()
 
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
@@ -74,17 +73,14 @@ class PromoterActivity : AppCompatActivity() {
                             "operation" to "INSERT",
                         ) }.toList()
 
-                        val merchandises = Gson().toJson(listMerchandise.filter { it.flag == true }.joinToString { it.description }).replace("\"", "")
-                        Log.d("log_carlos_listStocks", Gson().toJson(listStockProcessed))
-                        Log.d("log_carlos_listProducts", Gson().toJson(listProducts))
-                        Log.d("log_carlos_listMerchandise", merchandises)
+                        Log.d("carlosss", Gson().toJson(listProductProcessed))
 
                         promoterViewModel.closePromoter(
                             pointSale.visitId,
                             Gson().toJson(listStockProcessed),
                             Gson().toJson(listProductProcessed),
                             listProducts.count() > 0,
-                            merchandises,
+                            "",
                             SharedPrefsCache(this).getToken()
                         )
                     }
