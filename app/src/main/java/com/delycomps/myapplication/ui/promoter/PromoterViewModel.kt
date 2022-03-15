@@ -9,7 +9,11 @@ import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.Stock
 import com.delycomps.myapplication.model.SurveyProduct
+import com.google.gson.Gson
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class PromoterViewModel : ViewModel() {
 
@@ -40,13 +44,15 @@ class PromoterViewModel : ViewModel() {
     private val _urlSelfie: MutableLiveData<String> = MutableLiveData()
     val urlSelfie: LiveData<String> = _urlSelfie
 
-    fun getMainMulti(token: String) {
+    fun getMainMulti(visitId: Int, token: String) {
         _loadingInital.value = true
-        Repository().getMultiPromoter(token) { isSuccess, result, _ ->
+        Repository().getMultiPromoter(visitId, token) { isSuccess, result, _ ->
             if (isSuccess) {
                 _dataMerchandise.value = result?.merchandises ?: emptyList()
                 _dataProducts.value = result?.products ?: emptyList()
                 _dataStocks.value = result?.stocks ?: emptyList()
+                _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
+                _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
                 _loadingInital.value = false
             }
         }
@@ -58,28 +64,34 @@ class PromoterViewModel : ViewModel() {
         }
     }
 
-    fun addStocks(stocks: List<Stock>) {
+    fun addStocks(stocks: List<Stock>): MutableList<Stock> {
         _listStockSelected.value = ((_listStockSelected.value ?: emptyList()) + stocks.filter { (_listStockSelected.value ?: emptyList()).find { r -> r.product == it.product } == null }).toMutableList()
+
+        return _listStockSelected.value!!
     }
 
-    fun removeStock(i: Int) {
+    fun removeStock(i: Int): MutableList<Stock> {
         _listStockSelected.value = _listStockSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
+        return _listStockSelected.value!!
     }
 
-    fun addProduct (material: SurveyProduct) {
+    fun addProduct (material: SurveyProduct): MutableList<SurveyProduct> {
         _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + listOf(material)).toMutableList()
+        return _listProductSelected.value!!
     }
 
-    fun updateProduct (product: SurveyProduct, i: Int) {
+    fun updateProduct (product: SurveyProduct, i: Int) : MutableList<SurveyProduct> {
         _listProductSelected.value = _listProductSelected.value!!.mapIndexed { index, item -> if (index == i) product else item }.toMutableList()
+        return _listProductSelected.value!!
     }
 
     fun updateMerchandise (merchandise: Merchandise, i: Int) {
         _dataMerchandise.value = _dataMerchandise.value!!.mapIndexed { index, item -> if (index == i) merchandise else item }.toMutableList()
     }
 
-    fun removeProduct (i: Int) {
+    fun removeProduct (i: Int): MutableList<SurveyProduct> {
         _listProductSelected.value = _listProductSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
+        return _listProductSelected.value!!
     }
 
     fun setUrlSelfie(url: String) {
@@ -95,6 +107,41 @@ class PromoterViewModel : ViewModel() {
                 _urlSelfie.value = ""
             }
             _loadingSelfie.value = true
+        }
+    }
+
+    fun updateStock(visitId: Int, json: String, token: String) {
+        Repository().updatePromoter(visitId, "QUERY_UPDATE_REPLACE_STOCK", json, "replace_stock", token) { isSuccess, _ ->
+            if (isSuccess) {
+
+            }
+        }
+    }
+    fun updateSales(visitId: Int, list : List<SurveyProduct>, token: String) {
+        val toSend = Gson().toJson(list.map { mapOf<String, Any>(
+            "subtotal" to 0,
+            "total" to 0,
+            "description_sale" to SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(
+                Date()
+            ),
+            "status_sale" to "ACTIVO",
+            "type_sale" to "NINGUNO",
+            "productid" to it.productId,
+            "quantity" to it.quantity,
+            "measure_unit" to (it.measureUnit ?: ""),
+            "price" to 0,
+            "merchant" to (it.merchant ?: ""),
+            "url_evidence" to (it.imageEvidence ?: ""),
+            "total_detail" to 0,
+            "description_detail" to (it.description ?: ""),
+            "status_detail" to "ACTIVO",
+            "type_detail" to "NINGUNO",
+            "operation" to "INSERT",
+        ) }.toList())
+        Repository().updatePromoter(visitId, "UFN_SALEDETAIL_UPDATE", toSend, "sales", token) { isSuccess, _ ->
+            if (isSuccess) {
+
+            }
         }
     }
 }

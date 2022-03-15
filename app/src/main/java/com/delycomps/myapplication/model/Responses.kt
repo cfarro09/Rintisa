@@ -51,4 +51,11 @@ data class DataPromoter(
     var merchandises: List<Merchandise>,
     var products: List<SurveyProduct>,
     var stocks: List<Stock>,
+    var stocksSelected: List<Stock>,
+    var productsSelected: List<SurveyProduct>,
+)
+
+data class Seltmp(
+    var replaceStock: List<Stock>,
+    var Sale: List<SurveyProduct>,
 )

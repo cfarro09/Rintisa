@@ -34,12 +34,13 @@ import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterSale
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Merchandise
+import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.SurveyProduct
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 private const val CODE_RESULT_CAMERA = 10001
 private const val CODE_RESULT_GALLERY = 10002
@@ -56,7 +57,7 @@ class SalesFragment : Fragment() {
     private lateinit var imageRegister: ImageView
     private lateinit var loadingEvidence: ProgressBar
     private val listMeasureUnit = listOf("KILO", "SACO", "UNIDAD")
-
+    private lateinit var pointSale: PointSale
     private var indexSelected = 0
 
     override fun onCreateView(
@@ -83,6 +84,7 @@ class SalesFragment : Fragment() {
             if (it == false) {
                 listProduct = viewModel.dataProducts.value ?: emptyList()
                 listMerchandise = viewModel.dataMerchandise.value ?: emptyList()
+                listProductsSelected = viewModel.listProductSelected.value ?: ArrayList()
                 starALL(view)
             }
         }
@@ -126,6 +128,8 @@ class SalesFragment : Fragment() {
                 }
             }
         }
+        pointSale = requireActivity().intent.getParcelableExtra<PointSale>(Constants.POINT_SALE_ITEM)!!
+
     }
 
     private fun starALL (view : View) {
@@ -187,12 +191,14 @@ class SalesFragment : Fragment() {
                     dialogMaterial.show()
                 } else {
                     (rv.adapter as AdapterSale).removeItemProduct(position)
-                    viewModel.removeProduct(position)
+                    val listProducts = viewModel.removeProduct(position)
+                    viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
             }
         }, object : AdapterSale.ListAdapterListenerMerchant {
             override fun onChangeMerchant(surveyProduct: SurveyProduct, position: Int) {
-                viewModel.updateProduct(surveyProduct, position)
+                val listProducts = viewModel.updateProduct(surveyProduct, position)
+                viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
             }
         })
 
@@ -246,14 +252,6 @@ class SalesFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
-
-//                if (brand == "RICOCAN" || brand == "RICOCAT") {
-//                    containerMerchant.visibility = View.VISIBLE
-//                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
-//                } else {
-//                    containerMerchant.visibility = View.GONE
-//                    spinnerMerchant.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, emptyList<String>())
-//                }
                 spinnerProduct.adapter = ArrayAdapter<String?>(view!!.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
             }
         }
@@ -279,12 +277,14 @@ class SalesFragment : Fragment() {
                 val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
                 val surveyProduct = SurveyProduct(productId, product, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
                 if (indexSelected == -1) {
+                    val listProducts = viewModel.addProduct(surveyProduct)
                     (rv.adapter as AdapterSale).addProduct(surveyProduct)
-                    viewModel.addProduct(surveyProduct)
+                    viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
                 else {
                     (rv.adapter as AdapterSale).updateItemProduct(surveyProduct, indexSelected)
-                    viewModel.updateProduct(surveyProduct, indexSelected)
+                    val listProducts = viewModel.updateProduct(surveyProduct, indexSelected)
+                    viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
                 dialog.dismiss()
             } else {
@@ -308,9 +308,6 @@ class SalesFragment : Fragment() {
         }
         return null
     }
-
-
-
 
     override fun onActivityResult(
         requestCode: Int,

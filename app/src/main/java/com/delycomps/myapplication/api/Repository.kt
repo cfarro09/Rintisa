@@ -168,6 +168,47 @@ class Repository {
         }
     }
 
+
+    fun updatePromoter(
+        visitId: Int,
+        method: String,
+        json: String,
+        key: String, //replace_stock
+        token: String,
+        onResult: (isSuccess: Boolean, message: String?) -> Unit
+    )  {
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+
+            Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+                "visitid" to visitId,
+                key to json
+            )))
+        )
+        try {
+            Connection.instance.execute(body, "Bearer $token").enqueue(object :
+                Callback<ResponseCommon> {
+                override fun onResponse(
+                    call: Call<ResponseCommon>?,
+                    response: Response<ResponseCommon>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, null)
+                    } else {
+                        onResult(false, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseCommon>?, t: Throwable?) {
+                    onResult(false, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
+
+
     fun insCloseManagePromoter(
         visitId: Int,
         stock_list: String,
@@ -263,6 +304,7 @@ class Repository {
 
 
     fun getMultiPromoter(
+        visitid: Int,
         token: String,
         onResult: (isSuccess: Boolean, result: DataPromoter?, message: String?) -> Unit
     )  {
@@ -274,6 +316,7 @@ class Repository {
                 "competence" to "RINTI"
             )),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAPRODUCTO")),
+            RequestBodyX("UFN_STOCK_SALE_SEL", "UFN_STOCK_SALE_SEL", mapOf<String, Any>("visitid" to visitid)),
         )
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
@@ -287,7 +330,7 @@ class Repository {
                     response: Response<ResponseMulti>?
                 ) {
                     if (response?.isSuccessful == true && response.body().success == true) {
-                        val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList())
+                        val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
 
                         if (response.body().data[0].success == true) {
                             dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
@@ -296,8 +339,40 @@ class Repository {
                             dataPromoter.products = response.body().data[1].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0) }
                         }
                         if (response.body().data[2].success == true) {
-                            val aa = ""
                             dataPromoter.stocks = response.body().data[2].data.toList().map { r -> Stock(r["type"].toString(), r["domaindesc"].toString(), r["domainvalue"].toString()) }
+                        }
+                        if (response.body().data[3].success == true) {
+                            val listRes = response.body().data[3].data.toList()
+                            if (listRes.count() > 0) {
+                                val stocks = listRes[0]["replace_stock"]
+                                val sales = listRes[0]["sale"]
+                                if (stocks != null) {
+                                    val stocks2 = stocks as List<Map<String, Any>>
+                                    dataPromoter.stocksSelected = stocks2.map { r ->
+                                        Stock(
+                                            r["category"].toString(),
+                                            r["brand"].toString(),
+                                            r["product"].toString()
+                                        )
+                                    }
+                                }
+                                if (sales != null) {
+                                    val sales2 = sales as List<Map<String, Any>>
+                                    dataPromoter.productsSelected = sales2.map { r ->
+                                        val productId = r["productid"]?.toString()?.toDouble()?.toInt() ?: 0
+                                        SurveyProduct(
+                                            productId,
+                                            r["saledetail_description"].toString(),
+                                            dataPromoter.products.find { it.productId == productId }?.brand ?: "",
+                                            0.00,
+                                            r["measure_unit"].toString(),
+                                            r["quantity"].toString().toDouble().toInt(),
+                                            r["merchant"].toString(),
+                                            r["url_evidence"].toString(),
+                                        )
+                                    }
+                                }
+                            }
                         }
                         onResult(true, dataPromoter, null)
                     } else {

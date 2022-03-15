@@ -63,6 +63,7 @@ class PromoterActivity : AppCompatActivity() {
                             "type_sale" to "NINGUNO",
                             "productid" to it.productId,
                             "quantity" to it.quantity,
+                            "measure_unit" to (it.measureUnit ?: ""),
                             "price" to 0,
                             "merchant" to (it.merchant ?: ""),
                             "url_evidence" to (it.imageEvidence ?: ""),
@@ -107,12 +108,14 @@ class PromoterActivity : AppCompatActivity() {
         binding = ActivityPromoterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        pointSale = intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
         val builderLoading: AlertDialog.Builder = AlertDialog.Builder(this)
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        promoterViewModel.getMainMulti(SharedPrefsCache(this).getToken())
+        promoterViewModel.getMainMulti(pointSale.visitId, SharedPrefsCache(this).getToken())
 
         promoterViewModel.loadingInital.observe(this) {
             if (it == true) {
@@ -131,7 +134,7 @@ class PromoterActivity : AppCompatActivity() {
                 Toast.makeText(this, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
             }
         }
-        pointSale = intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
 
         val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
         val viewPager: ViewPager = binding.promoterViewPager

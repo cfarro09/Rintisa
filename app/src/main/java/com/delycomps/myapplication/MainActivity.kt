@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-                    pointSale1.management = "INICIADO"
+//                    pointSale1.management = "INICIADO"
                     if (pointSale1.management == "VISITADO")
                     {
                         Toast.makeText(this@MainActivity, "El punto de venta ya fue gestionado", Toast.LENGTH_SHORT).show()

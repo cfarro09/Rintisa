@@ -84,6 +84,7 @@ class AdapterSale(
 
         if ((brand == "RICOCAN" || brand == "RICOCAT") && ((measureUnit == "SACO") || (measureUnit == "KILO" && quantity >= 2))) {
             holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
+            holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
 //            holder.itemProductMerchant.text = surveyProduct.merchant
             holder.itemContainerMerchant.visibility = View.VISIBLE
         } else {
@@ -129,20 +130,21 @@ class AdapterSale(
         internal var itemProductImage: ImageView = itemView.findViewById(R.id.view_image_evidence)
         internal var itemProductLoading: ProgressBar = itemView.findViewById(R.id.loading_evidence)
         private var buttonRemove: ImageButton = itemView.findViewById(R.id.button_remove)
-
+        private var check = 0
         init {
 
             itemProductMerchant.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) { }
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    val merchant = itemProductMerchant.selectedItem.toString()
-                    val position = adapterPosition
-                    if (position != RecyclerView.NO_POSITION) {
-                        val product = listSurveyProduct[position]
-                        product.merchant = merchant
-                        refListenerMerchant.onChangeMerchant(product, position)
+                    if (++check > 1) {
+                        val merchant = itemProductMerchant.selectedItem.toString()
+                        val position = adapterPosition
+                        if (position != RecyclerView.NO_POSITION) {
+                            val product = listSurveyProduct[position]
+                            product.merchant = merchant
+                            refListenerMerchant.onChangeMerchant(product, position)
+                        }
                     }
-
                 }
             }
 

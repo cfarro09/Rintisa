@@ -12,10 +12,13 @@ import android.widget.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterStock
 import com.delycomps.myapplication.adapter.AdapterStockProduct
+import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Material
+import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.Stock
 import com.delycomps.myapplication.model.SurveyProduct
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
@@ -29,7 +32,7 @@ class StockFragment : Fragment() {
     private var listStockSelected: MutableList<Stock> = ArrayList()
     private lateinit var listProduct: List<Stock>
     private lateinit var listBrand: List<String>
-
+    private lateinit var pointSale: PointSale
     private var indexSelected = 0
 
     override fun onCreateView(
@@ -50,9 +53,15 @@ class StockFragment : Fragment() {
         viewModel.loadingInital.observe(requireActivity()) {
             if (it == false) {
                 listProduct = viewModel.dataStocks.value ?: emptyList()
+                listStockSelected = (viewModel.listStockSelected.value ?: ArrayList())
                 starALL(view)
             }
         }
+        pointSale = requireActivity().intent.getParcelableExtra<PointSale>(Constants.POINT_SALE_ITEM)!!
+//        viewModel.listStockSelected.observe(requireActivity()) {
+//            val listReady = it ?: emptyList()
+//
+//        }
     }
 
     private fun starALL (view : View) {
@@ -73,7 +82,8 @@ class StockFragment : Fragment() {
                 indexSelected = position
                 if (type != "UPDATE") {
                     (rv.adapter as AdapterStock).removeItemStock(position)
-                    viewModel.removeStock(position)
+                    val listStock = viewModel.removeStock(position)
+                    viewModel.updateStock(pointSale.visitId, Gson().toJson(listStock), SharedPrefsCache(view.context).getToken())
                 }
             }
         })
@@ -130,9 +140,9 @@ class StockFragment : Fragment() {
             val listStockSelected = (rvProduct.adapter as AdapterStockProduct).getList().filter { it.flag == true }
 
             if (listStockSelected.count() > 0) {
-                //se agrega el recyclerview del fragment
                 listStockSelected.forEach { r -> (rv.adapter as AdapterStock).addStock(r) }
-                viewModel.addStocks(listStockSelected)
+                val listStock = viewModel.addStocks(listStockSelected)
+                viewModel.updateStock(pointSale.visitId, Gson().toJson(listStock), SharedPrefsCache(view.context).getToken())
                 dialog.dismiss()
             } else {
                 Toast.makeText(view.context, "Debe seleccionar al menos un producto", Toast.LENGTH_LONG).show()
