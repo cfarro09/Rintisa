@@ -50,7 +50,7 @@ class PromoterActivity : AppCompatActivity() {
                         val listStockProcessed = listStocks.map { mapOf<String, Any>(
                             "product" to it.product.toString(),
                             "brand" to it.brand.toString(),
-                            "category" to it.type.toString()
+                            "type" to it.type.toString()
                         ) }.toList()
 
                         val listProductProcessed = listProducts.map { mapOf<String, Any>(

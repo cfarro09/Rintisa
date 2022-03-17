@@ -252,6 +252,42 @@ class Repository {
         }
     }
 
+    fun insCloseIncompleteManage(
+        visitId: Int,
+        observation: String,
+        token: String,
+        onResult: (isSuccess: Boolean, message: String?) -> Unit
+    )  {
+        val jsonto = Gson().toJson(RequestBodyX("UFN_UFN_CLOSE_MANAGE_VISIT", "UFN_UFN_CLOSE_MANAGE_VISIT", mapOf<String, Any>(
+            "visitid" to visitId,
+            "observation" to observation
+        )))
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            jsonto
+        )
+        try {
+            Connection.instance.execute(body, "Bearer $token").enqueue(object :
+                Callback<ResponseCommon> {
+                override fun onResponse(
+                    call: Call<ResponseCommon>?,
+                    response: Response<ResponseCommon>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, null)
+                    } else {
+                        onResult(false, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseCommon>?, t: Throwable?) {
+                    onResult(false, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
     fun getMultiMerchant(
         token: String,
         onResult: (isSuccess: Boolean, result: DataMerchant?, message: String?) -> Unit
@@ -406,7 +442,6 @@ class Repository {
                     if (response!!.isSuccessful) {
                         onResult(true, response.body().url, null)
                     } else {
-//                        val message = JSONObject(response.errorBody().string()).getJSONObject("error").getString("mensaje")
                         onResult(false, null, DEFAULT_MESSAGE_ERROR)
                     }
                 }

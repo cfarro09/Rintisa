@@ -232,6 +232,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
             }
         }
+
+        supportActionBar?.title = SharedPrefsCache(rv.context).get("fullname", "string")?.toString() ?: pointSale.client
     }
 
     private val locationListener: LocationListener = object : LocationListener {

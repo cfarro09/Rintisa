@@ -35,6 +35,7 @@ class LoginActivity : AppCompatActivity() {
                     if (isSuccess) {
                         SharedPrefsCache(this).set("type", result?.role?.uppercase() ?: "", "string")
                         SharedPrefsCache(this).set("token", result?.token, "string")
+                        SharedPrefsCache(this).set("fullname", result?.fullname, "string")
                         Toast.makeText(this, "Bienvenido $username (${result?.role?.uppercase() ?: ""})", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, MainActivity::class.java))
                         finish()

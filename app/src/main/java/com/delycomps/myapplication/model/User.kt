@@ -13,6 +13,9 @@ data class User(
     @SerializedName("lastname")
     @Expose
     var lastName: String,
+    @SerializedName("fullname")
+    @Expose
+    var fullname: String,
     @SerializedName("usr")
     @Expose
     var username: String,
