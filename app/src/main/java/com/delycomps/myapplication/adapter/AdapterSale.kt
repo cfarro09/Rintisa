@@ -75,7 +75,7 @@ class AdapterSale(
 
         holder.itemProductMeasureUnit.text = surveyProduct.measureUnit
         holder.itemProductQuantity.text = surveyProduct.quantity.toString()
-        holder.itemProductProduct.text = surveyProduct.description + " (" + surveyProduct.brand + ")"
+        holder.itemProductProduct.text = surveyProduct.brand
 
         val brand = surveyProduct.brand
         val measureUnit = surveyProduct.measureUnit

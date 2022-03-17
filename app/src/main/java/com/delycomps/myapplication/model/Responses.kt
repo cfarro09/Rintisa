@@ -47,9 +47,15 @@ data class DataMerchant(
     var products: List<SurveyProduct>
 )
 
+data class BrandSale (
+    var brand: String,
+    var listMeasure: List<String>
+)
+
+
 data class DataPromoter(
     var merchandises: List<Merchandise>,
-    var products: List<SurveyProduct>,
+    var saleBrand: List<BrandSale>,
     var stocks: List<Stock>,
     var stocksSelected: List<Stock>,
     var productsSelected: List<SurveyProduct>,

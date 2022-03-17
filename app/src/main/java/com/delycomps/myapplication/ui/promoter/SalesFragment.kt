@@ -33,6 +33,7 @@ import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterSale
 import com.delycomps.myapplication.cache.SharedPrefsCache
+import com.delycomps.myapplication.model.BrandSale
 import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.SurveyProduct
@@ -49,14 +50,14 @@ class SalesFragment : Fragment() {
     private lateinit var rv: RecyclerView
     private lateinit var viewModel: PromoterViewModel
     private var listProductsSelected: MutableList<SurveyProduct> = ArrayList()
-    private lateinit var listProduct: List<SurveyProduct>
+    private lateinit var listBrandSale: List<BrandSale>
     private lateinit var listMerchandise: List<Merchandise>
     private lateinit var listBrand: List<String>
     private var currentPhotoPath: String = ""
     private lateinit var dialogLoading: AlertDialog
     private lateinit var imageRegister: ImageView
     private lateinit var loadingEvidence: ProgressBar
-    private val listMeasureUnit = listOf("KILO", "SACO", "UNIDAD")
+//    private val listMeasureUnit = listOf("KILO", "SACO", "HUMEDO", "SNACK")
     private lateinit var pointSale: PointSale
     private var indexSelected = 0
 
@@ -82,7 +83,7 @@ class SalesFragment : Fragment() {
 
         viewModel.loadingInital.observe(requireActivity()) {
             if (it == false) {
-                listProduct = viewModel.dataProducts.value ?: emptyList()
+                listBrandSale = viewModel.dataBrandSale.value ?: emptyList()
                 listMerchandise = viewModel.dataMerchandise.value ?: emptyList()
                 listProductsSelected = viewModel.listProductSelected.value ?: ArrayList()
                 starALL(view)
@@ -133,7 +134,7 @@ class SalesFragment : Fragment() {
     }
 
     private fun starALL (view : View) {
-        listBrand = listOf("Seleccione").union(listProduct.map { it.brand!! }.distinct().toList()).toMutableList()
+        listBrand = listOf("Seleccione").union(listBrandSale.map { it.brand }.toList()).toMutableList()
 
         val builderDialogMaterial: AlertDialog.Builder = AlertDialog.Builder(view.context)
 
@@ -150,13 +151,13 @@ class SalesFragment : Fragment() {
                 indexSelected = position
                 if (type == "UPDATE") {
                     viewModel.setUrlSelfie(surveyProduct.imageEvidence ?: "")
-                    val spinnerTmp = dialogProductUI.findViewById<Spinner>(R.id.spinner_product)
-                    val listProductName = listProduct.filter { it.brand == surveyProduct.brand }.map { it.description }.toMutableList()
-                    spinnerTmp.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listProductName)
-                    spinnerTmp.setSelection(listProductName.indexOf(surveyProduct.description))
+//                    val spinnerTmp = dialogProductUI.findViewById<Spinner>(R.id.spinner_product)
+//                    val listProductName = listProduct.filter { it.brand == surveyProduct.brand }.map { it.description }.toMutableList()
+//                    spinnerTmp.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listProductName)
+//                    spinnerTmp.setSelection(listProductName.indexOf(surveyProduct.description))
 
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(surveyProduct.brand))
-                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(listMeasureUnit.indexOf(surveyProduct.measureUnit))
+//                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(listMeasureUnit.indexOf(surveyProduct.measureUnit))
                     dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + surveyProduct.quantity)
 
                     imageRegister.visibility = View.VISIBLE
@@ -205,7 +206,7 @@ class SalesFragment : Fragment() {
         buttonRegister.setOnClickListener {
             viewModel.setUrlSelfie("")
             indexSelected = -1
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_product).adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
+//            dialogProductUI.findViewById<Spinner>(R.id.spinner_product).adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
             dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
 //            dialogProductUI.findViewById<Spinner>(R.id.spinner_merchant).setSelection(0)
@@ -219,7 +220,7 @@ class SalesFragment : Fragment() {
 
     private fun manageDialogMaterial (view: View, dialog: AlertDialog) {
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
-        val spinnerProduct = view.findViewById<Spinner>(R.id.spinner_product)
+//        val spinnerProduct = view.findViewById<Spinner>(R.id.spinner_product)
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
 //        val containerMerchant = view.findViewById<LinearLayout>(R.id.container_merchant)
@@ -237,9 +238,7 @@ class SalesFragment : Fragment() {
             intent.type = "image/*"
             startActivityForResult(intent, CODE_RESULT_GALLERY)
         }
-
-        spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
-
+//        spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
 //        spinnerMerchant.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
 
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
@@ -252,11 +251,11 @@ class SalesFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
-                spinnerProduct.adapter = ArrayAdapter<String?>(view!!.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
+//                spinnerProduct.adapter = ArrayAdapter<String?>(view!!.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
+                val measures: List<String> = listBrandSale.find { it.brand == brand }?.listMeasure ?: emptyList()
+                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, measures)
             }
         }
-
-        spinnerMeasureUnit.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listMeasureUnit)
 
         val buttonSave = view.findViewById<Button>(R.id.dialog_save_product)
         val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel_product)
@@ -266,16 +265,16 @@ class SalesFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
-            val product = spinnerProduct.selectedItem?.toString() ?: ""
+//            val product = spinnerProduct.selectedItem?.toString() ?: ""
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
 //            val merchant = spinnerMerchant.selectedItem?.toString() ?: ""
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0 else quantityString.toInt()
 
-            if (product != "" && product != "Seleccione" && quantity > 0) {
-                val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
-                val surveyProduct = SurveyProduct(productId, product, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
+            if (quantity > 0) {
+//                val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
+                val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
                 if (indexSelected == -1) {
                     val listProducts = viewModel.addProduct(surveyProduct)
                     (rv.adapter as AdapterSale).addProduct(surveyProduct)

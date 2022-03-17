@@ -346,11 +346,7 @@ class Repository {
     )  {
         val multi = listOf(
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MERCHANDISING")),
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_PRODUCT_COMPETENCE_SEL", mapOf<String, Any>(
-                "id" to 0,
-                "all" to true,
-                "competence" to "RINTI"
-            )),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAVENTAS")),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAPRODUCTO")),
             RequestBodyX("UFN_STOCK_SALE_SEL", "UFN_STOCK_SALE_SEL", mapOf<String, Any>("visitid" to visitid)),
         )
@@ -372,7 +368,7 @@ class Repository {
                             dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
                         }
                         if (response.body().data[1].success == true) {
-                            dataPromoter.products = response.body().data[1].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0) }
+                            dataPromoter.saleBrand = response.body().data[1].data.toList().map { r -> BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList()) }
                         }
                         if (response.body().data[2].success == true) {
                             dataPromoter.stocks = response.body().data[2].data.toList().map { r -> Stock(r["type"].toString(), r["domaindesc"].toString(), r["domainvalue"].toString()) }
@@ -399,7 +395,7 @@ class Repository {
                                         SurveyProduct(
                                             productId,
                                             r["saledetail_description"].toString(),
-                                            dataPromoter.products.find { it.productId == productId }?.brand ?: "",
+                                            r["saledetail_description"].toString(),
                                             0.00,
                                             r["measure_unit"].toString(),
                                             r["quantity"].toString().toDouble().toInt(),

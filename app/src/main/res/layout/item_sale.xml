@@ -7,7 +7,7 @@
     android:layout_marginBottom="10dp">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:paddingTop="0dp"
@@ -36,7 +36,7 @@
         </RelativeLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/container_evidence"
             android:orientation="vertical"
@@ -52,7 +52,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@+id/spinner_material"
-                    android:text="@string/product" />
+                    android:text="@string/brand" />
 
                 <TextView
                     android:id="@+id/item_product"

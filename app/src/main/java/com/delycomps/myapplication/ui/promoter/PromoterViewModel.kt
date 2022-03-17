@@ -1,14 +1,12 @@
 package com.delycomps.myapplication.ui.promoter
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.delycomps.myapplication.api.Repository
-import com.delycomps.myapplication.model.Material
-import com.delycomps.myapplication.model.Merchandise
-import com.delycomps.myapplication.model.Stock
-import com.delycomps.myapplication.model.SurveyProduct
+import com.delycomps.myapplication.model.*
 import com.google.gson.Gson
 import java.io.File
 import java.text.SimpleDateFormat
@@ -23,8 +21,8 @@ class PromoterViewModel : ViewModel() {
     private val _dataStocks: MutableLiveData<List<Stock>> = MutableLiveData()
     val dataStocks: LiveData<List<Stock>> = _dataStocks
 
-    private val _dataProducts: MutableLiveData<List<SurveyProduct>> = MutableLiveData()
-    val dataProducts: LiveData<List<SurveyProduct>> = _dataProducts
+    private val _dataBrandSale: MutableLiveData<List<BrandSale>> = MutableLiveData()
+    val dataBrandSale: LiveData<List<BrandSale>> = _dataBrandSale
 
     private val _loadingInital: MutableLiveData<Boolean> = MutableLiveData()
     val loadingInital: LiveData<Boolean> = _loadingInital
@@ -49,7 +47,7 @@ class PromoterViewModel : ViewModel() {
         Repository().getMultiPromoter(visitId, token) { isSuccess, result, _ ->
             if (isSuccess) {
                 _dataMerchandise.value = result?.merchandises ?: emptyList()
-                _dataProducts.value = result?.products ?: emptyList()
+                _dataBrandSale.value = result?.saleBrand ?: emptyList()
                 _dataStocks.value = result?.stocks ?: emptyList()
                 _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
                 _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
@@ -126,7 +124,7 @@ class PromoterViewModel : ViewModel() {
             ),
             "status_sale" to "ACTIVO",
             "type_sale" to "NINGUNO",
-            "productid" to it.productId,
+            "productid" to 0,
             "quantity" to it.quantity,
             "measure_unit" to (it.measureUnit ?: ""),
             "price" to 0,
@@ -138,6 +136,7 @@ class PromoterViewModel : ViewModel() {
             "type_detail" to "NINGUNO",
             "operation" to "INSERT",
         ) }.toList())
+        Log.d("davidddd", toSend)
         Repository().updatePromoter(visitId, "UFN_SALEDETAIL_UPDATE", toSend, "sales", token) { isSuccess, _ ->
             if (isSuccess) {
 
