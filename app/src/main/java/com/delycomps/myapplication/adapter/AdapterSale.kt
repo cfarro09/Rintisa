@@ -125,13 +125,19 @@ class AdapterSale(
         internal var itemProductMeasureUnit: TextView = itemView.findViewById(R.id.item_measure_unit)
         internal var itemProductProduct: TextView = itemView.findViewById(R.id.item_product)
         internal var itemProductQuantity: TextView = itemView.findViewById(R.id.item_quantity)
-        internal var itemContainerMerchant: LinearLayout = itemView.findViewById(R.id.container_merchant)
+        internal var itemContainerMerchant: RelativeLayout = itemView.findViewById(R.id.container_merchant)
         internal var itemProductMerchant: Spinner = itemView.findViewById(R.id.item_merchant)
         internal var itemProductImage: ImageView = itemView.findViewById(R.id.view_image_evidence)
         internal var itemProductLoading: ProgressBar = itemView.findViewById(R.id.loading_evidence)
         private var buttonRemove: ImageButton = itemView.findViewById(R.id.button_remove)
+        private var buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private var check = 0
         init {
+            buttonSave.setOnClickListener {
+                itemProductMerchant.isEnabled = false
+                itemProductMerchant.isClickable = false
+                Toast.makeText(mContext, "¡Se guardó con exito!", Toast.LENGTH_LONG).show()
+            }
 
             itemProductMerchant.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) { }

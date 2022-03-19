@@ -128,7 +128,7 @@ class MaterialsFragment : Fragment() {
                     dialogMaterial.show()
                 } else {
                     (rv.adapter as AdapterMaterial).removeItemMaterial(position)
-                    viewModel.removeMaterial(indexSelected, view.context, pointSale.visitId, material.uuid.toString())
+                    viewModel.removeMaterial(indexSelected, view.context, material.uuid.toString())
                 }
             }
         })

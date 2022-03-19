@@ -105,23 +105,42 @@
                         />
                 </LinearLayout>
             </LinearLayout>
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:id="@+id/container_merchant"
-                android:orientation="vertical">
-                <TextView
+                android:layout_marginTop="5dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_toStartOf="@+id/button_save"
+
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:labelFor="@+id/spinner_material"
+                        android:text="@string/merchant" />
+                    <Spinner
+                        android:id="@+id/item_merchant"
+                        android:layout_marginStart="-7dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/button_save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:labelFor="@+id/spinner_material"
-                    android:text="@string/merchant" />
-                <Spinner
-                    android:id="@+id/item_merchant"
-                    android:layout_marginStart="-7dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/back_rounded"
+                    android:backgroundTint="#00A303"
+                    android:contentDescription="@string/button_save"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_baseline_save_24"
+                    app:tint="#FFFFFF" />
+            </RelativeLayout>
         </LinearLayout>
 
         <ImageButton

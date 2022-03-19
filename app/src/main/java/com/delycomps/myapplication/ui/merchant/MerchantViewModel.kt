@@ -52,8 +52,8 @@ class MerchantViewModel : ViewModel() {
         _listMaterialSelected.value = _listMaterialSelected.value!!.mapIndexed { index, item -> if (index == i) material else item }.toMutableList()
     }
 
-    fun removeMaterial (i: Int, context: Context, visitId: Int, uuid: String) {
-        BDLocal(context).deleteMaterialsFromVisit(visitId, uuid)
+    fun removeMaterial (i: Int, context: Context, uuid: String) {
+        BDLocal(context).deleteMaterialsFromVisit(uuid)
         _listMaterialSelected.value = _listMaterialSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
     }
 

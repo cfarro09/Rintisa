@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-//                    pointSale1.management = "INICIADO"
+                    pointSale1.management = "INICIADO"
                     if (pointSale1.management == "VISITADO")
                     {
                         val role = SharedPrefsCache(rv.context).get("type", "string")
