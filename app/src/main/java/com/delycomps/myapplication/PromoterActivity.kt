@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.ui.promoter.SectionsPagerAdapter
 import com.delycomps.myapplication.databinding.ActivityPromoterBinding
+import com.delycomps.myapplication.model.DataMerchant
+import com.delycomps.myapplication.model.DataPromoter
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.gson.Gson
@@ -114,6 +116,10 @@ class PromoterActivity : AppCompatActivity() {
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
+
+        val jsonPromoter = SharedPrefsCache(this).get("data-promoter", "string")
+        val dataPromoter = Gson().fromJson(jsonPromoter.toString(), DataPromoter::class.java)
+        promoterViewModel.setMultiInitial(dataPromoter)
 
         promoterViewModel.getMainMulti(pointSale.visitId, SharedPrefsCache(this).getToken())
 

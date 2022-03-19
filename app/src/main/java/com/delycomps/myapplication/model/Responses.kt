@@ -25,9 +25,10 @@ data class ResponseMulti(
     var data: List<ResponseList<Map<String, Any>>>,
 )
 
-data class ResError(
-    var msg: String?,
-    var code: Int?
+data class ResGlobal(
+    var loading: Boolean,
+    var result: String,
+    var success: Boolean
 )
 
 data class ResUploader(

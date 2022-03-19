@@ -24,11 +24,9 @@ open class SurveyProduct: Parcelable {
     @SerializedName("quantity")
     @Expose
     var quantity: Int
-
     @SerializedName("merchant")
     @Expose
     var merchant: String?
-
     @SerializedName("image_evidence")
     @Expose
     var imageEvidence: String?

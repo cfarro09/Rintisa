@@ -23,5 +23,5 @@ interface Endpoints {
 
     @Multipart
     @POST("upload")
-    fun upload(@Part file: MultipartBody.Part, @Header("Authorization") authHeader: String): Call<ResUploader>
+    fun upload(@Part file: MultipartBody.Part, @Part("requestBody") type: RequestBody, @Header("Authorization") authHeader: String): Call<ResUploader>
 }

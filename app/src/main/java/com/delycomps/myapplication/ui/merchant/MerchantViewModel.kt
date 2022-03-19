@@ -1,12 +1,15 @@
 package com.delycomps.myapplication.ui.merchant
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.delycomps.myapplication.api.Repository
-import com.delycomps.myapplication.model.Material
-import com.delycomps.myapplication.model.SurveyProduct
+import com.delycomps.myapplication.cache.BDLocal
+import com.delycomps.myapplication.model.*
+import com.google.gson.Gson
+import org.json.JSONObject
 import java.io.File
 
 class MerchantViewModel : ViewModel() {
@@ -35,16 +38,27 @@ class MerchantViewModel : ViewModel() {
     private val _closingMerchant: MutableLiveData<Boolean> = MutableLiveData()
     val closingMerchant: LiveData<Boolean> = _closingMerchant
 
-    fun addMaterial (material: Material) {
+    private val _urlImageWithBD: MutableLiveData<ResGlobal> = MutableLiveData()
+    val urlImageWithBD: LiveData<ResGlobal> = _urlImageWithBD
+
+    fun addMaterial (material: Material, context: Context, visitId: Int) {
+        BDLocal(context).addMaterialStock(material, visitId)
         _listMaterialSelected.value = ((_listMaterialSelected.value ?: emptyList()) + listOf(material)).toMutableList()
     }
 
-    fun updateMaterial (material: Material, i: Int) {
+    fun updateMaterial (material: Material, i: Int, context: Context) {
+        material.uuid = _listMaterialSelected.value!![i].uuid
+        BDLocal(context).updateMaterialsFromVisit(material)
         _listMaterialSelected.value = _listMaterialSelected.value!!.mapIndexed { index, item -> if (index == i) material else item }.toMutableList()
     }
 
-    fun removeMaterial (i: Int) {
+    fun removeMaterial (i: Int, context: Context, visitId: Int, uuid: String) {
+        BDLocal(context).deleteMaterialsFromVisit(visitId, uuid)
         _listMaterialSelected.value = _listMaterialSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
+    }
+
+    fun initialMaterialSelected (list: MutableList<Material>) {
+        _listMaterialSelected.value = list
     }
 
     fun addProduct (material: SurveyProduct) {
@@ -57,6 +71,22 @@ class MerchantViewModel : ViewModel() {
 
     fun removeProduct (i: Int) {
         _listProductSelected.value = _listProductSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
+    }
+
+    fun uploadWithBD(file: File, visitId: Int, type: String, token: String) {
+        _urlImageWithBD.value = ResGlobal(true, "", false)
+        val method = if (type == "AFTER") "QUERY_IMAGE_AFTER" else "QUERY_IMAGE_BEFORE"
+        val jsonRb = Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+            "visitid" to visitId
+        )))
+
+        Repository().uploadImage(file, token, jsonRb) { isSuccess, result, _ ->
+            if (isSuccess) {
+                _urlImageWithBD.value = ResGlobal(false, result.toString(), true)
+            } else {
+                _urlImageWithBD.value = ResGlobal(false, "", false)
+            }
+        }
     }
 
     fun uploadBeforeImage(file: File, token: String) {
@@ -97,4 +127,13 @@ class MerchantViewModel : ViewModel() {
         }
     }
 
+    fun initMainMulti(data: DataMerchant) {
+//        Repository().getMultiMerchant(token) { isSuccess, result, _ ->
+//            if (isSuccess) {
+            _dataBrands.value = data.brands
+            _dataMaterials.value = data.materials
+            _dataProducts.value = data.products
+//            }
+//        }
+    }
 }

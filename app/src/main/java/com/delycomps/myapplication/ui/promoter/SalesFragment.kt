@@ -151,13 +151,7 @@ class SalesFragment : Fragment() {
                 indexSelected = position
                 if (type == "UPDATE") {
                     viewModel.setUrlSelfie(surveyProduct.imageEvidence ?: "")
-//                    val spinnerTmp = dialogProductUI.findViewById<Spinner>(R.id.spinner_product)
-//                    val listProductName = listProduct.filter { it.brand == surveyProduct.brand }.map { it.description }.toMutableList()
-//                    spinnerTmp.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listProductName)
-//                    spinnerTmp.setSelection(listProductName.indexOf(surveyProduct.description))
-
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(surveyProduct.brand))
-//                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(listMeasureUnit.indexOf(surveyProduct.measureUnit))
                     dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + surveyProduct.quantity)
 
                     imageRegister.visibility = View.VISIBLE
@@ -206,10 +200,8 @@ class SalesFragment : Fragment() {
         buttonRegister.setOnClickListener {
             viewModel.setUrlSelfie("")
             indexSelected = -1
-//            dialogProductUI.findViewById<Spinner>(R.id.spinner_product).adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
             dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
-//            dialogProductUI.findViewById<Spinner>(R.id.spinner_merchant).setSelection(0)
             dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("")
 
             loadingEvidence.visibility = View.GONE
@@ -220,11 +212,8 @@ class SalesFragment : Fragment() {
 
     private fun manageDialogMaterial (view: View, dialog: AlertDialog) {
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
-//        val spinnerProduct = view.findViewById<Spinner>(R.id.spinner_product)
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
-//        val containerMerchant = view.findViewById<LinearLayout>(R.id.container_merchant)
-//        val spinnerMerchant = view.findViewById<Spinner>(R.id.spinner_merchant)
         val buttonTakePhoto = view.findViewById<Button>(R.id.dialog_take_photo_product)
         val buttonSelectImage = view.findViewById<Button>(R.id.dialog_select_gallery_product)
         loadingEvidence = view.findViewById(R.id.loading_evidence)
@@ -238,8 +227,6 @@ class SalesFragment : Fragment() {
             intent.type = "image/*"
             startActivityForResult(intent, CODE_RESULT_GALLERY)
         }
-//        spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
-//        spinnerMerchant.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listMerchandise.map { it.description })
 
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {
@@ -272,7 +259,7 @@ class SalesFragment : Fragment() {
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0 else quantityString.toInt()
 
-            if (quantity > 0) {
+            if (brand != "" && brand != "Seleccione" && quantity > 0) {
 //                val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
                 val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
                 if (indexSelected == -1) {

@@ -43,6 +43,13 @@ open class PointSale: Parcelable {
     @Expose
     var management: String? = ""
 
+    @SerializedName("image_before")
+    @Expose
+    var imageBefore: String? = ""
+    @SerializedName("image_after")
+    @Expose
+    var imageAfter: String? = ""
+
     constructor(
         visitId: Int,
         customerId: Int,
@@ -55,7 +62,9 @@ open class PointSale: Parcelable {
         lastVisit: String,
         trafficLights: String,
         showSurvey: Boolean,
-        management: String
+        management: String,
+        imageBefore: String,
+        imageAfter: String
     ) {
         this.visitId = visitId
         this.customerId = customerId
@@ -69,6 +78,8 @@ open class PointSale: Parcelable {
         this.trafficLights = trafficLights
         this.showSurvey = showSurvey
         this.management = management
+        this.imageBefore = imageBefore
+        this.imageAfter = imageAfter
     }
     protected constructor(parcel: Parcel) {
         this.visitId = parcel.readInt()
@@ -83,6 +94,8 @@ open class PointSale: Parcelable {
         this.trafficLights = parcel.readString()
         this.showSurvey = parcel.readInt() != 0
         this.management = parcel.readString()
+        this.imageBefore = parcel.readString()
+        this.imageAfter = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -100,6 +113,8 @@ open class PointSale: Parcelable {
         p0.writeString(trafficLights)
         p0.writeByte((if (showSurvey) 1 else 0).toByte())
         p0.writeString(management)
+        p0.writeString(imageBefore)
+        p0.writeString(imageAfter)
     }
     companion object CREATOR : Parcelable.Creator<PointSale> {
         override fun createFromParcel(parcel: Parcel): PointSale {

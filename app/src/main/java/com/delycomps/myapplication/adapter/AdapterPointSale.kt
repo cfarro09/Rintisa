@@ -36,12 +36,15 @@ class AdapterPointsale(
         return position
     }
 
-//    fun changeStatus(newStatus: String, position: Int, countImagesDelivery: Int, countImagesPickup: Int){
-//        listPointSale[position].status = newStatus
-//        listPointSale[position].countImagesDelivery = countImagesDelivery
-//        listPointSale[position].countImagesPickup = countImagesPickup
-//        notifyDataSetChanged()
-//    }
+    fun updateImageBefore(position: Int, url: String){
+        listPointSale[position].imageBefore = url
+        notifyItemChanged(position)
+    }
+
+    fun updateImageAfter(position: Int, url: String){
+        listPointSale[position].imageAfter = url
+        notifyItemChanged(position)
+    }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val pointSale: PointSale = listPointSale[position]

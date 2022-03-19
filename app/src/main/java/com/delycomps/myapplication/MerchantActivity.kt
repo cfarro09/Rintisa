@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityMerchantBinding
+import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.delycomps.myapplication.ui.merchant.SectionsPagerAdapter
@@ -45,24 +46,24 @@ class MerchantActivity : AppCompatActivity() {
             val listMaterials = merchantViewModel.listMaterialSelected.value ?: emptyList()
             val listProducts = merchantViewModel.listProductSelected.value ?: emptyList()
 
-            if (imageAfter == "") {
-                Snackbar.make(tabs, "La \"foto del despues\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-                    R.color.colorSecondary
-                )).show()
-                return true
-            }
-            if (imageBefore == "") {
-                Snackbar.make(tabs, "La \"foto del antes\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-                    R.color.colorSecondary
-                )).show()
-                return true
-            }
-            if (listMaterials.count() == 0) {
-                Snackbar.make(tabs, "Debe registrar al menos un material instalado", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-                    R.color.colorSecondary
-                )).show()
-                return true
-            }
+//            if (imageAfter == "") {
+//                Snackbar.make(tabs, "La \"foto del despues\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
+//                    R.color.colorSecondary
+//                )).show()
+//                return true
+//            }
+//            if (imageBefore == "") {
+//                Snackbar.make(tabs, "La \"foto del antes\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
+//                    R.color.colorSecondary
+//                )).show()
+//                return true
+//            }
+//            if (listMaterials.count() == 0) {
+//                Snackbar.make(tabs, "Debe registrar al menos un material instalado", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
+//                    R.color.colorSecondary
+//                )).show()
+//                return true
+//            }
 
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
@@ -120,13 +121,9 @@ class MerchantActivity : AppCompatActivity() {
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        dialogLoading.show()
-
-        merchantViewModel.getMainMulti(SharedPrefsCache(this).getToken())
-
-        merchantViewModel.dataMaterials.observe(this) {
-            dialogLoading.dismiss()
-        }
+        val jsonMerchant = SharedPrefsCache(this).get("data-merchant", "string")
+        val dataMerchant = Gson().fromJson(jsonMerchant.toString(), DataMerchant::class.java)
+        merchantViewModel.initMainMulti(dataMerchant)
 
         merchantViewModel.closingMerchant.observe(this) {
             dialogLoading.dismiss()
@@ -151,7 +148,5 @@ class MerchantActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
-
-
     }
 }

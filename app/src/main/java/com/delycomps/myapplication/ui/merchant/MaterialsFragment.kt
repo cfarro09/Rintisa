@@ -11,11 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.delycomps.myapplication.MainActivity
-import com.delycomps.myapplication.MerchantActivity
+import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterMaterial
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.model.Material
+import com.delycomps.myapplication.model.PointSale
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MaterialsFragment : Fragment() {
@@ -25,6 +26,7 @@ class MaterialsFragment : Fragment() {
     private lateinit var listMaterialNames : List<String>
     private lateinit var listBrand : List<String>
     private var indexSelected = 0
+    private lateinit var pointSale: PointSale
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +46,12 @@ class MaterialsFragment : Fragment() {
         viewModel.dataBrands.observe(requireActivity()) {
             listBrand = listOf("Seleccione") + it
         }
+
+        pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        listMaterial = BDLocal(view.context).getMaterialStock(pointSale.visitId).toMutableList()
+        viewModel.initialMaterialSelected(listMaterial)
+
         viewModel.dataMaterials.observe(requireActivity()) { it ->
             listMaterialNames = listOf("Seleccione") + it.map { it.material!! }.toList()
             startALL(view)
@@ -85,11 +93,11 @@ class MaterialsFragment : Fragment() {
                     val material = Material(material, brand, quantity.toInt())
                     if (indexSelected == -1) {
                         (rv.adapter as AdapterMaterial).addMaterial(material)
-                        viewModel.addMaterial(material)
+                        viewModel.addMaterial(material, view.context, pointSale.visitId)
                     }
                     else {
                         (rv.adapter as AdapterMaterial).updateItemMaterial(material, indexSelected)
-                        viewModel.updateMaterial(material, indexSelected)
+                        viewModel.updateMaterial(material, indexSelected, view.context)
                     }
                     dialog.dismiss()
                 }
@@ -120,7 +128,7 @@ class MaterialsFragment : Fragment() {
                     dialogMaterial.show()
                 } else {
                     (rv.adapter as AdapterMaterial).removeItemMaterial(position)
-                    viewModel.removeMaterial(indexSelected)
+                    viewModel.removeMaterial(indexSelected, view.context, pointSale.visitId, material.uuid.toString())
                 }
             }
         })

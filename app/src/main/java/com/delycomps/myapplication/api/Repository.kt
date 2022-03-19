@@ -345,9 +345,6 @@ class Repository {
         onResult: (isSuccess: Boolean, result: DataPromoter?, message: String?) -> Unit
     )  {
         val multi = listOf(
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MERCHANDISING")),
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAVENTAS")),
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAPRODUCTO")),
             RequestBodyX("UFN_STOCK_SALE_SEL", "UFN_STOCK_SALE_SEL", mapOf<String, Any>("visitid" to visitid)),
         )
         val body: RequestBody = RequestBody.create(
@@ -363,18 +360,8 @@ class Repository {
                 ) {
                     if (response?.isSuccessful == true && response.body().success == true) {
                         val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
-
                         if (response.body().data[0].success == true) {
-                            dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
-                        }
-                        if (response.body().data[1].success == true) {
-                            dataPromoter.saleBrand = response.body().data[1].data.toList().map { r -> BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList()) }
-                        }
-                        if (response.body().data[2].success == true) {
-                            dataPromoter.stocks = response.body().data[2].data.toList().map { r -> Stock(r["type"].toString(), r["domaindesc"].toString(), r["domainvalue"].toString()) }
-                        }
-                        if (response.body().data[3].success == true) {
-                            val listRes = response.body().data[3].data.toList()
+                            val listRes = response.body().data[0].data.toList()
                             if (listRes.count() > 0) {
                                 val stocks = listRes[0]["replace_stock"]
                                 val sales = listRes[0]["sale"]
@@ -420,16 +407,65 @@ class Repository {
         }
     }
 
+    fun getMultiPromoterInitial(
+        token: String,
+        onResult: (isSuccess: Boolean, result: DataPromoter?, message: String?) -> Unit
+    )  {
+        val multi = listOf(
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MERCHANDISING")),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAVENTAS")),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAPRODUCTO")),
+        )
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(multi)
+        )
+        try {
+            Connection.instance.mainMulti(body, "Bearer $token").enqueue(object :
+                Callback<ResponseMulti> {
+                override fun onResponse(
+                    call: Call<ResponseMulti>?,
+                    response: Response<ResponseMulti>?
+                ) {
+                    if (response?.isSuccessful == true && response.body().success == true) {
+                        val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+
+                        if (response.body().data[0].success == true) {
+                            dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
+                        }
+                        if (response.body().data[1].success == true) {
+                            dataPromoter.saleBrand = response.body().data[1].data.toList().map { r -> BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList()) }
+                        }
+                        if (response.body().data[2].success == true) {
+                            dataPromoter.stocks = response.body().data[2].data.toList().map { r -> Stock(r["type"].toString(), r["domaindesc"].toString(), r["domainvalue"].toString()) }
+                        }
+                        onResult(true, dataPromoter, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseMulti>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
+
     fun uploadImage (
         file: File,
         token: String,
+        rb: String? = "",
         onResult: (isSuccess: Boolean, result: String?, message: String?) -> Unit
     )  {
         val fileReqBody: RequestBody = RequestBody.create(MediaType.parse("*/*"), file)
         val part: MultipartBody.Part = MultipartBody.Part.createFormData("file", file.name, fileReqBody)
 
         try {
-            Connection.instance.upload(part, "Bearer $token").enqueue(object :
+            val rb: RequestBody = RequestBody.create(MediaType.parse("text/plain"), rb)
+            Connection.instance.upload(part, rb,"Bearer $token").enqueue(object :
                 Callback<ResUploader> {
                 override fun onResponse(
                     call: Call<ResUploader>?,

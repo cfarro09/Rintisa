@@ -20,6 +20,10 @@ import android.text.Html
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -29,20 +33,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.delycomps.myapplication.adapter.AdapterPointsale
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.PointSale
+import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
-private const val CODE_RESULT_CAMERA = 10001
+private const val CODE_RESULT_CAMERA_SELFIE = 10001
+private const val CODE_RESULT_CAMERA_MERCHANT_VISITED = 10021
+private const val CODE_RESULT_GALLERY = 10002
 
 class MainActivity : AppCompatActivity() {
     private lateinit var rv: RecyclerView
@@ -52,9 +58,15 @@ class MainActivity : AppCompatActivity() {
     private var permissionCamera = false
     private var permissionGPS = false
     private var gpsEnabled = false
+    private var indexPosition = 0
     private var lastLocation: Location? = null
     private var locationManager : LocationManager? = null
     private var currentPhotoPath: String = ""
+    private lateinit var merchantViewModel: MerchantViewModel
+    private var currentMerchantPhotoPath: String = ""
+    private lateinit var currentMerchantPhotoUri: Uri
+    private var fromImage: String = ""
+    private var typeImage: String = ""
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -93,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
 
         //PERMISOS
         val locationPermissionRequest = registerForActivityResult(
@@ -159,6 +172,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val builderDialogMerchantVisited: AlertDialog.Builder = AlertDialog.Builder(this)
+        val inflater = this.layoutInflater
+        val dialogMerchantVisitedUI = inflater.inflate(R.layout.layout_merchant_visited, null)
+        builderDialogMerchantVisited.setView(dialogMerchantVisitedUI)
+        val dialogMerchantVisited = builderDialogMerchantVisited.create()
+        manageDialogMerchantVisited(dialogMerchantVisitedUI, dialogMerchantVisited)
+
         mainViewModel.listPointSale.observe(this) {
             dialogLoading.dismiss()
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
@@ -166,7 +186,36 @@ class MainActivity : AppCompatActivity() {
 //                    pointSale1.management = "INICIADO"
                     if (pointSale1.management == "VISITADO")
                     {
-                        Toast.makeText(this@MainActivity, "El punto de venta ya fue gestionado", Toast.LENGTH_SHORT).show()
+                        val role = SharedPrefsCache(rv.context).get("type", "string")
+                        if (role == "MERCADERISTA") {
+                            indexPosition = position
+                            pointSale = pointSale1
+                            dialogMerchantVisitedUI.findViewById<TextView>(R.id.dialog_client_name).text = pointSale1.client
+                            dialogMerchantVisited.show()
+
+                            if (pointSale1.imageBefore != null && pointSale1.imageBefore != "") {
+                                Glide.with(rv.context)
+                                    .load(pointSale1.imageBefore)
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .placeholder(R.drawable.loadingtmp)
+                                    .into(dialogMerchantVisitedUI.findViewById(R.id.view_image_before))
+                            } else {
+                                dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_before).setImageDrawable(null)
+                            }
+
+
+                            if (pointSale1.imageAfter != null && pointSale1.imageAfter != "") {
+                                Glide.with(rv.context)
+                                    .load(pointSale1.imageAfter)
+                                    .placeholder(R.drawable.loadingtmp)
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .into(dialogMerchantVisitedUI.findViewById(R.id.view_image_after))
+                            } else {
+                                dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_after).setImageDrawable(null)
+                            }
+                        } else {
+                            Toast.makeText(this@MainActivity, "El punto de venta ya fue gestionado", Toast.LENGTH_SHORT).show()
+                        }
                         return
                     }
                     else if (pointSale1.management == "INICIADO")
@@ -208,6 +257,32 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
+        merchantViewModel.urlImageWithBD.observe(this) {
+            if (!it.loading) {
+                dialogLoading.dismiss()
+                if (it.success) {
+                    if (typeImage == "AFTER") {
+                        (rv.adapter as AdapterPointsale).updateImageAfter(indexPosition, it.result)
+                        if (fromImage == "CAMERA") {
+                            dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(currentMerchantPhotoPath))
+                        } else {
+                            dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_after).setImageURI(currentMerchantPhotoUri)
+                        }
+                    } else {
+                        (rv.adapter as AdapterPointsale).updateImageBefore(indexPosition, it.result)
+                        if (fromImage == "CAMERA") {
+                            dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(currentMerchantPhotoPath))
+                        } else {
+                            dialogMerchantVisitedUI.findViewById<ImageView>(R.id.view_image_before).setImageURI(currentMerchantPhotoUri)
+                        }
+                    }
+                    Toast.makeText(this@MainActivity, "Se subió la imagen con exito!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@MainActivity, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         mainViewModel.loadingSelfie.observe(this) {
             if ((mainViewModel.urlSelfie.value ?: "") == "") {
                 dialogLoading.dismiss()
@@ -234,6 +309,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportActionBar?.title = SharedPrefsCache(rv.context).get("fullname", "string")?.toString() ?: pointSale.client
+    }
+
+    private fun manageDialogMerchantVisited (view: View, dialog: AlertDialog) {
+        view.findViewById<ImageButton>(R.id.image_before).setOnClickListener {
+            typeImage = "BEFORE"
+            fromImage = "CAMERA"
+            dispatchTakePictureIntent(CODE_RESULT_CAMERA_MERCHANT_VISITED)
+        }
+        view.findViewById<ImageButton>(R.id.image_before_gallery).setOnClickListener {
+            typeImage = "BEFORE"
+            fromImage = "GALLERY"
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+            intent.type = "image/*"
+            startActivityForResult(intent,
+                CODE_RESULT_GALLERY
+            )
+        }
+        view.findViewById<ImageButton>(R.id.image_after).setOnClickListener {
+            typeImage = "AFTER"
+            fromImage = "CAMERA"
+            dispatchTakePictureIntent(CODE_RESULT_CAMERA_MERCHANT_VISITED)
+        }
+        view.findViewById<ImageButton>(R.id.image_after_gallery).setOnClickListener {
+            typeImage = "AFTER"
+            fromImage = "GALLERY"
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent,
+                CODE_RESULT_GALLERY
+            )
+        }
     }
 
     private val locationListener: LocationListener = object : LocationListener {
@@ -270,7 +376,7 @@ class MainActivity : AppCompatActivity() {
     ){
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
         when (requestCode) {
-            CODE_RESULT_CAMERA -> if (resultCode == RESULT_OK) {
+            CODE_RESULT_CAMERA_SELFIE -> if (resultCode == RESULT_OK) {
                 dialogLoading.show()
                 val f = saveBitmapToFile(File(currentPhotoPath))
                 if (f != null) {
@@ -280,17 +386,60 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }
             }
+            CODE_RESULT_CAMERA_MERCHANT_VISITED -> if (resultCode == RESULT_OK) {
+                dialogLoading.show()
+                val f = saveBitmapToFile(File(currentMerchantPhotoPath))
+                if (f != null) {
+                    merchantViewModel.uploadWithBD(f, pointSale.visitId, typeImage, SharedPrefsCache(this).getToken())
+                } else {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                }
+            }
+            CODE_RESULT_GALLERY -> if (resultCode == RESULT_OK) {
+                val imageSelected: Uri? = imageReturnedIntent?.data
+                if (imageSelected != null) {
+                    currentMerchantPhotoUri = imageSelected
+                    try {
+                        val f = uriToImageFile(imageSelected)
+                        if (f != null) {
+                            dialogLoading.show()
+                            merchantViewModel.uploadWithBD(f, pointSale.visitId, typeImage, SharedPrefsCache(this).getToken())
+                        } else {
+                            Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: FileNotFoundException) {
+                        Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
+    private fun uriToImageFile(uri: Uri): File? {
+        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, filePathColumn, null, null, null)
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                val columnIndex = cursor.getColumnIndex(filePathColumn[0])
+                val filePath = cursor.getString(columnIndex)
+                cursor.close()
+                return File(filePath)
+            }
+            cursor.close()
+        }
+        return null
+    }
 
-    private fun dispatchTakePictureIntent() {
+    private fun dispatchTakePictureIntent(code: Int = CODE_RESULT_CAMERA_SELFIE) {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
             takePictureIntent.resolveActivity(packageManager).also {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
-                    createImageFile()
+                    createImageFile(code)
                 } catch (ex: IOException) {
                     null
                 }
@@ -302,7 +451,7 @@ class MainActivity : AppCompatActivity() {
                         photoFile
                     )
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, CODE_RESULT_CAMERA)
+                    startActivityForResult(takePictureIntent, code)
                 }
             }
         }
@@ -342,7 +491,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createImageFile(): File {
+    private fun createImageFile(code: Int): File {
         // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
@@ -352,7 +501,10 @@ class MainActivity : AppCompatActivity() {
             storageDir /* directory */
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
-            currentPhotoPath = absolutePath
+            if (code == CODE_RESULT_CAMERA_SELFIE)
+                currentPhotoPath = absolutePath
+            else
+                currentMerchantPhotoPath = absolutePath
         }
     }
 

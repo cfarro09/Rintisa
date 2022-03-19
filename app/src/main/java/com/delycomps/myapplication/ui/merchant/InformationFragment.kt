@@ -7,39 +7,33 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.PointSale
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 private const val CODE_RESULT_CAMERA = 10001
+private const val CODE_RESULT_GALLERY = 10002
 
 class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel
     private var currentPhotoPath: String = ""
+    private lateinit var currentPhotoUri: Uri
+    private var fromImage: String = ""
     private var typeImage: String = ""
     private lateinit var dialogLoading: AlertDialog
 
@@ -60,13 +54,33 @@ class InformationFragment : Fragment() {
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        view.findViewById<Button>(R.id.image_before).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.image_before).setOnClickListener {
             typeImage = "BEFORE"
+            fromImage = "CAMERA"
             dispatchTakePictureIntent(view)
         }
-        view.findViewById<Button>(R.id.image_after).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.image_before_gallery).setOnClickListener {
+            typeImage = "BEFORE"
+            fromImage = "GALLERY"
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+            intent.type = "image/*"
+            startActivityForResult(intent,
+                CODE_RESULT_GALLERY
+            )
+        }
+        view.findViewById<ImageButton>(R.id.image_after).setOnClickListener {
             typeImage = "AFTER"
+            fromImage = "CAMERA"
             dispatchTakePictureIntent(view)
+        }
+        view.findViewById<ImageButton>(R.id.image_after_gallery).setOnClickListener {
+            typeImage = "AFTER"
+            fromImage = "GALLERY"
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent,
+                CODE_RESULT_GALLERY
+            )
         }
         val pointSale: PointSale? = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
         if (pointSale != null) {
@@ -85,12 +99,17 @@ class InformationFragment : Fragment() {
             if (it == "") {
                 Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
             } else {
-                Glide.with(view.context)
-                    .load(it)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .circleCrop()
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(view.findViewById(R.id.view_image_after))
+                if (fromImage == "CAMERA") {
+                    view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                } else {
+                    view.findViewById<ImageView>(R.id.view_image_after).setImageURI(currentPhotoUri)
+                }
+//                Glide.with(view.context)
+//                    .load(it)
+//                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                    .circleCrop()
+//                    .transition(DrawableTransitionOptions.withCrossFade())
+//                    .into(view.findViewById(R.id.view_image_after))
             }
         }
         viewModel.urlBeforeImage.observe(requireActivity()) {
@@ -98,16 +117,36 @@ class InformationFragment : Fragment() {
             if (it == "") {
                 Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
             } else {
-                Glide.with(view.context)
-                    .load(it)
-                    .circleCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .placeholder(R.drawable.ic_baseline_person_24)
-
-                    .into(view.findViewById(R.id.view_image_before))
+                if (fromImage == "CAMERA") {
+                    view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                } else {
+                    view.findViewById<ImageView>(R.id.view_image_before).setImageURI(currentPhotoUri)
+                }
+//                Glide.with(view.context)
+//                    .load(it)
+//                    .circleCrop()
+//                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                    .transition(DrawableTransitionOptions.withCrossFade())
+//                    .placeholder(R.drawable.ic_baseline_person_24)
+//
+//                    .into(view.findViewById(R.id.view_image_before))
             }
         }
+    }
+
+    private fun uriToImageFile(uri: Uri): File? {
+        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = requireActivity().contentResolver.query(uri, filePathColumn, null, null, null)
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                val columnIndex = cursor.getColumnIndex(filePathColumn[0])
+                val filePath = cursor.getString(columnIndex)
+                cursor.close()
+                return File(filePath)
+            }
+            cursor.close()
+        }
+        return null
     }
 
     override fun onActivityResult(
@@ -129,6 +168,29 @@ class InformationFragment : Fragment() {
                 } else {
                     dialogLoading.dismiss()
                     Toast.makeText(context, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                }
+            }
+            CODE_RESULT_GALLERY -> if (resultCode == AppCompatActivity.RESULT_OK) {
+                val imageSelected: Uri? = imageReturnedIntent?.data
+                if (imageSelected != null) {
+                    currentPhotoUri = imageSelected
+                    try {
+                        val f = uriToImageFile(imageSelected)
+                        if (f != null) {
+                            dialogLoading.show()
+                            if (typeImage == "BEFORE") {
+                                viewModel.uploadBeforeImage(f, SharedPrefsCache(requireContext()).getToken())
+                            } else {
+                                viewModel.uploadAfterImage(f, SharedPrefsCache(requireContext()).getToken())
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: FileNotFoundException) {
+                        Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }
             }
         }

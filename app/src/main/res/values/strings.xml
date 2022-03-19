@@ -43,5 +43,6 @@
     <string name="take_photo">Tomar foto</string>
     <string name="gallery">Galeria</string>
     <string name="merchant">Canje</string>
+    <string name="upload_images_merchant_visited">Aquí podrá subir las imagenes del antes y después de su gestión.</string>
 
 </resources>

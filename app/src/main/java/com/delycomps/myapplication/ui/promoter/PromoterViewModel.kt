@@ -46,12 +46,31 @@ class PromoterViewModel : ViewModel() {
         _loadingInital.value = true
         Repository().getMultiPromoter(visitId, token) { isSuccess, result, _ ->
             if (isSuccess) {
-                _dataMerchandise.value = result?.merchandises ?: emptyList()
-                _dataBrandSale.value = result?.saleBrand ?: emptyList()
-                _dataStocks.value = result?.stocks ?: emptyList()
+//                _dataMerchandise.value = result?.merchandises ?: emptyList()
+//                _dataBrandSale.value = result?.saleBrand ?: emptyList()
+//                _dataStocks.value = result?.stocks ?: emptyList()
                 _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
                 _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
                 _loadingInital.value = false
+            }
+        }
+    }
+    fun setMultiInitial(data: DataPromoter) {
+        _dataMerchandise.value = data.merchandises
+        _dataBrandSale.value = data.saleBrand
+        _dataStocks.value = data.stocks
+    }
+
+    fun getMainMultiInitial(token: String) {
+//        _loadingInital.value = true
+        Repository().getMultiPromoterInitial(token) { isSuccess, result, _ ->
+            if (isSuccess) {
+                _dataMerchandise.value = result?.merchandises ?: emptyList()
+                _dataBrandSale.value = result?.saleBrand ?: emptyList()
+                _dataStocks.value = result?.stocks ?: emptyList()
+//                _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
+//                _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
+//                _loadingInital.value = false
             }
         }
     }
