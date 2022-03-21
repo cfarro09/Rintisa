@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-                    pointSale1.management = "INICIADO"
+//                    pointSale1.management = "EN ESPERA"
                     if (pointSale1.management == "VISITADO")
                     {
                         val role = SharedPrefsCache(rv.context).get("type", "string")
@@ -284,11 +284,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainViewModel.loadingSelfie.observe(this) {
-            if ((mainViewModel.urlSelfie.value ?: "") == "") {
-                dialogLoading.dismiss()
-                Toast.makeText(rv.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-            } else {
-                mainViewModel.initPointSale(SharedPrefsCache(this).getToken(), pointSale.visitId, mainViewModel.urlSelfie.value ?: "", lastLocation!!.latitude, lastLocation!!.longitude)
+            if (!it) {
+                if ((mainViewModel.urlSelfie.value ?: "") == "") {
+                    dialogLoading.dismiss()
+                    Toast.makeText(rv.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
+                } else {
+                    mainViewModel.initPointSale(SharedPrefsCache(this).getToken(), pointSale.visitId, mainViewModel.urlSelfie.value ?: "", lastLocation!!.latitude, lastLocation!!.longitude)
+                }
             }
         }
 

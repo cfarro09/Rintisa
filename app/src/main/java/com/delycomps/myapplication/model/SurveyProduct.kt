@@ -4,6 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import java.util.*
 
 open class SurveyProduct: Parcelable {
     @SerializedName("productid")
@@ -31,6 +32,8 @@ open class SurveyProduct: Parcelable {
     @Expose
     var imageEvidence: String?
 
+    var uuid: String?
+
     constructor(
         productId: Int,
         description: String,
@@ -39,7 +42,8 @@ open class SurveyProduct: Parcelable {
         measureUnit: String,
         quantity: Int = 0,
         merchant: String? = "",
-        imageEvidence: String? = ""
+        imageEvidence: String? = "",
+        uuid: String = UUID.randomUUID().toString()
     ) {
         this.productId = productId
         this.description = description
@@ -49,6 +53,7 @@ open class SurveyProduct: Parcelable {
         this.quantity = quantity
         this.merchant = merchant
         this.imageEvidence = imageEvidence
+        this.uuid = uuid
     }
     protected constructor(parcel: Parcel) {
         this.productId = parcel.readInt()
@@ -59,6 +64,7 @@ open class SurveyProduct: Parcelable {
         this.quantity = parcel.readInt()
         this.merchant = parcel.readString()
         this.imageEvidence = parcel.readString()
+        this.uuid = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -72,6 +78,7 @@ open class SurveyProduct: Parcelable {
         p0.writeInt(quantity)
         p0.writeString(merchant)
         p0.writeString(imageEvidence)
+        p0.writeString(uuid)
     }
     companion object CREATOR : Parcelable.Creator<SurveyProduct> {
         override fun createFromParcel(parcel: Parcel): SurveyProduct {

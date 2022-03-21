@@ -46,14 +46,14 @@ class MainViewModel : ViewModel() {
     }
 
     fun uploadSelfie(file: File, token: String) {
-        _loadingSelfie.value = false
+        _loadingSelfie.value = true
         Repository().uploadImage(file, token) { isSuccess, result, _ ->
             if (isSuccess) {
                 _urlSelfie.value = result!!
             } else {
                 _urlSelfie.value = ""
             }
-            _loadingSelfie.value = true
+            _loadingSelfie.value = false
         }
     }
     fun setGPSIsEnabled(enabled: Boolean) {

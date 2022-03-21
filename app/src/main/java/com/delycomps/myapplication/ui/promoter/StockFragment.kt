@@ -16,6 +16,7 @@ import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterStock
 import com.delycomps.myapplication.adapter.AdapterStockProduct
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.PointSale
@@ -50,14 +51,20 @@ class StockFragment : Fragment() {
         rv = view.findViewById(R.id.rv_stock)
         rv.layoutManager = LinearLayoutManager(view.context)
 
-        viewModel.loadingInital.observe(requireActivity()) {
-            if (it == false) {
-                listProduct = viewModel.dataStocks.value ?: emptyList()
-                listStockSelected = (viewModel.listStockSelected.value ?: ArrayList())
-                starALL(view)
-            }
-        }
-        pointSale = requireActivity().intent.getParcelableExtra<PointSale>(Constants.POINT_SALE_ITEM)!!
+
+//        viewModel.loadingInital.observe(requireActivity()) {
+//            if (it == false) {
+//                listProduct = viewModel.dataStocks.value ?: emptyList()
+//                listStockSelected = (viewModel.listStockSelected.value ?: ArrayList())
+//                starALL(view)
+//            }
+//        }
+        pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        listProduct = viewModel.dataStocks.value ?: emptyList()
+        listStockSelected = viewModel.listStockSelected.value!!.toMutableList()
+        starALL(view)
+
 //        viewModel.listStockSelected.observe(requireActivity()) {
 //            val listReady = it ?: emptyList()
 //
@@ -81,6 +88,7 @@ class StockFragment : Fragment() {
             override fun onUpdateStock(stock: Stock, position: Int, type: String) {
                 indexSelected = position
                 if (type != "UPDATE") {
+                    BDLocal(view.context).deleteStockPromoter(stock.uuid.toString())
                     (rv.adapter as AdapterStock).removeItemStock(position)
                     val listStock = viewModel.removeStock(position)
                     viewModel.updateStock(pointSale.visitId, Gson().toJson(listStock), SharedPrefsCache(view.context).getToken())
@@ -137,10 +145,15 @@ class StockFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
-            val listStockSelected = (rvProduct.adapter as AdapterStockProduct).getList().filter { it.flag == true }
+            val listStockSelected = (rvProduct.adapter as AdapterStockProduct).getList().filter { it.flag }
 
             if (listStockSelected.count() > 0) {
-                listStockSelected.forEach { r -> (rv.adapter as AdapterStock).addStock(r) }
+                listStockSelected.forEach { r ->
+                    run {
+                        (rv.adapter as AdapterStock).addStock(r)
+                        BDLocal(view.context).addStockPromoter(r, pointSale.visitId)
+                    }
+                }
                 val listStock = viewModel.addStocks(listStockSelected)
                 viewModel.updateStock(pointSale.visitId, Gson().toJson(listStock), SharedPrefsCache(view.context).getToken())
                 dialog.dismiss()

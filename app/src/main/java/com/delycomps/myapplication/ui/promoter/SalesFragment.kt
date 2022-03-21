@@ -32,6 +32,7 @@ import com.bumptech.glide.request.target.Target
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterSale
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.BrandSale
 import com.delycomps.myapplication.model.Merchandise
@@ -81,15 +82,6 @@ class SalesFragment : Fragment() {
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        viewModel.loadingInital.observe(requireActivity()) {
-            if (it == false) {
-                listBrandSale = viewModel.dataBrandSale.value ?: emptyList()
-                listMerchandise = viewModel.dataMerchandise.value ?: emptyList()
-                listProductsSelected = viewModel.listProductSelected.value ?: ArrayList()
-                starALL(view)
-            }
-        }
-
         viewModel.loadingSelfie.observe(requireActivity()) {
             if (it == true) {
                 dialogLoading.dismiss()
@@ -131,6 +123,10 @@ class SalesFragment : Fragment() {
         }
         pointSale = requireActivity().intent.getParcelableExtra<PointSale>(Constants.POINT_SALE_ITEM)!!
 
+        listBrandSale = viewModel.dataBrandSale.value ?: emptyList()
+        listMerchandise = viewModel.dataMerchandise.value ?: emptyList()
+        listProductsSelected = viewModel.listProductSelected.value ?: ArrayList()
+        starALL(view)
     }
 
     private fun starALL (view : View) {
@@ -185,14 +181,14 @@ class SalesFragment : Fragment() {
 
                     dialogMaterial.show()
                 } else {
+                    val listProducts = viewModel.removeProduct(position, view.context)
                     (rv.adapter as AdapterSale).removeItemProduct(position)
-                    val listProducts = viewModel.removeProduct(position)
                     viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
             }
         }, object : AdapterSale.ListAdapterListenerMerchant {
             override fun onChangeMerchant(surveyProduct: SurveyProduct, position: Int) {
-                val listProducts = viewModel.updateProduct(surveyProduct, position)
+                val listProducts = viewModel.updateProduct(surveyProduct, position, view.context)
                 viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
             }
         })
@@ -252,24 +248,22 @@ class SalesFragment : Fragment() {
         }
 
         buttonSave.setOnClickListener {
-//            val product = spinnerProduct.selectedItem?.toString() ?: ""
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
-//            val merchant = spinnerMerchant.selectedItem?.toString() ?: ""
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0 else quantityString.toInt()
 
             if (brand != "" && brand != "Seleccione" && quantity > 0) {
-//                val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
+
                 val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
                 if (indexSelected == -1) {
-                    val listProducts = viewModel.addProduct(surveyProduct)
+                    val listProducts = viewModel.addProduct(surveyProduct, pointSale.visitId, view.context)
                     (rv.adapter as AdapterSale).addProduct(surveyProduct)
                     viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
                 else {
                     (rv.adapter as AdapterSale).updateItemProduct(surveyProduct, indexSelected)
-                    val listProducts = viewModel.updateProduct(surveyProduct, indexSelected)
+                    val listProducts = viewModel.updateProduct(surveyProduct, indexSelected, view.context)
                     viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
                 }
                 dialog.dismiss()

@@ -12,12 +12,11 @@ import com.google.android.material.tabs.TabLayout
 import androidx.viewpager.widget.ViewPager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.ui.promoter.SectionsPagerAdapter
 import com.delycomps.myapplication.databinding.ActivityPromoterBinding
-import com.delycomps.myapplication.model.DataMerchant
-import com.delycomps.myapplication.model.DataPromoter
-import com.delycomps.myapplication.model.PointSale
+import com.delycomps.myapplication.model.*
 import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
@@ -121,15 +120,9 @@ class PromoterActivity : AppCompatActivity() {
         val dataPromoter = Gson().fromJson(jsonPromoter.toString(), DataPromoter::class.java)
         promoterViewModel.setMultiInitial(dataPromoter)
 
-        promoterViewModel.getMainMulti(pointSale.visitId, SharedPrefsCache(this).getToken())
-
-        promoterViewModel.loadingInital.observe(this) {
-            if (it == true) {
-                dialogLoading.show()
-            } else if (it == false){
-                dialogLoading.dismiss()
-            }
-        }
+        val listStock: List<Stock> = BDLocal(this).getStockPromoter(pointSale.visitId)
+        val listProducts: List<SurveyProduct> = BDLocal(this).getSalePromoter(pointSale.visitId)
+        promoterViewModel.initialDataPromoter(listStock, listProducts)
 
         promoterViewModel.closingPromoter.observe(this) {
             dialogLoading.dismiss()

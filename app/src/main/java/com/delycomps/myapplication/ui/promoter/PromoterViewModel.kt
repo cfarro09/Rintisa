@@ -1,11 +1,13 @@
 package com.delycomps.myapplication.ui.promoter
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.delycomps.myapplication.api.Repository
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.model.*
 import com.google.gson.Gson
 import java.io.File
@@ -42,18 +44,9 @@ class PromoterViewModel : ViewModel() {
     private val _urlSelfie: MutableLiveData<String> = MutableLiveData()
     val urlSelfie: LiveData<String> = _urlSelfie
 
-    fun getMainMulti(visitId: Int, token: String) {
-        _loadingInital.value = true
-        Repository().getMultiPromoter(visitId, token) { isSuccess, result, _ ->
-            if (isSuccess) {
-//                _dataMerchandise.value = result?.merchandises ?: emptyList()
-//                _dataBrandSale.value = result?.saleBrand ?: emptyList()
-//                _dataStocks.value = result?.stocks ?: emptyList()
-                _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
-                _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
-                _loadingInital.value = false
-            }
-        }
+    fun initialDataPromoter(stocks: List<Stock>, products: List<SurveyProduct>) {
+        _listStockSelected.value = stocks.toMutableList()
+        _listProductSelected.value = products.toMutableList()
     }
     fun setMultiInitial(data: DataPromoter) {
         _dataMerchandise.value = data.merchandises
@@ -92,12 +85,15 @@ class PromoterViewModel : ViewModel() {
         return _listStockSelected.value!!
     }
 
-    fun addProduct (material: SurveyProduct): MutableList<SurveyProduct> {
+    fun addProduct (material: SurveyProduct, visitId: Int, context: Context): MutableList<SurveyProduct> {
         _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + listOf(material)).toMutableList()
+        BDLocal(context).addSalePromoter(material, visitId)
         return _listProductSelected.value!!
     }
 
-    fun updateProduct (product: SurveyProduct, i: Int) : MutableList<SurveyProduct> {
+    fun updateProduct (product: SurveyProduct, i: Int, context: Context) : MutableList<SurveyProduct> {
+        product.uuid = _listProductSelected.value!![i].uuid.toString()
+        BDLocal(context).updateSalePromoter(product)
         _listProductSelected.value = _listProductSelected.value!!.mapIndexed { index, item -> if (index == i) product else item }.toMutableList()
         return _listProductSelected.value!!
     }
@@ -106,7 +102,9 @@ class PromoterViewModel : ViewModel() {
         _dataMerchandise.value = _dataMerchandise.value!!.mapIndexed { index, item -> if (index == i) merchandise else item }.toMutableList()
     }
 
-    fun removeProduct (i: Int): MutableList<SurveyProduct> {
+    fun removeProduct (i: Int, context: Context): MutableList<SurveyProduct> {
+        val uuid: String = _listProductSelected.value!![i].uuid.toString()
+        BDLocal(context).deleteSalePromoter(uuid)
         _listProductSelected.value = _listProductSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
         return _listProductSelected.value!!
     }
