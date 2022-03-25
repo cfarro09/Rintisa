@@ -41,6 +41,11 @@ class AdapterPointsale(
         notifyItemChanged(position)
     }
 
+    fun updateManagement(position: Int, status: String){
+        listPointSale[position].management = status
+        notifyItemChanged(position)
+    }
+
     fun updateImageAfter(position: Int, url: String){
         listPointSale[position].imageAfter = url
         notifyItemChanged(position)

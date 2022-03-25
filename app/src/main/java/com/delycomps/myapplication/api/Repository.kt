@@ -208,6 +208,43 @@ class Repository {
     }
 
 
+    fun saveAttendance(
+        token: String,
+        onResult: (isSuccess: Boolean, message: String?) -> Unit
+    )  {
+        val jsonto = Gson().toJson(RequestBodyX("UFN_ASSISTANCE_REPORT_INS", "UFN_ASSISTANCE_REPORT_INS", mapOf<String, Any>(
+            "id" to 0,
+            "type" to "NINGUNO",
+            "status" to "ACTIVO",
+            "description" to "",
+            "operation" to "INSERT",
+        )))
+
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            jsonto
+        )
+        try {
+            Connection.instance.execute(body, "Bearer $token").enqueue(object :
+                Callback<ResponseCommon> {
+                override fun onResponse(
+                    call: Call<ResponseCommon>?,
+                    response: Response<ResponseCommon>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, null)
+                    } else {
+                        onResult(false, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseCommon>?, t: Throwable?) {
+                    onResult(false, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, DEFAULT_MESSAGE_ERROR)
+        }
+    }
 
     fun insCloseManagePromoter(
         visitId: Int,

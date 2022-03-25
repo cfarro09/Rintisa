@@ -2,6 +2,8 @@ package com.delycomps.myapplication
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Html
 import android.view.Menu
@@ -10,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
+import com.delycomps.myapplication.Constants.RETURN_ACTIVITY
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityMerchantBinding
 import com.delycomps.myapplication.model.DataMerchant
@@ -129,6 +132,9 @@ class MerchantActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+                val output = Intent()
+                output.putExtra("refresh", "refresh")
+                setResult(RESULT_OK, output);
                 finish()
             } else {
                 Toast.makeText(this, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
@@ -148,5 +154,12 @@ class MerchantActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
+    }
+    override fun onBackPressed() {
+//        super.onBackPressed()
+        val output = Intent()
+        output.putExtra("status", "INICIADO")
+        setResult(RESULT_OK, output);
+        finish()
     }
 }

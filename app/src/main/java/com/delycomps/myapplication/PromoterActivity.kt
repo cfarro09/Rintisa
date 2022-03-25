@@ -2,9 +2,11 @@ package com.delycomps.myapplication
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.text.Html
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -128,6 +130,9 @@ class PromoterActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+                val output = Intent()
+                output.putExtra("status", "VISITADO")
+                setResult(RESULT_OK, output);
                 finish()
             } else {
                 Toast.makeText(this, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
@@ -144,4 +149,21 @@ class PromoterActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
     }
+    override fun onBackPressed() {
+        val output = Intent()
+        output.putExtra("status", "INICIADO")
+        setResult(RESULT_OK, output);
+        finish()
+//        super.onBackPressed()
+    }
+
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        return super.onKeyDown(keyCode, event)
+//        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+//            val output = Intent()
+//            output.putExtra("status", "INICIADO")
+//            setResult(RESULT_OK, output);
+//        }
+//    }
+
 }

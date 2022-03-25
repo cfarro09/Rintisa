@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.delycomps.myapplication.Constants.RETURN_ACTIVITY
 import com.delycomps.myapplication.adapter.AdapterPointsale
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.PointSale
@@ -95,6 +96,8 @@ class MainActivity : AppCompatActivity() {
             val alert = builder.create()
             alert.show()
             return true
+        } else if (id == R.id.action_assist) {
+            mainViewModel.saveAssistance(SharedPrefsCache(this).getToken())
         }
         return super.onOptionsItemSelected(item)
     }
@@ -172,6 +175,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        mainViewModel.resSaveAssistance.observe(this) {
+            if (it.loading) {
+                dialogLoading.show()
+            } else {
+                dialogLoading.dismiss()
+            }
+            if (!it.loading && it.success) {
+                Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
+            }
+        }
+
         val builderDialogMerchantVisited: AlertDialog.Builder = AlertDialog.Builder(this)
         val inflater = this.layoutInflater
         val dialogMerchantVisitedUI = inflater.inflate(R.layout.layout_merchant_visited, null)
@@ -226,12 +240,14 @@ class MainActivity : AppCompatActivity() {
                             if (role == "IMPULSADOR") PromoterActivity::class.java else MerchantActivity::class.java
                         )
                         intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
+//                        rv.context.startActivity(intent)
+                        startActivityForResult(intent, RETURN_ACTIVITY)
+//                        RETURN_ACTIVITY
                         locationManager?.removeUpdates(locationListener)
-                        rv.context.startActivity(intent)
                     }
                     else
                     {
-                        if (!permissionCamera || !permissionGPS || !gpsEnabled) {
+                        if (!permissionCamera || !permissionGPS || !gpsEnabled || lastLocation == null) {
                             if (!permissionCamera) {
                                 Toast.makeText(this@MainActivity, "Tiene que conceder permisos de cámara", Toast.LENGTH_SHORT).show()
                                 return
@@ -250,7 +266,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         } else {
                             pointSale = pointSale1
-                            dispatchTakePictureIntent()
+                            dialogLoading.show()
+                            mainViewModel.initPointSale(SharedPrefsCache(rv.context).getToken(), pointSale1.visitId, "", lastLocation!!.latitude, lastLocation!!.longitude)
+//                            dispatchTakePictureIntent()
                         }
                     }
                 }
@@ -283,16 +301,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        mainViewModel.loadingSelfie.observe(this) {
-            if (!it) {
-                if ((mainViewModel.urlSelfie.value ?: "") == "") {
-                    dialogLoading.dismiss()
-                    Toast.makeText(rv.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-                } else {
-                    mainViewModel.initPointSale(SharedPrefsCache(this).getToken(), pointSale.visitId, mainViewModel.urlSelfie.value ?: "", lastLocation!!.latitude, lastLocation!!.longitude)
-                }
-            }
-        }
+//        mainViewModel.loadingSelfie.observe(this) {
+//            if (!it) {
+//                if ((mainViewModel.urlSelfie.value ?: "") == "") {
+//                    dialogLoading.dismiss()
+//                    Toast.makeText(rv.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
+//                } else {
+//                    mainViewModel.initPointSale(SharedPrefsCache(this).getToken(), pointSale.visitId, mainViewModel.urlSelfie.value ?: "", lastLocation!!.latitude, lastLocation!!.longitude)
+//                }
+//            }
+//        }
 
         mainViewModel.sendInitPointSale.observe(this) {
             dialogLoading.dismiss()
@@ -304,7 +322,8 @@ class MainActivity : AppCompatActivity() {
                 )
                 intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
                 locationManager?.removeUpdates(locationListener)
-                rv.context.startActivity(intent)
+                startActivityForResult(intent, RETURN_ACTIVITY)
+//                rv.context.startActivity(intent)
             } else {
                 Toast.makeText(this@MainActivity, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
             }
@@ -387,6 +406,11 @@ class MainActivity : AppCompatActivity() {
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }
+            }
+            RETURN_ACTIVITY -> {
+                    if ((imageReturnedIntent?.getStringExtra("status") ?: "") != "") {
+                        (rv.adapter as AdapterPointsale).updateManagement(indexPosition, imageReturnedIntent?.getStringExtra("status") ?: "")
+                    }
             }
             CODE_RESULT_CAMERA_MERCHANT_VISITED -> if (resultCode == RESULT_OK) {
                 dialogLoading.show()
