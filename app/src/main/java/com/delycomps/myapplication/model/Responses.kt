@@ -31,6 +31,19 @@ data class ResGlobal(
     var success: Boolean
 )
 
+data class Management(
+    var status_management: String?,
+    var motive: String?,
+    var observation: String?
+)
+
+data class PriceProduct(
+    var productId: Int,
+    var description: String,
+    var price_k: Double,
+    var price_s: Double
+)
+
 data class ResUploader(
     var url: String?,
     var success: Boolean

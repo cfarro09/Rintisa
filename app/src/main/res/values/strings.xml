@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.5.3</string>
+    <string name="version">1.5.4</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -17,7 +17,6 @@
     <string name="password">Contraseña</string>
     <string name="confirm_password">Confirmar contraseña</string>
     <string name="all_obligatory">Todos los campos son obligatorios.</string>
-    <string name="status">Estado</string>
     <string name="username">Usuario</string>
     <string name="title_activity_client_detail">ClientDetail</string>
     <string name="tab_text_1">Info</string>
@@ -46,5 +45,8 @@
     <string name="merchant">Canje</string>
     <string name="upload_images_merchant_visited">Aquí podrá subir las imagenes del antes y después de su gestión.</string>
     <string name="button_save">button_save</string>
+    <string name="status">Estado</string>
+    <string name="motive">Motivo</string>
+    <string name="observation">Observación</string>
 
 </resources>

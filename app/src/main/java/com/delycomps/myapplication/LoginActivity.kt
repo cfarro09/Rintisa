@@ -67,8 +67,6 @@ class LoginActivity : AppCompatActivity() {
                             merchantViewModel.getMainMulti(SharedPrefsCache(this).getToken())
                         } else {
                             promoterViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
-//                            startActivity(Intent(this, MainActivity::class.java))
-//                            finish()
                         }
                     } else {
                         Snackbar.make(findViewById<EditText>(R.id.login_username), message ?: "Usuario incorrecto", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(

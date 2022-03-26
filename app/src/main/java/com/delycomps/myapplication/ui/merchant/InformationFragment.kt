@@ -16,11 +16,13 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.cache.SharedPrefsCache
+import com.delycomps.myapplication.model.Management
 import com.delycomps.myapplication.model.PointSale
 import java.io.*
 import java.text.SimpleDateFormat
@@ -28,6 +30,8 @@ import java.util.*
 
 private const val CODE_RESULT_CAMERA = 10001
 private const val CODE_RESULT_GALLERY = 10002
+private val STATUS_LIST = listOf("EFECTIVA", "NO EFECTIVA")
+private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "PDV cerrado", "No visitado")
 
 class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel
@@ -94,6 +98,40 @@ class InformationFragment : Fragment() {
             view.findViewById<View>(R.id.pdv_traffic_light).backgroundTintList = ColorStateList.valueOf(Color.parseColor(color))
         }
 
+        val spinnerStatus = view.findViewById<Spinner>(R.id.spinner_status_management)
+        val spinnerMotive = view.findViewById<Spinner>(R.id.spinner_motive)
+        val editObservation = view.findViewById<EditText>(R.id.observation)
+        val containerMotive = view.findViewById<LinearLayout>(R.id.container_motive)
+
+        editObservation.addTextChangedListener {
+            viewModel.setManagement(Management(null, null, editObservation.text.toString()))
+        }
+        spinnerStatus.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, STATUS_LIST)
+        spinnerMotive.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, MOTIVES_LIST)
+
+        spinnerMotive.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val motive = spinnerMotive.selectedItem.toString()
+                viewModel.setManagement(Management(null, motive, null))
+            }
+        }
+
+        spinnerStatus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val status = spinnerStatus.selectedItem.toString()
+                spinnerMotive.setSelection(0)
+                if (status == "EFECTIVA") {
+                    containerMotive.visibility = View.GONE
+                    viewModel.setManagement(Management("EFECTIVA", "", null))
+                } else {
+                    containerMotive.visibility = View.VISIBLE
+                    viewModel.setManagement(Management("NO EFECTIVA", "Cambio de rubro", null))
+                }
+            }
+        }
+
         viewModel.urlAfterImage.observe(requireActivity()) {
             dialogLoading.dismiss()
             if (it == "") {
@@ -104,12 +142,6 @@ class InformationFragment : Fragment() {
                 } else {
                     view.findViewById<ImageView>(R.id.view_image_after).setImageURI(currentPhotoUri)
                 }
-//                Glide.with(view.context)
-//                    .load(it)
-//                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                    .circleCrop()
-//                    .transition(DrawableTransitionOptions.withCrossFade())
-//                    .into(view.findViewById(R.id.view_image_after))
             }
         }
         viewModel.urlBeforeImage.observe(requireActivity()) {
@@ -122,14 +154,6 @@ class InformationFragment : Fragment() {
                 } else {
                     view.findViewById<ImageView>(R.id.view_image_before).setImageURI(currentPhotoUri)
                 }
-//                Glide.with(view.context)
-//                    .load(it)
-//                    .circleCrop()
-//                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                    .transition(DrawableTransitionOptions.withCrossFade())
-//                    .placeholder(R.drawable.ic_baseline_person_24)
-//
-//                    .into(view.findViewById(R.id.view_image_before))
             }
         }
     }

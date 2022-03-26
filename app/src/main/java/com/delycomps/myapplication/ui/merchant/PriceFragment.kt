@@ -11,8 +11,13 @@ import android.widget.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.adapter.AdapterPriceProduct
 import com.delycomps.myapplication.adapter.AdapterProductSurvey
+import com.delycomps.myapplication.cache.BDLocal
+import com.delycomps.myapplication.model.PointSale
+import com.delycomps.myapplication.model.PriceProduct
 import com.delycomps.myapplication.model.SurveyProduct
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -22,6 +27,7 @@ class PriceFragment : Fragment() {
     private var listProductsSelected: MutableList<SurveyProduct> = ArrayList()
     private lateinit var listProduct: List<SurveyProduct>
     private lateinit var listBrand: List<String>
+    private lateinit var pointSale: PointSale
     private val listMeasureUnit = listOf("KILO", "SACO", "UNIDAD")
 
     private var indexSelected = 0
@@ -41,6 +47,11 @@ class PriceFragment : Fragment() {
         rv = view.findViewById(R.id.main_rv_survey_price)
         rv.layoutManager = LinearLayoutManager(view.context)
 
+        pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        listProductsSelected = BDLocal(view.context).getMerchantPrices(pointSale.visitId).toMutableList()
+        viewModel.initialPriceProduct(listProductsSelected)
+
         viewModel.dataProducts.observe(requireActivity()) {
             listProduct = it
             starALL(view)
@@ -51,12 +62,22 @@ class PriceFragment : Fragment() {
         listBrand = listOf("Seleccione").union(listProduct.map { it.brand!! }.distinct().toList()).toMutableList()
 
         val builderDialogMaterial: AlertDialog.Builder = AlertDialog.Builder(view.context)
+        val builderDialogMaterialAll: AlertDialog.Builder = AlertDialog.Builder(view.context)
 
         val inflater = this.layoutInflater
         val dialogProductUI = inflater.inflate(R.layout.layout_product_register, null)
         builderDialogMaterial.setView(dialogProductUI)
         val dialogMaterial = builderDialogMaterial.create()
+
+        val inflaterAll = this.layoutInflater
+        val dialogProductUIAll = inflaterAll.inflate(R.layout.layout_product_register_all, null)
+        builderDialogMaterialAll.setView(dialogProductUIAll)
+        val dialogMaterialAll = builderDialogMaterialAll.create()
+
+
         manageDialogMaterial(dialogProductUI, dialogMaterial)
+
+        manageDialogMaterialAll(dialogProductUIAll, dialogMaterialAll)
 
         val buttonRegister = view.findViewById<FloatingActionButton>(R.id.survey_price_register)
 
@@ -76,17 +97,15 @@ class PriceFragment : Fragment() {
                 } else {
                     (rv.adapter as AdapterProductSurvey).removeItemProduct(position)
                     viewModel.removeProduct(position)
+                    BDLocal(view.context).deleteMerchantPrices(surveyProduct.uuid.toString())
                 }
             }
         })
 
         buttonRegister.setOnClickListener {
             indexSelected = -1
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_product).adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
-            dialogProductUI.findViewById<EditText>(R.id.dialog_price).text = Editable.Factory.getInstance().newEditable("")
-            dialogMaterial.show()
+            dialogProductUIAll.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
+            dialogMaterialAll.show()
         }
     }
 
@@ -132,13 +151,10 @@ class PriceFragment : Fragment() {
                 val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
 
                 val surveyProduct = SurveyProduct(productId, product, brand, price, measureUnit, 0, "")
-                if (indexSelected == -1) {
-                    (rv.adapter as AdapterProductSurvey).addProduct(surveyProduct)
-                    viewModel.addProduct(surveyProduct)
-                }
-                else {
+                if (indexSelected != -1) {
                     (rv.adapter as AdapterProductSurvey).updateItemProduct(surveyProduct, indexSelected)
-                    viewModel.updateProduct(surveyProduct, indexSelected)
+                    viewModel.updateProduct(surveyProduct, indexSelected, view.context)
+
                 }
                 dialog.dismiss()
             } else {
@@ -146,5 +162,57 @@ class PriceFragment : Fragment() {
             }
         }
 
+    }
+
+
+    private fun manageDialogMaterialAll (view: View, dialog: AlertDialog) {
+        val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
+        val rvProduct = view.findViewById<RecyclerView>(R.id.rv_products)
+        rvProduct.layoutManager = LinearLayoutManager(view.context)
+
+        spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
+            override fun isEnabled(position: Int): Boolean {
+                return position != 0
+            }
+        }
+        spinnerBrand.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val valueSelected = spinnerBrand.selectedItem.toString()
+                val listProduct = listProduct.filter { it.brand == valueSelected }.map { PriceProduct(it.productId, it.description ?: "", 0.0, 0.0) }.toMutableList()
+                rvProduct.adapter = AdapterPriceProduct(listProduct)
+            }
+        }
+        val buttonSave = view.findViewById<Button>(R.id.dialog_save_product)
+        val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel_product)
+
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        buttonSave.setOnClickListener {
+            val brand = spinnerBrand.selectedItem?.toString() ?: ""
+            val listProduct: MutableList<SurveyProduct> = ArrayList()
+            (rvProduct.adapter as AdapterPriceProduct).getList().forEach {
+                if (it.price_k > 0) {
+                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_k, "KILO", 0))
+                }
+                if (it.price_s > 0) {
+                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_s, "SACO", 0))
+                }
+            }
+            if (listProduct.count() > 0) {
+                viewModel.addProduct(listProduct)
+                listProduct.forEach {
+                    val insert = (rv.adapter as AdapterProductSurvey).addProduct(it)
+                    if (insert) {
+                        BDLocal(view.context).addMerchantPrice(it, pointSale.visitId)
+                    }
+                }
+                dialog.dismiss()
+            } else {
+                Toast.makeText(view.context, "No tiene ningun producto editado", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 }

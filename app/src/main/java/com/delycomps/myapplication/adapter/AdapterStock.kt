@@ -49,11 +49,13 @@ class AdapterStock(
         notifyItemRemoved(index)
     }
 
-    fun addStock(p: Stock) {
+    fun addStock(p: Stock): Boolean {
         if (listStock.find { it.product == p.product && it.type == p.type && it.brand == p.brand} == null) {
             listStock.add(p)
             notifyItemInserted(listStock.count() - 1)
+            return true
         }
+        return false
     }
     fun getList() : List<Stock> {
         return listStock

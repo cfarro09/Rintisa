@@ -132,6 +132,9 @@ class Repository {
         material_list: String,
         price_survey_list: String,
         haveSurvey: Boolean,
+        status_management: String,
+        motive: String,
+        observation: String,
         token: String,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
@@ -144,6 +147,9 @@ class Repository {
                 "material_list" to material_list,
                 "pricesurvey_list" to price_survey_list,
                 "havesurvey" to haveSurvey,
+                "status_management" to status_management,
+                "motive" to motive,
+                "observation" to observation,
             )))
         )
         try {

@@ -47,9 +47,13 @@ class AdapterProductSurvey(
         notifyItemRemoved(index)
     }
 
-    fun addProduct(surveyProduct: SurveyProduct) {
-        listSurveyProduct.add(surveyProduct)
-        notifyItemInserted(listSurveyProduct.count() - 1)
+    fun addProduct(surveyProduct: SurveyProduct): Boolean {
+        if (listSurveyProduct.find { it.productId == surveyProduct.productId && it.measureUnit == surveyProduct.measureUnit } == null) {
+            listSurveyProduct.add(surveyProduct)
+            notifyItemInserted(listSurveyProduct.count() - 1)
+            return true
+        }
+        return false
     }
     fun getList() : List<SurveyProduct> {
         return listSurveyProduct

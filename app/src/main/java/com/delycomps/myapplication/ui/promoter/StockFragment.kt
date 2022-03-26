@@ -150,8 +150,9 @@ class StockFragment : Fragment() {
             if (listStockSelected.count() > 0) {
                 listStockSelected.forEach { r ->
                     run {
-                        (rv.adapter as AdapterStock).addStock(r)
-                        BDLocal(view.context).addStockPromoter(r, pointSale.visitId)
+                        val insert = (rv.adapter as AdapterStock).addStock(r)
+                        if (insert)
+                            BDLocal(view.context).addStockPromoter(r, pointSale.visitId)
                     }
                 }
                 val listStock = viewModel.addStocks(listStockSelected)

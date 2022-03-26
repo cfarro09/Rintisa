@@ -1,6 +1,7 @@
 package com.delycomps.myapplication
 
 import android.app.AlertDialog
+import android.app.Fragment
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -8,6 +9,7 @@ import android.os.Bundle
 import android.text.Html
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -17,6 +19,7 @@ import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityMerchantBinding
 import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.PointSale
+import com.delycomps.myapplication.ui.merchant.InformationFragment
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.delycomps.myapplication.ui.merchant.SectionsPagerAdapter
 import com.google.android.material.snackbar.Snackbar
@@ -49,6 +52,11 @@ class MerchantActivity : AppCompatActivity() {
             val listMaterials = merchantViewModel.listMaterialSelected.value ?: emptyList()
             val listProducts = merchantViewModel.listProductSelected.value ?: emptyList()
 
+            val statusManagement = merchantViewModel.management.value?.status_management ?: "EFECTIVA"
+            val motive = merchantViewModel.management.value?.motive ?: ""
+            val observation = merchantViewModel.management.value?.observation ?: ""
+
+            Toast.makeText(this, "observation: ${merchantViewModel.management.value?.motive ?: "x"}.", Toast.LENGTH_LONG).show()
 //            if (imageAfter == "") {
 //                Snackbar.make(tabs, "La \"foto del despues\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
 //                    R.color.colorSecondary
@@ -98,7 +106,8 @@ class MerchantActivity : AppCompatActivity() {
                             "type_pricesurveydetail" to "NINGUNO",
                             "operation" to "INSERT"
                         ) }.toList()
-                        merchantViewModel.closeMerchant(pointSale.visitId, imageBefore, imageAfter, Gson().toJson(listMaterialProcessed), Gson().toJson(listProductProcessed), listProductProcessed.count() > 0, SharedPrefsCache(this).getToken())
+                        merchantViewModel.closeMerchant(pointSale.visitId, imageBefore, imageAfter, Gson().toJson(listMaterialProcessed), Gson().toJson(listProductProcessed), listProductProcessed.count() > 0,
+                            statusManagement, motive, observation, SharedPrefsCache(this).getToken())
                     }
                 }
             }
@@ -155,6 +164,7 @@ class MerchantActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
     }
+
     override fun onBackPressed() {
 //        super.onBackPressed()
         val output = Intent()

@@ -17,6 +17,9 @@ class MerchantViewModel : ViewModel() {
     private val _dataBrands: MutableLiveData<List<String>> = MutableLiveData()
     val dataBrands: LiveData<List<String>> = _dataBrands
 
+    private val _management: MutableLiveData<Management> = MutableLiveData()
+    val management: LiveData<Management> = _management
+
     private val _dataMaterials: MutableLiveData<List<Material>> = MutableLiveData()
     val dataMaterials: LiveData<List<Material>> = _dataMaterials
 
@@ -41,6 +44,16 @@ class MerchantViewModel : ViewModel() {
     private val _urlImageWithBD: MutableLiveData<ResGlobal> = MutableLiveData()
     val urlImageWithBD: LiveData<ResGlobal> = _urlImageWithBD
 
+    fun setManagement (management: Management) {
+
+        _management.value = Management(
+            management.status_management ?: _management.value?.status_management ?: "",
+            management.motive ?: _management.value?.motive ?: "",
+            management.observation ?: _management.value?.observation ?: "",
+        )
+    }
+
+
     fun addMaterial (material: Material, context: Context, visitId: Int) {
         BDLocal(context).addMaterialStock(material, visitId)
         _listMaterialSelected.value = ((_listMaterialSelected.value ?: emptyList()) + listOf(material)).toMutableList()
@@ -61,12 +74,26 @@ class MerchantViewModel : ViewModel() {
         _listMaterialSelected.value = list
     }
 
-    fun addProduct (material: SurveyProduct) {
-        _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + listOf(material)).toMutableList()
+    fun initialPriceProduct (list: MutableList<SurveyProduct>) {
+        _listProductSelected.value = list
     }
 
-    fun updateProduct (product: SurveyProduct, i: Int) {
+//    fun addStocks(stocks: List<Stock>): MutableList<Stock> {
+//        _listStockSelected.value = ((_listStockSelected.value ?: emptyList()) + stocks.filter { (_listStockSelected.value ?: emptyList()).find { r -> r.product == it.product } == null }).toMutableList()
+//
+//        return _listStockSelected.value!!
+//    }
+
+
+    fun addProduct (stocks: List<SurveyProduct>) {
+        _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + stocks.filter { (_listProductSelected.value ?: emptyList()).find { r -> r.productId == it.productId && r.measureUnit == it.measureUnit } == null }).toMutableList()
+//        _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + listOf(material)).toMutableList()
+    }
+
+    fun updateProduct (product: SurveyProduct, i: Int, context: Context) {
+        product.uuid = _listProductSelected.value!![i].uuid
         _listProductSelected.value = _listProductSelected.value!!.mapIndexed { index, item -> if (index == i) product else item }.toMutableList()
+        BDLocal(context).updateMerchantPrice(product)
     }
 
     fun removeProduct (i: Int) {
@@ -100,8 +127,9 @@ class MerchantViewModel : ViewModel() {
         }
     }
 
-    fun closeMerchant(visitId: Int, image_before: String, image_after: String, material_list: String, price_survey_list: String, haveSurvey: Boolean, token: String) {
-        Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey, token) { isSuccess, _ ->
+    fun closeMerchant(visitId: Int, image_before: String, image_after: String, material_list: String, price_survey_list: String, haveSurvey: Boolean,
+                      status_management: String, motive: String, observation: String,token: String) {
+        Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey, status_management, motive, observation, token) { isSuccess, _ ->
             _closingMerchant.value = isSuccess
         }
     }
