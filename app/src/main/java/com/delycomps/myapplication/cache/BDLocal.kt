@@ -14,10 +14,72 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.execSQL(SQL_CREATE_TABLE_STOCK)
         db.execSQL(SQL_CREATE_TABLE_STOCK1)
         db.execSQL(SQL_CREATE_TABLE_SALES)
+        db.execSQL(SQL_CREATE_TABLE_PRICE)
     }
 
     override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
-        TODO("Not yet implemented")
+        p0?.execSQL(SQL_CREATE_TABLE_PRICE)
+    }
+
+
+    fun getMerchantPrices(visitID: Int): List<SurveyProduct> {
+        val db = readableDatabase
+        val listSurveyProduct = ArrayList<SurveyProduct>()
+        val select = arrayOf(PRICES_PRODUCT_ID, PRICES_DESCRIPTION, PRICES_BRAND, PRICES_PRICE, PRICES_MEASURE_UNIT, UUID )
+
+        val c = db.query(TABLE_PRICES, select, "$VISIT_ID = $visitID", null, null, null, null, null)
+
+        if (c != null && c.count > 0) {
+            c.moveToFirst()
+            do {
+                listSurveyProduct.add(SurveyProduct(c.getInt(0), c.getString(1), c.getString(2), c.getDouble(3), c.getString(4), 0, "", "", c.getString(5)))
+            } while (c.moveToNext())
+        }
+        db?.close()
+        c?.close()
+
+        return listSurveyProduct
+    }
+
+    fun addMerchantPrice(surveyProduct: SurveyProduct, visitId: Int) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(VISIT_ID, visitId)
+        values.put(PRICES_PRODUCT_ID, surveyProduct.productId)
+        values.put(PRICES_BRAND, surveyProduct.brand)
+        values.put(PRICES_DESCRIPTION, surveyProduct.description)
+        values.put(PRICES_PRICE, surveyProduct.price)
+        values.put(PRICES_MEASURE_UNIT, surveyProduct.measureUnit)
+        values.put(UUID, surveyProduct.uuid)
+
+        db.insert(TABLE_PRICES, null, values)
+        db.close()
+    }
+
+    fun updateMerchantPrice(surveyProduct: SurveyProduct) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(PRICES_PRODUCT_ID, surveyProduct.productId)
+        values.put(PRICES_BRAND, surveyProduct.brand)
+        values.put(PRICES_DESCRIPTION, surveyProduct.description)
+        values.put(PRICES_PRICE, surveyProduct.price)
+        values.put(PRICES_MEASURE_UNIT, surveyProduct.measureUnit)
+
+        db.update(
+            TABLE_PRICES,
+            values,
+            "$UUID = ?",
+            arrayOf(surveyProduct.uuid)
+        )
+        db.close()
+    }
+
+    fun deleteMerchantPrices(uuid: String) {
+        val db = readableDatabase
+        db.delete(TABLE_PRICES, "$UUID = ?", arrayOf(uuid))
+        db.close()
     }
 
     fun getMaterialStock(visitID: Int): List<Material> {
@@ -175,7 +237,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
     //#END STOCK PROMOTER
 
     companion object {
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
 
         private const val UUID = "uuidtmp"
         private const val VISIT_ID = "visitid"
@@ -198,7 +260,24 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val SALES_MERCHANT = "merchant"
         private const val SALES_IMAGE_EVIDENCE = "image_evidence"
 
-//        private const val TABLE_PRICES = "merchant_prices"
+        private const val TABLE_PRICES = "merchant_prices"
+        private const val PRICES_PRODUCT_ID = "productid"
+        private const val PRICES_BRAND = "brand"
+        private const val PRICES_DESCRIPTION = "description"
+        private const val PRICES_PRICE = "price"
+        private const val PRICES_MEASURE_UNIT = "measure_unit"
+
+        private const val SQL_CREATE_TABLE_PRICE = ("" +
+                "create table $TABLE_PRICES (" +
+                "  _id integer primary key autoincrement," +
+                "   $PRICES_PRODUCT_ID integer," +
+                "   $PRICES_BRAND text," +
+                "   $PRICES_DESCRIPTION text," +
+                "   $PRICES_PRICE double," +
+                "   $PRICES_MEASURE_UNIT text," +
+                "   $UUID text," +
+                "   $VISIT_ID integer" +
+                ")")
 
         private const val SQL_CREATE_TABLE_STOCK = ("" +
                 "create table $TABLE_STOCK (" +

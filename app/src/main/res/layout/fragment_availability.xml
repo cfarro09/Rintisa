@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp"
+    android:orientation="vertical"
+    tools:context=".ui.merchant.AvailabilityFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/spinner_competence"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:text="@string/competencia" />
+        <Spinner
+            android:id="@+id/spinner_competence"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/spinner_product"
+            android:text="@string/brand" />
+        <Spinner
+            android:id="@+id/spinner_brand"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:labelFor="@+id/spinner_product"
+            android:layout_marginBottom="10dp"
+            android:text="@string/skus" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_product_availability"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:listitem="@layout/item_availability"
+            />
+    </LinearLayout>
+</LinearLayout>

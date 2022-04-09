@@ -142,7 +142,7 @@ class MerchantActivity : AppCompatActivity() {
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
                 val output = Intent()
-                output.putExtra("refresh", "refresh")
+                output.putExtra("status", "VISITADO")
                 setResult(RESULT_OK, output);
                 finish()
             } else {

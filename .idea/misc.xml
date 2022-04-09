@@ -25,6 +25,7 @@
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_promoter.xml" value="0.19479166666666667" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/activity_splash.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/blank_fragment.xml" value="0.2520833333333333" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_availability.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_blank.xml" value="0.2520833333333333" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_client_detail.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_materials.xml" value="0.36666666666666664" />
@@ -33,6 +34,7 @@
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_sales.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/fragment_stock.xml" value="0.15" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/information_fragment.xml" value="0.25" />
+        <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_availability.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_material.xml" value="0.2520833333333333" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_merchandise.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/layout/item_pdv.xml" value="0.36666666666666664" />

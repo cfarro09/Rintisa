@@ -140,16 +140,16 @@ class Repository {
     )  {
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
-            Gson().toJson(RequestBodyX("UFN_UPLOAD_IMAGE_AFTER_VISIT", "UFN_UPLOAD_IMAGE_AFTER_VISIT", mapOf<String, Any>(
+            Gson().toJson(RequestBodyX("UFN_UPLOAD_IMAGE_AFTER_VISIT2", "UFN_UPLOAD_IMAGE_AFTER_VISIT2", mapOf<String, Any>(
                 "visitid" to visitId,
                 "image_before" to image_before,
                 "image_after" to image_after,
                 "material_list" to material_list,
                 "pricesurvey_list" to price_survey_list,
                 "havesurvey" to haveSurvey,
-                "status_management" to status_management,
-                "motive" to motive,
-                "observation" to observation,
+                "status_manage" to status_management,
+                "motive_visit" to motive,
+                "observations" to observation,
             )))
         )
         try {
@@ -365,7 +365,8 @@ class Repository {
                             resultMerchant.materials = response.body().data[1].data.toList().map { r -> Material(r["domainvalue"].toString(),"", 0) }
                         }
                         if (response.body().data[2].success == true) {
-                            resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0) }
+                            resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(
+                                r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0, null, null, UUID.randomUUID().toString(), r["competence"].toString()) }
                         }
                         onResult(true, resultMerchant, null)
                     } else {

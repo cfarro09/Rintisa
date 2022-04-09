@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.5.4</string>
+    <string name="version">1.6.1 (beta)</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -18,10 +18,12 @@
     <string name="confirm_password">Confirmar contraseña</string>
     <string name="all_obligatory">Todos los campos son obligatorios.</string>
     <string name="username">Usuario</string>
-    <string name="title_activity_client_detail">ClientDetail</string>
+    <string name="title_activity_client_detail">C
+        lientDetail</string>
     <string name="tab_text_1">Info</string>
     <string name="tab_text_2">Materiales</string>
     <string name="tab_text_sales">Ventas</string>
+    <string name="tab_text_availability">Disponibilidad</string>
     <string name="tab_text_stock">Stock</string>
     <string name="tab_text_3">Enc precio</string>
     <!-- TODO: Remove or change this placeholder text -->
@@ -48,5 +50,7 @@
     <string name="status">Estado</string>
     <string name="motive">Motivo</string>
     <string name="observation">Observación</string>
+    <string name="competencia">Competencia</string>
+    <string name="skus">SKUS</string>
 
 </resources>

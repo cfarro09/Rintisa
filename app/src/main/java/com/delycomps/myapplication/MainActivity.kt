@@ -301,17 +301,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-//        mainViewModel.loadingSelfie.observe(this) {
-//            if (!it) {
-//                if ((mainViewModel.urlSelfie.value ?: "") == "") {
-//                    dialogLoading.dismiss()
-//                    Toast.makeText(rv.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-//                } else {
-//                    mainViewModel.initPointSale(SharedPrefsCache(this).getToken(), pointSale.visitId, mainViewModel.urlSelfie.value ?: "", lastLocation!!.latitude, lastLocation!!.longitude)
-//                }
-//            }
-//        }
-
         mainViewModel.sendInitPointSale.observe(this) {
             dialogLoading.dismiss()
             if (it == true) {
@@ -323,7 +312,6 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
                 locationManager?.removeUpdates(locationListener)
                 startActivityForResult(intent, RETURN_ACTIVITY)
-//                rv.context.startActivity(intent)
             } else {
                 Toast.makeText(this@MainActivity, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
             }

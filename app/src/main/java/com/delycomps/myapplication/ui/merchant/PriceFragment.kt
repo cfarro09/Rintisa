@@ -53,7 +53,7 @@ class PriceFragment : Fragment() {
         viewModel.initialPriceProduct(listProductsSelected)
 
         viewModel.dataProducts.observe(requireActivity()) {
-            listProduct = it
+            listProduct = it.filter { r -> r.competence == "RINTI" }
             starALL(view)
         }
     }
