@@ -32,6 +32,9 @@ class MerchantViewModel : ViewModel() {
     private val _listProductSelected: MutableLiveData<MutableList<SurveyProduct>> = MutableLiveData()
     val listProductSelected: LiveData<MutableList<SurveyProduct>> = _listProductSelected
 
+    private val _productsAvailability: MutableLiveData<MutableList<Availability>> = MutableLiveData()
+    val productsAvailability: LiveData<MutableList<Availability>> = _productsAvailability
+
     private val _urlBeforeImage: MutableLiveData<String> = MutableLiveData()
     val urlBeforeImage: LiveData<String> = _urlBeforeImage
 
@@ -59,6 +62,22 @@ class MerchantViewModel : ViewModel() {
         _listMaterialSelected.value = ((_listMaterialSelected.value ?: emptyList()) + listOf(material)).toMutableList()
     }
 
+    fun initialProductAvailability (list: MutableList<Availability>) {
+        _productsAvailability.value = list
+    }
+
+    fun manageProductAvailability (product: Availability, context: Context, visitId: Int) {
+//        BDLocal(context).addMaterialStock(material, visitId)
+        if (product.flag == true) {
+            _productsAvailability.value = ((_productsAvailability.value ?: emptyList()) + listOf(product)).toMutableList()
+            BDLocal(context).addProductsAvailability(product, visitId)
+        } else {
+            val uuid = _productsAvailability.value?.find { it.productid == product.productid }?.uuid ?: ""
+            BDLocal(context).deleteProductAvailability(uuid)
+            _productsAvailability.value = _productsAvailability.value!!.filter { it.productid != product.productid }.toMutableList()
+        }
+    }
+
     fun updateMaterial (material: Material, i: Int, context: Context) {
         material.uuid = _listMaterialSelected.value!![i].uuid
         BDLocal(context).updateMaterialsFromVisit(material)
@@ -66,7 +85,7 @@ class MerchantViewModel : ViewModel() {
     }
 
     fun removeMaterial (i: Int, context: Context, uuid: String) {
-        BDLocal(context).deleteMaterialsFromVisit(uuid)
+        BDLocal(context).deleteMaterial(uuid)
         _listMaterialSelected.value = _listMaterialSelected.value!!.filterIndexed { index, _ -> index != i } .toMutableList()
     }
 
@@ -128,8 +147,12 @@ class MerchantViewModel : ViewModel() {
     }
 
     fun closeMerchant(visitId: Int, image_before: String, image_after: String, material_list: String, price_survey_list: String, haveSurvey: Boolean,
+                      listAvailability: String, haveAvailability: Boolean,
                       status_management: String, motive: String, observation: String,token: String) {
-        Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey, status_management, motive, observation, token) { isSuccess, _ ->
+        Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey,
+            listAvailability,
+            haveAvailability,
+            status_management, motive, observation, token) { isSuccess, _ ->
             _closingMerchant.value = isSuccess
         }
     }
@@ -156,12 +179,8 @@ class MerchantViewModel : ViewModel() {
     }
 
     fun initMainMulti(data: DataMerchant) {
-//        Repository().getMultiMerchant(token) { isSuccess, result, _ ->
-//            if (isSuccess) {
             _dataBrands.value = data.brands
             _dataMaterials.value = data.materials
             _dataProducts.value = data.products
-//            }
-//        }
     }
 }

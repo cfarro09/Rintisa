@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
-import com.delycomps.myapplication.adapter.AdapterPriceProduct
+import com.delycomps.myapplication.adapter.AdapterAvailability
 import com.delycomps.myapplication.cache.BDLocal
+import com.delycomps.myapplication.model.Availability
 import com.delycomps.myapplication.model.PointSale
-import com.delycomps.myapplication.model.PriceProduct
 import com.delycomps.myapplication.model.SurveyProduct
 
 
@@ -31,7 +31,7 @@ class AvailabilityFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_price, container, false)
+        val view = inflater.inflate(R.layout.fragment_availability, container, false)
         viewModel = ViewModelProvider(requireActivity()).get(MerchantViewModel::class.java)
 
         viewModel.dataProducts.observe(requireActivity()) {
@@ -49,13 +49,13 @@ class AvailabilityFragment : Fragment() {
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
 //        listProductsSelected = BDLocal(view.context).getMerchantPrices(pointSale.visitId).toMutableList()
-//        viewModel.initialPriceProduct(listProductsSelected)
+        viewModel.initialProductAvailability(BDLocal(view.context).getProductsAvailability(pointSale.visitId).toMutableList())
 
-        val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_product)
+        val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
         spinnerBrand.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.competence == "RINTI" }.map { it.brand }.distinct())
 
         val spinnerCompetence = view.findViewById<Spinner>(R.id.spinner_competence)
-        spinnerCompetence.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("RINTI", "COMPETENCE"))
+        spinnerCompetence.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("RINTI", "COMPETENCIA"))
 
         spinnerCompetence.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
@@ -70,11 +70,29 @@ class AvailabilityFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
                 val competence = spinnerCompetence.selectedItem.toString()
-                listProduct.filter { it.competence == competence && it.brand == brand }.map { it.description }
+
+                val list = listProduct
+                    .filter { it.competence == competence && it.brand == brand }
+                    .map { y ->
+                        val ff = viewModel.productsAvailability.value?.find { r -> r.productid == y.productId }
+                        Availability(
+                            y.productId,
+                            y.description.toString(),
+                            y.brand.toString(),
+                            y.competence.toString(),
+                            ff != null,
+                            ff?.uuid ?: y.uuid
+                        )
+                    }
+
+                (rv.adapter as AdapterAvailability).updateAvailability(list.toMutableList())
             }
         }
 
-
+        rv.adapter = AdapterAvailability(ArrayList(), object : AdapterAvailability.ListAdapterListener {
+            override fun availability(availability: Availability, position: Int) {
+                viewModel.manageProductAvailability(availability, rv.context, pointSale.visitId)
+            }
+        })
     }
-
 }

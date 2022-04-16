@@ -20,6 +20,17 @@ data class ResponseCommon (
     var key: String?,
 )
 
+data class Availability(
+    var productid: Int,
+    var description: String,
+    var brand: String,
+    var competence: String,
+    var flag: Boolean?,
+    var uuid: String? = UUID.randomUUID().toString(),
+    var customerid: Int? = 0
+)
+
+
 data class ResponseMulti(
     var success: Boolean?,
     var data: List<ResponseList<Map<String, Any>>>,

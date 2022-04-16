@@ -132,6 +132,8 @@ class Repository {
         material_list: String,
         price_survey_list: String,
         haveSurvey: Boolean,
+        availability_survey_list: String,
+        haveAvailability: Boolean,
         status_management: String,
         motive: String,
         observation: String,
@@ -140,13 +142,15 @@ class Repository {
     )  {
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
-            Gson().toJson(RequestBodyX("UFN_UPLOAD_IMAGE_AFTER_VISIT2", "UFN_UPLOAD_IMAGE_AFTER_VISIT2", mapOf<String, Any>(
+            Gson().toJson(RequestBodyX("UFN_UPLOAD_IMAGE_AFTER_VISIT3", "UFN_UPLOAD_IMAGE_AFTER_VISIT3", mapOf<String, Any>(
                 "visitid" to visitId,
                 "image_before" to image_before,
                 "image_after" to image_after,
                 "material_list" to material_list,
                 "pricesurvey_list" to price_survey_list,
                 "havesurvey" to haveSurvey,
+                "availability_survey_list" to availability_survey_list,
+                "haveavailability" to haveAvailability,
                 "status_manage" to status_management,
                 "motive_visit" to motive,
                 "observations" to observation,
@@ -341,7 +345,7 @@ class Repository {
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_PRODUCT_COMPETENCE_SEL", mapOf<String, Any>(
                 "id" to 0,
                 "all" to true,
-                "competence" to "RINTI"
+                "competence" to ""
             )),
         )
         val body: RequestBody = RequestBody.create(
@@ -516,6 +520,7 @@ class Repository {
                     response: Response<ResUploader>?
                 ) {
                     if (response!!.isSuccessful) {
+                        Log.d("carlos_urlimage", "" + response.body().url)
                         onResult(true, response.body().url, null)
                     } else {
                         onResult(false, null, DEFAULT_MESSAGE_ERROR)

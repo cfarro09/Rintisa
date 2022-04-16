@@ -82,7 +82,7 @@ class AdapterSale(
         val quantity = surveyProduct.quantity
 
 
-        if ((brand == "RICOCAN" || brand == "RICOCAT" || brand == "SUPERCAN" || brand == "SUPERCAT") && ((measureUnit == "SACO") || (measureUnit == "KILO" && quantity >= 2))) {
+        if (brand == "RICOCAN" || brand == "RICOCAT" || brand == "SUPERCAN" || brand == "SUPERCAT") {
             if (brand == "SUPERCAN" || brand == "SUPERCAT") {
                 if (measureUnit == "SACO") {
                     holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
@@ -90,9 +90,15 @@ class AdapterSale(
                     holder.itemContainerMerchant.visibility = View.VISIBLE
                 }
             } else {
-                holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
-                holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
-                holder.itemContainerMerchant.visibility = View.VISIBLE
+                if ((measureUnit == "SACO") || (measureUnit == "KILO" && quantity >= 2)) {
+                    holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
+                    holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
+                    holder.itemContainerMerchant.visibility = View.VISIBLE
+                } else if ((brand == "RICOCAN" || brand == "RICOCAT") && (measureUnit == "HUMEDO")) {
+                    holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
+                    holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
+                    holder.itemContainerMerchant.visibility = View.VISIBLE
+                }
             }
         } else {
             holder.itemContainerMerchant.visibility = View.GONE

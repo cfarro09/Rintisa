@@ -10,14 +10,15 @@ import com.delycomps.myapplication.R
 private val TAB_TITLES = arrayOf(
     R.string.tab_text_1,
     R.string.tab_text_2,
-    R.string.tab_text_3
+    R.string.tab_text_3,
+    R.string.tab_text_availability
 )
 
 /**
  * A [FragmentPagerAdapter] that returns a fragment corresponding to
  * one of the sections/tabs/pages.
  */
-class SectionsPagerAdapter(private val context: Context, private val fm: FragmentManager, private val totalItems2: Int) :
+class SectionsPagerAdapter(private val context: Context, private val fm: FragmentManager, private val showSurvey: Boolean, private val showAvailability: Boolean) :
     FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
@@ -26,16 +27,22 @@ class SectionsPagerAdapter(private val context: Context, private val fm: Fragmen
         return when (position) {
             0 -> InformationFragment()
             1 -> MaterialsFragment()
-            2 -> PriceFragment()
+            2 -> if (showAvailability && showSurvey) PriceFragment() else if (showAvailability) AvailabilityFragment() else PriceFragment()
+            3 -> AvailabilityFragment()
             else -> InformationFragment()
         }
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
-        return context.resources.getString(TAB_TITLES[position])
+        return context.resources.getString(arrayOf(
+            R.string.tab_text_1,
+            R.string.tab_text_2,
+            if (showAvailability && showSurvey) R.string.tab_text_3 else if (showAvailability) R.string.tab_text_availability else R.string.tab_text_3,
+            R.string.tab_text_availability
+        )[position])
     }
 
     override fun getCount(): Int {
-        return totalItems2
+        return 2 + (if (showSurvey) 1 else 0) + (if (showAvailability) 1 else 0)
     }
 }

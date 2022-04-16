@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.6.1 (beta)</string>
+    <string name="version">1.7.0</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>

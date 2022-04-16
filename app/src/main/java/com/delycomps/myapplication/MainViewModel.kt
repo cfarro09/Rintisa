@@ -1,9 +1,11 @@
 package com.delycomps.myapplication
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.delycomps.myapplication.api.Repository
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.ResGlobal
@@ -38,13 +40,15 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun getListLocation(token: String) {
+    fun getListLocation(context: Context, token: String) {
         Repository().getPointsSale(token) { isSuccess, result, message ->
             if (isSuccess) {
                 _listPointSale.value = result!!
+                BDLocal(context).savePointSales(result)
             } else {
                 _errorOnGetList.value = message
-                _listPointSale.value = emptyList()
+                val aux = BDLocal(context).getPointSale()
+                _listPointSale.value = aux
             }
         }
     }

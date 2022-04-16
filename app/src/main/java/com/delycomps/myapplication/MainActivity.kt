@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
         val swiper: SwipeRefreshLayout = findViewById(R.id.main_swiper_refresh)
         swiper.setOnRefreshListener {
-            mainViewModel.getListLocation(SharedPrefsCache(this).getToken())
+            mainViewModel.getListLocation(this, SharedPrefsCache(this).getToken())
             swiper.isRefreshing = false
         }
 
@@ -166,12 +166,12 @@ class MainActivity : AppCompatActivity() {
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        mainViewModel.getListLocation(SharedPrefsCache(this).getToken())
+        mainViewModel.getListLocation(this, SharedPrefsCache(this).getToken())
         dialogLoading.show()
 
         mainViewModel.errorOnGetList.observe(this) {
             if (it != "" && it != null) {
-                Toast.makeText(this, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Sin internet. Se cargaran los puntos de ventas guardados en memoria.", Toast.LENGTH_LONG).show()
             }
         }
 

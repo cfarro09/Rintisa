@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Management
 import com.delycomps.myapplication.model.PointSale
@@ -36,7 +37,7 @@ private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "P
 class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel
     private var currentPhotoPath: String = ""
-    private lateinit var currentPhotoUri: Uri
+    private var currentPhotoBitmap: Bitmap? = null
     private var fromImage: String = ""
     private var typeImage: String = ""
     private lateinit var dialogLoading: AlertDialog
@@ -140,7 +141,7 @@ class InformationFragment : Fragment() {
                 if (fromImage == "CAMERA") {
                     view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 } else {
-                    view.findViewById<ImageView>(R.id.view_image_after).setImageURI(currentPhotoUri)
+                    view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(currentPhotoBitmap)
                 }
             }
         }
@@ -152,7 +153,7 @@ class InformationFragment : Fragment() {
                 if (fromImage == "CAMERA") {
                     view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 } else {
-                    view.findViewById<ImageView>(R.id.view_image_before).setImageURI(currentPhotoUri)
+                    view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(currentPhotoBitmap)
                 }
             }
         }
@@ -197,18 +198,26 @@ class InformationFragment : Fragment() {
             CODE_RESULT_GALLERY -> if (resultCode == AppCompatActivity.RESULT_OK) {
                 val imageSelected: Uri? = imageReturnedIntent?.data
                 if (imageSelected != null) {
-                    currentPhotoUri = imageSelected
                     try {
-                        val f = uriToImageFile(imageSelected)
-                        if (f != null) {
-                            dialogLoading.show()
-                            if (typeImage == "BEFORE") {
-                                viewModel.uploadBeforeImage(f, SharedPrefsCache(requireContext()).getToken())
+                        val  imageStream: InputStream? = requireActivity().contentResolver!!.openInputStream(imageSelected)
+
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+
+                        currentPhotoBitmap = Helpers().getResizedBitmap(selectedImage, 600)
+
+                        if (currentPhotoBitmap != null) {
+                            val f = Helpers().bitmapToFile(context, currentPhotoBitmap!!, UUID.randomUUID().toString())
+
+                            if (f != null) {
+                                dialogLoading.show()
+                                if (typeImage == "BEFORE") {
+                                    viewModel.uploadBeforeImage(f, SharedPrefsCache(requireContext()).getToken())
+                                } else {
+                                    viewModel.uploadAfterImage(f, SharedPrefsCache(requireContext()).getToken())
+                                }
                             } else {
-                                viewModel.uploadAfterImage(f, SharedPrefsCache(requireContext()).getToken())
+                                Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                             }
-                        } else {
-                            Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: FileNotFoundException) {
                         Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()

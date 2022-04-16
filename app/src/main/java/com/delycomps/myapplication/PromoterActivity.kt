@@ -130,6 +130,10 @@ class PromoterActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+
+                BDLocal(this).deleteSalePromoterFromVisit(pointSale.visitId)
+                BDLocal(this).deleteStockPromoterFromVisit(pointSale.visitId)
+
                 val output = Intent()
                 output.putExtra("status", "VISITADO")
                 setResult(RESULT_OK, output);

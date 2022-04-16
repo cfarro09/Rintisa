@@ -15,8 +15,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.delycomps.myapplication.Constants.RETURN_ACTIVITY
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityMerchantBinding
+import com.delycomps.myapplication.model.Availability
 import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.merchant.InformationFragment
@@ -52,29 +54,29 @@ class MerchantActivity : AppCompatActivity() {
             val listMaterials = merchantViewModel.listMaterialSelected.value ?: emptyList()
             val listProducts = merchantViewModel.listProductSelected.value ?: emptyList()
 
+            val datecurrent = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+//            val listAvailabilities =
+
+            val listAvailabilitiesProcessed = (merchantViewModel.dataProducts.value ?: emptyList())
+                .map { mapOf<String, Any>(
+                    "customerid" to pointSale.customerId,
+                    "description_availability" to datecurrent,
+                    "status_availability" to "ACTIVO",
+                    "type_availability" to "NINGUNO",
+                    "availabilitydetailid" to 0,
+                    "productid" to it.productId,
+                    "brand" to it.brand + "",
+                    "competence" to it.competence + "",
+                    "description_availabilitydetail" to it.description + "",
+                    "status_availabilitydetail" to "ACTIVO",
+                    "type_availabilitydetail" to "NINGUNO",
+                    "operation" to "INSERT",
+                    "flag_availabilitydetail" to (merchantViewModel.productsAvailability.value ?: emptyList()).any { r -> r.productid == it.productId }
+                ) }.toList()
+
             val statusManagement = merchantViewModel.management.value?.status_management ?: "EFECTIVA"
             val motive = merchantViewModel.management.value?.motive ?: ""
             val observation = merchantViewModel.management.value?.observation ?: ""
-
-            Toast.makeText(this, "observation: ${merchantViewModel.management.value?.motive ?: "x"}.", Toast.LENGTH_LONG).show()
-//            if (imageAfter == "") {
-//                Snackbar.make(tabs, "La \"foto del despues\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-//                    R.color.colorSecondary
-//                )).show()
-//                return true
-//            }
-//            if (imageBefore == "") {
-//                Snackbar.make(tabs, "La \"foto del antes\" es obligatoria.", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-//                    R.color.colorSecondary
-//                )).show()
-//                return true
-//            }
-//            if (listMaterials.count() == 0) {
-//                Snackbar.make(tabs, "Debe registrar al menos un material instalado", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
-//                    R.color.colorSecondary
-//                )).show()
-//                return true
-//            }
 
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
@@ -93,7 +95,7 @@ class MerchantActivity : AppCompatActivity() {
                         val listProductProcessed = listProducts.map { mapOf<String, Any>(
                             "pricesurveyid" to 0,
                             "customerid" to pointSale.customerId,
-                            "description_pricesurvey" to SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()),
+                            "description_pricesurvey" to datecurrent,
                             "status_pricesurvey" to "ACTIVO",
                             "type_pricesurvey" to "NINGUNO",
                             "pricesurveydetailid" to 0,
@@ -106,7 +108,15 @@ class MerchantActivity : AppCompatActivity() {
                             "type_pricesurveydetail" to "NINGUNO",
                             "operation" to "INSERT"
                         ) }.toList()
-                        merchantViewModel.closeMerchant(pointSale.visitId, imageBefore, imageAfter, Gson().toJson(listMaterialProcessed), Gson().toJson(listProductProcessed), listProductProcessed.count() > 0,
+                        merchantViewModel.closeMerchant(
+                            pointSale.visitId,
+                            imageBefore,
+                            imageAfter,
+                            Gson().toJson(listMaterialProcessed),
+                            Gson().toJson(listProductProcessed),
+                            listProductProcessed.count() > 0,
+                            Gson().toJson(listAvailabilitiesProcessed),
+                            (merchantViewModel.productsAvailability.value ?: emptyList()).count() > 0,
                             statusManagement, motive, observation, SharedPrefsCache(this).getToken())
                     }
                 }
@@ -141,6 +151,10 @@ class MerchantActivity : AppCompatActivity() {
             dialogLoading.dismiss()
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+                BDLocal(this).deleteMerchantPricesFromVisit(pointSale.visitId)
+                BDLocal(this).deleteMaterialFromVisit(pointSale.visitId)
+                BDLocal(this).deleteProductAvailabilityFromVisit(pointSale.visitId)
+
                 val output = Intent()
                 output.putExtra("status", "VISITADO")
                 setResult(RESULT_OK, output);
@@ -155,7 +169,7 @@ class MerchantActivity : AppCompatActivity() {
 
         pointSale = intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
-        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager, if (pointSale.showSurvey) 3 else 2)
+        val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager, pointSale.showSurvey, pointSale.showAvailability)
         val viewPager: ViewPager = binding.viewPager
         viewPager.adapter = sectionsPagerAdapter
         tabs = binding.tabs

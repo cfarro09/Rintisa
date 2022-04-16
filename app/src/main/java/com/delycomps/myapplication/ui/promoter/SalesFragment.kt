@@ -33,6 +33,7 @@ import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterSale
 import com.delycomps.myapplication.cache.BDLocal
+import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.BrandSale
 import com.delycomps.myapplication.model.Merchandise
@@ -310,12 +311,21 @@ class SalesFragment : Fragment() {
                 val imageSelected: Uri? = imageReturnedIntent?.data
                 if (imageSelected != null) {
                     try {
-                        val imageOriginal = uriToImageFile(imageSelected)
-                        if (imageOriginal != null) {
-                            dialogLoading.show()
-                            viewModel.uploadSelfie(imageOriginal, SharedPrefsCache(requireContext()).getToken())
-                        } else {
-                            Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                        val  imageStream: InputStream? = requireActivity().contentResolver!!.openInputStream(imageSelected)
+
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+
+                        val currentPhotoBitmap = Helpers().getResizedBitmap(selectedImage, 600)
+
+                        if (currentPhotoBitmap != null) {
+                            val f = Helpers().bitmapToFile(context, currentPhotoBitmap, UUID.randomUUID().toString())
+
+                            if (f != null) {
+                                dialogLoading.show()
+                                viewModel.uploadSelfie(f, SharedPrefsCache(requireContext()).getToken())
+                            } else {
+                                Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     } catch (e: FileNotFoundException) {
                         Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
