@@ -1,6 +1,6 @@
 package com.delycomps.myapplication.model
 
-data class Merchandise(
+data class Market(
     var description: String,
-    var flag: Boolean? = false,
+    var marketId: Int
 )

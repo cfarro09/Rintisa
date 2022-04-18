@@ -12,18 +12,33 @@
         android:layout_height="wrap_content"
         android:id="@+id/pdv_background"
         android:padding="5dp">
+
         <TextView
             android:id="@+id/pdv_management"
-            android:text="EN CURSO"
-            android:layout_alignParentEnd="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="EN CURSO" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/pdv_management"
             android:orientation="vertical"
-            >
+        >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Carlos Farro"
+                android:id="@+id/pdv_username"
+                android:drawablePadding="5dp"
+                app:drawableStartCompat="@drawable/ic_baseline_assignment_ind_24" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="07:55"
+                android:id="@+id/pdv_hour_entry"
+                android:drawablePadding="5dp"
+                app:drawableStartCompat="@drawable/ic_baseline_schedule_24" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

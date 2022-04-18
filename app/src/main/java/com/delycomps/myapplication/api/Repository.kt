@@ -58,11 +58,18 @@ class Repository {
 
     fun getPointsSale(
         token: String,
+        supervisor: Boolean = false,
+        marketId: Int = 0,
+        service: String = "",
         onResult: (isSuccess: Boolean, result: List<PointSale>?, message: String?) -> Unit
-    )  {
+    ) {
+        val method = if (supervisor)  "UFN_CUSTOMER_BY_SUPERVISOR" else "UFN_CUSTOMER_BY_USER_SEL"
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
-            Gson().toJson(RequestBodyX("UFN_CUSTOMER_BY_USER_SEL", "UFN_CUSTOMER_BY_USER_SEL", mapOf<String, Any>()))
+            Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+                "marketid" to marketId,
+                "service" to service,
+            )))
         )
         try {
             Connection.instance.getClients(body, "Bearer $token").enqueue(object :
@@ -497,6 +504,44 @@ class Repository {
         }
     }
 
+    fun getMultiSupervisorInitial(
+        token: String,
+        onResult: (isSuccess: Boolean, result: DataSupervisor?, message: String?) -> Unit
+    )  {
+        val method = "QUERY_MARKET_SEL"
+        val multi = listOf(
+            RequestBodyX(method, method, mapOf<String, Any>())
+        )
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(multi)
+        )
+        try {
+            Connection.instance.mainMulti(body, "Bearer $token").enqueue(object :
+                Callback<ResponseMulti> {
+                override fun onResponse(
+                    call: Call<ResponseMulti>?,
+                    response: Response<ResponseMulti>?
+                ) {
+                    if (response?.isSuccessful == true && response.body().success == true) {
+                        val dataSupervisor = DataSupervisor(emptyList())
+
+                        if (response.body().data[0].success == true) {
+                            dataSupervisor.markets = response.body().data[0].data.toList().map { Market("(" + it["marketid"].toString() + ") " + it["description"].toString(), it["marketid"].toString().toDouble().toInt()) }
+                        }
+                        onResult(true, dataSupervisor, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseMulti>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
 
     fun uploadImage (
         file: File,

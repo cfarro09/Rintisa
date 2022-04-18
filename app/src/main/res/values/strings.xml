@@ -26,6 +26,7 @@
     <string name="tab_text_availability">Disponibilidad</string>
     <string name="tab_text_stock">Stock</string>
     <string name="tab_text_3">Enc precio</string>
+    <string name="tab_text_audit">Auditoria</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="init_image">Foto antes</string>
@@ -52,5 +53,9 @@
     <string name="observation">Observación</string>
     <string name="competencia">Competencia</string>
     <string name="skus">SKUS</string>
+    <string name="clients_filter">FILTRAR PUNTOS DE VENTA</string>
+    <string name="market">Mercado</string>
+    <string name="search">Buscar</string>
+    <string name="title_activity_merchant_supervisor">MerchantSupervisorActivity</string>
 
 </resources>

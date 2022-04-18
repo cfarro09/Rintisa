@@ -2,9 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.delycomps.myapplication">
+
     <queries>
         <intent>
             <action android:name="android.intent.action.SEND" />
+
             <data android:mimeType="vnd.android.cursor.dir/email" />
         </intent>
         <intent>
@@ -14,6 +16,7 @@
             <action android:name="android.intent.action.CALL" />
         </intent>
     </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
@@ -28,8 +31,17 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".MerchantSupervisorActivity"
+            android:exported="false"
+            android:label="@string/title_activity_merchant_supervisor"
+            android:parentActivityName=".SupervisorActivity" />
+        <activity
+            android:name=".SupervisorActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.delycomps.rintisa.provider"
@@ -39,6 +51,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <activity
             android:name=".PromoterActivity"
             android:exported="true"

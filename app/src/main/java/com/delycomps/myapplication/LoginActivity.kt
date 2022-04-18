@@ -13,6 +13,7 @@ import com.delycomps.myapplication.api.Repository
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.DataPromoter
+import com.delycomps.myapplication.model.DataSupervisor
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -22,6 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var merchantViewModel: MerchantViewModel
     private lateinit var promoterViewModel: PromoterViewModel
+    private lateinit var supervisorViewModel: SupervisorViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
 
         merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
         promoterViewModel = ViewModelProvider(this).get(PromoterViewModel::class.java)
+        supervisorViewModel = ViewModelProvider(this).get(SupervisorViewModel::class.java)
 
         val builderLoading: AlertDialog.Builder = AlertDialog.Builder(this)
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
@@ -48,6 +51,13 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
+        supervisorViewModel.dataMarket.observe(this) {
+            val data = DataSupervisor(supervisorViewModel.dataMarket.value!!)
+            SharedPrefsCache(this).set("data-supervisor", Gson().toJson(data), "string")
+            startActivity(Intent(this, SupervisorActivity::class.java))
+            finish()
+        }
+
         findViewById<Button>(R.id.login_access).setOnClickListener {
             val username = findViewById<EditText>(R.id.login_username).text.toString()
             val password = findViewById<EditText>(R.id.login_password).text.toString()
@@ -63,10 +73,16 @@ class LoginActivity : AppCompatActivity() {
                         SharedPrefsCache(this).set("fullname", result?.fullname, "string")
                         Toast.makeText(this, "Bienvenido $username (${result?.role?.uppercase() ?: ""})", Toast.LENGTH_SHORT).show()
 
-                        if (result?.role?.uppercase() == "MERCADERISTA") {
-                            merchantViewModel.getMainMulti(SharedPrefsCache(this).getToken())
-                        } else {
-                            promoterViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                        when {
+                            result?.role?.uppercase() == "MERCADERISTA" -> {
+                                merchantViewModel.getMainMulti(SharedPrefsCache(this).getToken())
+                            }
+                            result?.role?.uppercase() == "IMPULSADOR" -> {
+                                promoterViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                            }
+                            else -> {
+                                supervisorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                            }
                         }
                     } else {
                         Snackbar.make(findViewById<EditText>(R.id.login_username), message ?: "Usuario incorrecto", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
