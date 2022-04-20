@@ -14,7 +14,8 @@ import java.lang.Exception
 
 class AdapterPointsale(
     private var listPointSale: List<PointSale>,
-    private val refListener: ListAdapterListener
+    private val refListener: ListAdapterListener,
+    private val supervisor: Boolean = false
 ) : RecyclerView.Adapter<AdapterPointsale.OrderViewHolder>() {
     private lateinit var mContext: Context
 
@@ -56,8 +57,18 @@ class AdapterPointsale(
 
         holder.itemPointSaleClient.text = pointSale.client
         holder.itemPointSaleMarket.text = pointSale.market
-        holder.itemPointSaleStallNumber.text = "N° PUESTO: " + pointSale.stallNumber
+        holder.itemPointSaleStallNumber.text = "N° PUESTO: " + (pointSale.stallNumber ?: "")
         holder.itemPointSaleManagement.text = pointSale.management
+
+        if (supervisor) {
+            holder.itemPointSaleManagement.visibility = View.VISIBLE
+            holder.itemPointSaleHourEntry.visibility = View.VISIBLE
+            holder.itemPointSaleUsername.text = pointSale.user
+            holder.itemPointSaleHourEntry.text = pointSale.hourEntry
+        } else {
+            holder.itemPointSaleUsername.visibility = View.GONE
+            holder.itemPointSaleHourEntry.visibility = View.GONE
+        }
     }
 
     inner class OrderViewHolder internal constructor(itemView: View) :
@@ -67,9 +78,8 @@ class AdapterPointsale(
         internal var itemPointSaleMarket: TextView = itemView.findViewById(R.id.pdv_market)
         internal var itemPointSaleStallNumber: TextView = itemView.findViewById(R.id.pdv_stall_number)
         internal var itemPointSaleManagement: TextView = itemView.findViewById(R.id.pdv_management)
-//        internal var itemPointSaleDate: TextView = itemView.findViewById(R.id.pdv_date)
-//        internal var itemPointSaleLastVisit: TextView = itemView.findViewById(R.id.pdv_last_visit)
-        internal var itemPointSaleBackground: RelativeLayout = itemView.findViewById(R.id.pdv_background)
+        internal var itemPointSaleUsername: TextView = itemView.findViewById(R.id.pdv_username)
+        internal var itemPointSaleHourEntry: TextView = itemView.findViewById(R.id.pdv_hour_entry)
 
         init {
             itemView.setOnClickListener(this)

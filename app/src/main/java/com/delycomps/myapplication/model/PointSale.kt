@@ -52,9 +52,18 @@ open class PointSale: Parcelable {
     @SerializedName("image_after")
     @Expose
     var imageAfter: String? = ""
+<<<<<<< HEAD
     @SerializedName("uuid")
     @Expose
     var uuid: String? = ""
+=======
+    @SerializedName("user")
+    @Expose
+    var user: String? = ""
+    @SerializedName("hour_entry")
+    @Expose
+    var hourEntry: String? = ""
+>>>>>>> master
 
     constructor(
         visitId: Int,
@@ -72,7 +81,12 @@ open class PointSale: Parcelable {
         management: String,
         imageBefore: String,
         imageAfter: String,
+<<<<<<< HEAD
         uuid: String? = UUID.randomUUID().toString()
+=======
+        user: String,
+        hourEntry: String,
+>>>>>>> master
     ) {
         this.visitId = visitId
         this.customerId = customerId
@@ -89,7 +103,12 @@ open class PointSale: Parcelable {
         this.management = management
         this.imageBefore = imageBefore
         this.imageAfter = imageAfter
+<<<<<<< HEAD
         this.uuid = uuid
+=======
+        this.user = user
+        this.hourEntry = hourEntry
+>>>>>>> master
     }
     protected constructor(parcel: Parcel) {
         this.visitId = parcel.readInt()
@@ -107,7 +126,12 @@ open class PointSale: Parcelable {
         this.management = parcel.readString()
         this.imageBefore = parcel.readString()
         this.imageAfter = parcel.readString()
+<<<<<<< HEAD
         this.uuid = parcel.readString()
+=======
+        this.user = parcel.readString()
+        this.hourEntry = parcel.readString()
+>>>>>>> master
     }
     override fun describeContents(): Int {
         return 0
@@ -128,7 +152,12 @@ open class PointSale: Parcelable {
         p0.writeString(management)
         p0.writeString(imageBefore)
         p0.writeString(imageAfter)
+<<<<<<< HEAD
         p0.writeString(uuid)
+=======
+        p0.writeString(user)
+        p0.writeString(hourEntry)
+>>>>>>> master
     }
     companion object CREATOR : Parcelable.Creator<PointSale> {
         override fun createFromParcel(parcel: Parcel): PointSale {

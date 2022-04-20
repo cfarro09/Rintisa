@@ -18,7 +18,8 @@ class SplashActivity : AppCompatActivity() {
 
         Handler().postDelayed({
             if (token != "") {
-                startActivity(Intent(this, MainActivity::class.java))
+                val role = SharedPrefsCache(this).get("type", "string")
+                startActivity(Intent(this, if (role == "SUPERVISOR") SupervisorActivity::class.java else MainActivity::class.java))
                 finish()
             }
             else {
