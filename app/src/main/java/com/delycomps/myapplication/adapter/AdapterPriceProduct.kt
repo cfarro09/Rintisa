@@ -50,13 +50,13 @@ class AdapterPriceProduct(
             itemK.addTextChangedListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    listProduct[position].price_k = itemK.text.toString().toDouble()
+                    listProduct[position].price_k = (if (itemK.text.toString() == "") "0" else itemK.text.toString()).toDouble()
                 }
             }
             itemS.addTextChangedListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    listProduct[position].price_s = itemS.text.toString().toDouble()
+                    listProduct[position].price_s = (if (itemS.text.toString() == "") "0" else itemS.text.toString()).toDouble()
                 }
             }
         }

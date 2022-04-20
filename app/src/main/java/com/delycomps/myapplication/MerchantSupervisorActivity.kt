@@ -1,10 +1,16 @@
 package com.delycomps.myapplication
 
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
+import android.text.Html
+import android.view.MenuItem
 import com.google.android.material.tabs.TabLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
+import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityPromoterBinding
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.promoter.SectionsPagerAdapter
@@ -15,6 +21,16 @@ class MerchantSupervisorActivity : AppCompatActivity() {
     private lateinit var tabs: TabLayout
     private lateinit var pointSale: PointSale
     private lateinit var supervisorViewModel: SupervisorViewModel
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+        }
+        return false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +49,5 @@ class MerchantSupervisorActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
-
     }
 }
