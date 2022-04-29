@@ -1,60 +1,115 @@
 package com.delycomps.myapplication.ui.supervisor
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.text.Editable
+import android.text.Html
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.SupervisorViewModel
+import com.delycomps.myapplication.adapter.AdapterAvailability
+import com.delycomps.myapplication.adapter.AdapterMaterial
+import com.delycomps.myapplication.adapter.AdapterQuestions
+import com.delycomps.myapplication.cache.SharedPrefsCache
+import com.delycomps.myapplication.model.Availability
+import com.delycomps.myapplication.model.Material
+import com.delycomps.myapplication.model.PointSale
+import com.delycomps.myapplication.model.Question
+import com.google.gson.Gson
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AuditFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AuditFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var viewModel: SupervisorViewModel
+    private lateinit var pointSale: PointSale
+    private lateinit var dialogLoading: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_audit, container, false)
+        val view = inflater.inflate(R.layout.fragment_audit, container, false)
+        viewModel = ViewModelProvider(requireActivity()).get(SupervisorViewModel::class.java)
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AuditFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AuditFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val rv: RecyclerView = view.findViewById(R.id.rv_question)
+        val button: ImageButton = view.findViewById(R.id.button_save)
+        rv.layoutManager = LinearLayoutManager(view.context)
+        pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        val builderLoading: AlertDialog.Builder = AlertDialog.Builder(view.context)
+        builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
+        builderLoading.setView(R.layout.layout_loading_dialog)
+        dialogLoading = builderLoading.create()
+
+        rv.adapter = AdapterQuestions(viewModel.dataQuestion.value?.toMutableList() ?: ArrayList(), object : AdapterQuestions.ListAdapterListener {
+            override fun availability(question: Question, position: Int) {
+                viewModel.manageQuestion(question, rv.context, 0)
+            }
+        })
+
+        viewModel.resExecute.observe(requireActivity()) {
+            if ((it.result ?: "") == "UFN_AUDIT_DETAIL_INS") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    (rv.adapter as AdapterQuestions).updateQuestion(viewModel.dataQuestion.value?.toMutableList() ?: ArrayList())
+                    Toast.makeText(view.context, "Auditoria registrada correctamente", Toast.LENGTH_LONG).show()
+                    viewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    viewModel.initExecute()
+                    Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
                 }
             }
+        }
+
+        button.setOnClickListener {
+            val json = Gson().toJson((rv.adapter as AdapterQuestions).getList().map { mapOf<String, Any>(
+                "description_audit" to SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.US).format(Date()),
+                "type_audit" to "NINGUNO",
+                "question" to it.text,
+                "flag" to it.flag,
+                "score" to it.score,
+                "description_auditdetail" to it.text,
+                "type_auditdetail" to "NINGUNO",
+            )})
+            val ob = JSONObject()
+            ob.put("auditdetail", json)
+            ob.put("customerid", pointSale.customerId)
+            ob.put("visitid", pointSale.visitId)
+
+            val dialogClickListener = DialogInterface.OnClickListener { _, which ->
+                when (which) {
+                    DialogInterface.BUTTON_POSITIVE -> {
+                        dialogLoading.show()
+                        viewModel.executeSupervisor(ob, "UFN_AUDIT_DETAIL_INS", SharedPrefsCache(view.context).getToken())
+                    }
+                }
+            }
+            val builder = AlertDialog.Builder(view.context)
+            builder.setMessage("¿Está seguro de enviar la auditoria??")
+                .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
+                .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
+            val alert = builder.create()
+            alert.show()
+
+        }
     }
 }

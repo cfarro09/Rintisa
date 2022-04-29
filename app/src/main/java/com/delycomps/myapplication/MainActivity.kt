@@ -97,7 +97,22 @@ class MainActivity : AppCompatActivity() {
             alert.show()
             return true
         } else if (id == R.id.action_assist) {
-            mainViewModel.saveAssistance(SharedPrefsCache(this).getToken())
+
+            if (!permissionGPS || !gpsEnabled || lastLocation == null) {
+                if (!permissionGPS) {
+                    Toast.makeText(this@MainActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                    return true
+                }
+                if (!gpsEnabled) {
+                    Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                    return true
+                }
+                if (lastLocation != null) {
+                    Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                    return true
+                }
+            }
+            mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
         }
         return super.onOptionsItemSelected(item)
     }
@@ -240,9 +255,7 @@ class MainActivity : AppCompatActivity() {
                             if (role == "IMPULSADOR") PromoterActivity::class.java else MerchantActivity::class.java
                         )
                         intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
-//                        rv.context.startActivity(intent)
                         startActivityForResult(intent, RETURN_ACTIVITY)
-//                        RETURN_ACTIVITY
                         locationManager?.removeUpdates(locationListener)
                     }
                     else

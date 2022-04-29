@@ -146,7 +146,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         if (c != null && c.count > 0) {
             c.moveToFirst()
             do {
-                listSurveyProduct.add(SurveyProduct(c.getInt(0), c.getString(1), c.getString(2), c.getDouble(3), c.getString(4), 0, "", "", c.getString(5)))
+                listSurveyProduct.add(SurveyProduct(c.getInt(0), c.getString(1), c.getString(2), c.getDouble(3), c.getString(4), 0.0, "", "", c.getString(5)))
             } while (c.moveToNext())
         }
         db?.close()
@@ -276,7 +276,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         if (c != null && c.count > 0) {
             c.moveToFirst()
             do {
-                listStock.add(SurveyProduct(0, c.getString(0), c.getString(0), 0.00, c.getString(2), c.getInt(1), c.getString(3), c.getString(4), c.getString(5)))
+                listStock.add(SurveyProduct(0, c.getString(0), c.getString(0), 0.00, c.getString(2), c.getDouble(1), c.getString(3), c.getString(4), c.getString(5)))
             } while (c.moveToNext())
         }
         db?.close()
@@ -490,7 +490,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "create table $TABLE_SALES (" +
                 "  _id integer primary key autoincrement," +
                 "   $SALES_BRAND text," +
-                "   $SALES_QUANTITY integer," +
+                "   $SALES_QUANTITY double," +
                 "   $SALES_MEASURE_UNIT text," +
                 "   $SALES_MERCHANT text," +
                 "   $SALES_IMAGE_EVIDENCE text," +

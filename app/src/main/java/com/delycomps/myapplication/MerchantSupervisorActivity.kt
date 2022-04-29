@@ -12,9 +12,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityPromoterBinding
+import com.delycomps.myapplication.model.DataSupervisor
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.promoter.SectionsPagerAdapter
 import com.delycomps.myapplication.ui.supervisor.MerchantSectionsPagerAdapter
+import com.google.gson.Gson
 
 class MerchantSupervisorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPromoterBinding
@@ -40,6 +42,12 @@ class MerchantSupervisorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         pointSale = intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        supervisorViewModel.getMaterials(pointSale.visitId, SharedPrefsCache(this).getToken())
+
+        val jsonMerchant = SharedPrefsCache(this).get("data-supervisor", "string")
+        val dataSupervisor = Gson().fromJson(jsonMerchant.toString(), DataSupervisor::class.java)
+        supervisorViewModel.setMultiInitial(dataSupervisor)
 
         val sectionsPagerAdapter = MerchantSectionsPagerAdapter(this, supportFragmentManager)
         val viewPager: ViewPager = binding.promoterViewPager

@@ -132,6 +132,42 @@ class Repository {
         }
     }
 
+    fun executeSupervisor(
+        jo: JSONObject,
+        method: String,
+        token: String,
+        onResult: (isSuccess: Boolean, message: String?) -> Unit
+    )  {
+        val jo1 = JSONObject()
+        jo1.put("method", method)
+        jo1.put("parameters", jo)
+
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            jo1.toString()
+        )
+        try {
+            Connection.instance.execute(body, "Bearer $token").enqueue(object :
+                Callback<ResponseCommon> {
+                override fun onResponse(
+                    call: Call<ResponseCommon>?,
+                    response: Response<ResponseCommon>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, method)
+                    } else {
+                        onResult(false, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseCommon>?, t: Throwable?) {
+                    onResult(false, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
     fun insCloseManageMerchant(
         visitId: Int,
         image_before: String,
@@ -184,7 +220,41 @@ class Repository {
             onResult(false, DEFAULT_MESSAGE_ERROR)
         }
     }
+//    QUERY_MATERIALS_SEL
 
+    fun getMaterials(
+        visitId: Int,
+        token: String,
+        onResult: (isSuccess: Boolean, result: List<Material>?, message: String?) -> Unit
+    )  {
+        val rb = RequestBodyX("QUERY_MATERIALS_SEL", "QUERY_MATERIALS_SEL", mapOf<String, Any>("visitid" to visitId))
+
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(rb)
+        )
+
+        try {
+            Connection.instance.getMaterials(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<Material>> {
+                override fun onResponse(
+                    call: Call<ResponseList<Material>>?,
+                    response: Response<ResponseList<Material>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<Material>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
 
     fun updatePromoter(
         visitId: Int,
@@ -226,13 +296,17 @@ class Repository {
 
 
     fun saveAttendance(
+        latitude: Double,
+        longitude: Double,
         token: String,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
-        val jsonto = Gson().toJson(RequestBodyX("UFN_ASSISTANCE_REPORT_INS", "UFN_ASSISTANCE_REPORT_INS", mapOf<String, Any>(
+        val jsonto = Gson().toJson(RequestBodyX("UFN_ASSISTANCE_REPORT_INS2", "UFN_ASSISTANCE_REPORT_INS2", mapOf<String, Any>(
             "id" to 0,
             "type" to "NINGUNO",
             "status" to "ACTIVO",
+            "lat" to latitude,
+            "lon" to longitude,
             "description" to "",
             "operation" to "INSERT",
         )))
@@ -349,7 +423,7 @@ class Repository {
         val multi = listOf(
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCA")),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MATERIALPOP")),
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_PRODUCT_COMPETENCE_SEL", mapOf<String, Any>(
+            RequestBodyX("UFN_PRODUCT_COMPETENCE_SEL", "UFN_PRODUCT_COMPETENCE_SEL", mapOf<String, Any>(
                 "id" to 0,
                 "all" to true,
                 "competence" to ""
@@ -377,7 +451,7 @@ class Repository {
                         }
                         if (response.body().data[2].success == true) {
                             resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(
-                                r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0, null, null, UUID.randomUUID().toString(), r["competence"].toString()) }
+                                r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0.0, null, null, UUID.randomUUID().toString(), r["competence"].toString()) }
                         }
                         onResult(true, resultMerchant, null)
                     } else {
@@ -392,7 +466,6 @@ class Repository {
             onResult(false, null, DEFAULT_MESSAGE_ERROR)
         }
     }
-
 
     fun getMultiPromoter(
         visitid: Int,
@@ -440,7 +513,7 @@ class Repository {
                                             r["saledetail_description"].toString(),
                                             0.00,
                                             r["measure_unit"].toString(),
-                                            r["quantity"].toString().toDouble().toInt(),
+                                            r["quantity"].toString().toDouble(),
                                             r["merchant"].toString(),
                                             r["url_evidence"].toString(),
                                         )
@@ -514,8 +587,10 @@ class Repository {
     )  {
         val method = "QUERY_MARKET_SEL"
         val multi = listOf(
-            RequestBodyX(method, method, mapOf<String, Any>())
-        )
+            RequestBodyX(method, method, mapOf<String, Any>()),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "QUESTIONMERCHANT")),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "CHECK_SUPERVISOR_PROMOTER")),
+            )
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
             Gson().toJson(multi)
@@ -528,10 +603,16 @@ class Repository {
                     response: Response<ResponseMulti>?
                 ) {
                     if (response?.isSuccessful == true && response.body().success == true) {
-                        val dataSupervisor = DataSupervisor(emptyList())
+                        val dataSupervisor = DataSupervisor(emptyList(), emptyList(), emptyList())
 
                         if (response.body().data[0].success == true) {
                             dataSupervisor.markets = response.body().data[0].data.toList().map { Market("(" + it["marketid"].toString() + ") " + it["description"].toString(), it["marketid"].toString().toDouble().toInt()) }
+                        }
+                        if (response.body().data[1].success == true) {
+                            dataSupervisor.questions = response.body().data[1].data.toList().map { Question(it["domainvalue"].toString(), it["domaindesc"].toString(), false) }
+                        }
+                        if (response.body().data[2].success == true) {
+                            dataSupervisor.checks = response.body().data[2].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString()) }
                         }
                         onResult(true, dataSupervisor, null)
                     } else {

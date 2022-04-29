@@ -2,7 +2,6 @@ package com.delycomps.myapplication.ui.promoter
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
@@ -32,7 +31,6 @@ import com.bumptech.glide.request.target.Target
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.adapter.AdapterSale
-import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.BrandSale
@@ -40,7 +38,6 @@ import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.SurveyProduct
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.gson.Gson
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -76,7 +73,10 @@ class SalesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         rv = view.findViewById(R.id.rv_sale)
-        rv.layoutManager = LinearLayoutManager(view.context)
+        val linearLayoutManager = LinearLayoutManager(view.context)
+        linearLayoutManager.reverseLayout = true
+        linearLayoutManager.stackFromEnd = true
+        rv.layoutManager = linearLayoutManager
 
         val builderLoading: AlertDialog.Builder = AlertDialog.Builder(view.context)
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
@@ -252,7 +252,7 @@ class SalesFragment : Fragment() {
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
             val quantityString = editTextQuantity.text.toString()
-            val quantity = if (quantityString == "") 0 else quantityString.toInt()
+            val quantity = if (quantityString == "") 0.0 else quantityString.toDouble()
 
             if (brand != "" && brand != "Seleccione" && quantity > 0) {
 

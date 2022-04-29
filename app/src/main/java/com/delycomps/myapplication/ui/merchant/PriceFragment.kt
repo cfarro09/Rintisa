@@ -53,7 +53,7 @@ class PriceFragment : Fragment() {
         viewModel.initialPriceProduct(listProductsSelected)
 
         viewModel.dataProducts.observe(requireActivity()) {
-            listProduct = it.filter { r -> r.competence == "RINTI" }
+            listProduct = it //.filter { r -> r.competence == "RINTI" }
             starALL(view)
         }
     }
@@ -150,7 +150,7 @@ class PriceFragment : Fragment() {
             if (product != "" && product != "Seleccione" && price > 0) {
                 val productId = listProduct.find { it.description == product && it.brand == brand }?.productId ?: 0
 
-                val surveyProduct = SurveyProduct(productId, product, brand, price, measureUnit, 0, "")
+                val surveyProduct = SurveyProduct(productId, product, brand, price, measureUnit, 0.0, "")
                 if (indexSelected != -1) {
                     (rv.adapter as AdapterProductSurvey).updateItemProduct(surveyProduct, indexSelected)
                     viewModel.updateProduct(surveyProduct, indexSelected, view.context)
@@ -195,10 +195,10 @@ class PriceFragment : Fragment() {
             val listProduct: MutableList<SurveyProduct> = ArrayList()
             (rvProduct.adapter as AdapterPriceProduct).getList().forEach {
                 if (it.price_k > 0) {
-                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_k, "KILO", 0))
+                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_k, "KILO", 0.0))
                 }
                 if (it.price_s > 0) {
-                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_s, "SACO", 0))
+                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_s, "SACO", 0.0))
                 }
             }
             if (listProduct.count() > 0) {

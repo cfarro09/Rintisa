@@ -9,6 +9,7 @@ import com.delycomps.myapplication.api.Repository
 import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.model.*
 import com.google.gson.Gson
+import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,6 +17,9 @@ import java.util.*
 class SupervisorViewModel : ViewModel() {
     private val _listPointSale: MutableLiveData<List<PointSale>> = MutableLiveData()
     val listPointSale: LiveData<List<PointSale>> = _listPointSale
+
+    private val _listMaterial: MutableLiveData<List<Material>> = MutableLiveData()
+    val listMaterial: LiveData<List<Material>> = _listMaterial
 
     private val _loading: MutableLiveData<Boolean> = MutableLiveData()
     val loading: LiveData<Boolean> = _loading
@@ -26,14 +30,60 @@ class SupervisorViewModel : ViewModel() {
     private val _dataMarket: MutableLiveData<List<Market>> = MutableLiveData()
     val dataMarket: LiveData<List<Market>> = _dataMarket
 
+    private val _dataQuestion: MutableLiveData<List<Question>> = MutableLiveData()
+    val dataQuestion: LiveData<List<Question>> = _dataQuestion
+
+    private val _questionAnswered: MutableLiveData<List<Question>> = MutableLiveData()
+    val questionAnswered: LiveData<List<Question>> = _questionAnswered
+
+    private val _resExecute: MutableLiveData<ResGlobal> = MutableLiveData()
+    val resExecute: LiveData<ResGlobal> = _resExecute
+
     fun setMultiInitial(data: DataSupervisor) {
         _dataMarket.value = data.markets
+        _dataQuestion.value = data.questions
     }
 
     fun getMainMultiInitial(token: String) {
         Repository().getMultiSupervisorInitial(token) { isSuccess, result, _ ->
             if (isSuccess) {
+                _dataQuestion.value = result?.questions ?: emptyList()
                 _dataMarket.value = result?.markets ?: emptyList()
+            }
+        }
+    }
+
+    fun executeSupervisor(jo: JSONObject, method: String, token: String) {
+        _resExecute.value = ResGlobal(true, method, false)
+        Repository().executeSupervisor(jo, method, token) { isSuccess, _ ->
+            if (isSuccess) {
+                _resExecute.value = ResGlobal(false, method, true)
+            } else {
+                _resExecute.value = ResGlobal(false, method, false)
+            }
+        }
+    }
+
+    fun initExecute() {
+        _resExecute.value = ResGlobal(true, "", false)
+    }
+
+    fun manageQuestion (question: Question, context: Context, customerId: Int) {
+//        BDLocal(context).addMaterialStock(material, visitId)
+        if (question.flag) {
+            _questionAnswered.value = ((_questionAnswered.value ?: emptyList()) + listOf(question)).toMutableList()
+//            BDLocal(context).addProductsAvailability(question, visitId)
+        } else {
+//            val uuid = _questionAnswered.value?.find { it.text == question.text }?.uuid ?: ""
+//            BDLocal(context).deleteProductAvailability(uuid)
+            _questionAnswered.value = _questionAnswered.value!!.filter { it.text != question.text }.toMutableList()
+        }
+    }
+
+    fun getMaterials(visitId: Int, token: String) {
+        Repository().getMaterials(visitId, token) { isSuccess, result, _ ->
+            if (isSuccess) {
+                _listMaterial.value = result ?: emptyList()
             }
         }
     }

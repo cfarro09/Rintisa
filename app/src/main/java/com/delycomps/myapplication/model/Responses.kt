@@ -77,6 +77,18 @@ data class BrandSale (
     var listMeasure: List<String>
 )
 
+data class Question (
+    var score: String,
+    var text: String,
+    var flag: Boolean
+)
+
+data class CheckSupPromoter (
+    var key: String,
+    var Decription: String,
+    var type: String
+)
+
 
 data class DataPromoter(
     var merchandises: List<Merchandise>,
@@ -86,8 +98,11 @@ data class DataPromoter(
     var productsSelected: List<SurveyProduct>,
 )
 
+
 data class DataSupervisor(
-    var markets: List<Market>
+    var markets: List<Market>,
+    var questions: List<Question>,
+    var checks: List<CheckSupPromoter>,
 )
 
 data class Seltmp(

@@ -64,9 +64,9 @@ class MainViewModel : ViewModel() {
             _loadingSelfie.value = false
         }
     }
-    fun saveAssistance(token: String) {
+    fun saveAssistance(latitude: Double, longitude: Double,token: String) {
         _resSaveAssistance.value = ResGlobal(true, "", false)
-        Repository().saveAttendance(token) { isSuccess, _ ->
+        Repository().saveAttendance(latitude, longitude, token) { isSuccess, _ ->
             if (isSuccess) {
                 _resSaveAssistance.value = ResGlobal(false, "", true)
             }

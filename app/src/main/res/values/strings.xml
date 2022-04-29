@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.7.0</string>
+    <string name="version">1.8.1</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -27,6 +27,7 @@
     <string name="tab_text_stock">Stock</string>
     <string name="tab_text_3">Enc precio</string>
     <string name="tab_text_audit">Auditoria</string>
+    <string name="tab_text_action">Acciones</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="init_image">Foto antes</string>
@@ -57,5 +58,9 @@
     <string name="market">Mercado</string>
     <string name="search">Buscar</string>
     <string name="title_activity_merchant_supervisor">MerchantSupervisorActivity</string>
+    <string name="action">Acción</string>
+    <string name="exit">Salir</string>
+    <string name="filter">Filtrar</string>
+    <string name="assistance">Asistencia</string>
 
 </resources>

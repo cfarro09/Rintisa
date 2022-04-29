@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.model.PointSale
 import java.lang.Exception
+import java.util.ArrayList
 
 class AdapterPointsale(
     private var listPointSale: List<PointSale>,
@@ -35,6 +36,12 @@ class AdapterPointsale(
 
     override fun getItemViewType(position: Int): Int {
         return position
+    }
+
+    fun setFilter(list: List<PointSale>) {
+        listPointSale = ArrayList()
+        (listPointSale as ArrayList<PointSale>).addAll(list)
+        notifyDataSetChanged()
     }
 
     fun updateImageBefore(position: Int, url: String){

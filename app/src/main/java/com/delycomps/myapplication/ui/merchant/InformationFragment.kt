@@ -94,6 +94,7 @@ class InformationFragment : Fragment() {
             view.findViewById<TextView>(R.id.pdv_stall_number).text = "N° PUESTO: " + pointSale.stallNumber
             view.findViewById<TextView>(R.id.pdv_date).text = "${pointSale.visitFrequency} (${pointSale.visitDay})"
             view.findViewById<TextView>(R.id.pdv_last_visit).text = pointSale.lastVisit
+            view.findViewById<TextView>(R.id.pdv_comment).text = pointSale.comment
 
             val color = if (pointSale.trafficLights == "AMARILLO") "#FFF8B7" else if (pointSale.trafficLights == "VERDE") "#B6FFA9" else  "#FF9696"
             view.findViewById<View>(R.id.pdv_traffic_light).backgroundTintList = ColorStateList.valueOf(Color.parseColor(color))

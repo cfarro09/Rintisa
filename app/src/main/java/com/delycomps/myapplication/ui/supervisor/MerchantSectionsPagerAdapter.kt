@@ -10,7 +10,8 @@ import com.delycomps.myapplication.R
 private val TAB_TITLES = arrayOf(
     R.string.tab_text_1,
     R.string.tab_text_2,
-    R.string.tab_text_audit
+    R.string.tab_text_audit,
+    R.string.tab_text_action
 )
 
 /**
@@ -27,6 +28,7 @@ class MerchantSectionsPagerAdapter(private val context: Context, fm: FragmentMan
             0 -> InformationMerchant()
             1 -> MaterialsSupFragment()
             2 -> AuditFragment()
+            3 -> ActionsFragment()
             else -> MaterialsSupFragment()
         }
     }
@@ -36,6 +38,6 @@ class MerchantSectionsPagerAdapter(private val context: Context, fm: FragmentMan
     }
 
     override fun getCount(): Int {
-        return 3
+        return 4
     }
 }

@@ -24,7 +24,7 @@ open class SurveyProduct: Parcelable {
     var brand: String?
     @SerializedName("quantity")
     @Expose
-    var quantity: Int
+    var quantity: Double
     @SerializedName("merchant")
     @Expose
     var merchant: String?
@@ -41,7 +41,7 @@ open class SurveyProduct: Parcelable {
         brand: String,
         price: Double,
         measureUnit: String,
-        quantity: Int = 0,
+        quantity: Double = 0.0,
         merchant: String? = "",
         imageEvidence: String? = "",
         uuid: String = UUID.randomUUID().toString(),
@@ -64,7 +64,7 @@ open class SurveyProduct: Parcelable {
         this.brand = parcel.readString()
         this.price = parcel.readDouble()
         this.measureUnit = parcel.readString()
-        this.quantity = parcel.readInt()
+        this.quantity = parcel.readDouble()
         this.merchant = parcel.readString()
         this.imageEvidence = parcel.readString()
         this.uuid = parcel.readString()
@@ -79,7 +79,7 @@ open class SurveyProduct: Parcelable {
         p0.writeString(brand)
         p0.writeDouble(price)
         p0.writeString(measureUnit)
-        p0.writeInt(quantity)
+        p0.writeDouble(quantity)
         p0.writeString(merchant)
         p0.writeString(imageEvidence)
         p0.writeString(uuid)

@@ -5,11 +5,11 @@
         android:id="@+id/action_assist"
         android:icon="@drawable/ic_baseline_schedule_24"
         app:showAsAction="always"
-        android:title="Asistencia"/>
+        android:title="@string/assistance"/>
     <item
         android:id="@+id/action_exit"
         android:icon="@drawable/ic_baseline_exit_to_app_24"
-        app:showAsAction="always"
-        android:title="Exit"/>
+        app:showAsAction="ifRoom"
+        android:title="@string/exit"/>
 
 </menu>
