@@ -34,6 +34,11 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".PromoterSupervisorActivity"
+            android:exported="false"
+            android:label="@string/title_activity_promoter_supervisor"
+            android:parentActivityName=".SupervisorActivity" />
+        <activity
             android:name=".MerchantSupervisorActivity"
             android:exported="false"
             android:label="@string/title_activity_merchant_supervisor"

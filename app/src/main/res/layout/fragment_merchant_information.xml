@@ -92,6 +92,7 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
+                android:id="@+id/container_images"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp">
                 <LinearLayout
@@ -120,6 +121,7 @@
             </androidx.cardview.widget.CardView>
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
+                android:layout_marginBottom="10dp"
                 android:layout_height="wrap_content">
                 <RelativeLayout
                     android:layout_width="wrap_content"
@@ -147,6 +149,98 @@
                         android:src="@drawable/ic_baseline_save_24"
                         app:tint="#FFFFFF" />
                 </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:id="@+id/container_know"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:padding="10dp"
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+
+
+                    <ImageButton
+                        android:id="@+id/button_know_save"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:background="@drawable/back_rounded"
+                        android:backgroundTint="#00A303"
+                        android:contentDescription="@string/button_save"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_baseline_save_24"
+                        app:tint="#FFFFFF" />
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_marginTop="10dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/spinner_product"
+                            android:text="@string/speach_rcn" />
+                        <Spinner
+                            android:id="@+id/spinner_speach_rcn"
+                            android:spinnerMode="dialog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_marginTop="10dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/spinner_product"
+                            android:text="SPEACH RCT" />
+                        <Spinner
+                            android:id="@+id/spinner_speach_rct"
+                            android:spinnerMode="dialog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_marginTop="10dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/spinner_speach_scn"
+                            android:text="SPEACH RCN" />
+                        <Spinner
+                            android:id="@+id/spinner_speach_scn"
+                            android:spinnerMode="dialog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_marginTop="10dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:labelFor="@+id/spinner_speach_sct"
+                            android:text="SPEACH SCT" />
+                        <Spinner
+                            android:id="@+id/spinner_speach_sct"
+                            android:spinnerMode="dialog"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
     </ScrollView>

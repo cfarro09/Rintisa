@@ -8,10 +8,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -44,7 +42,12 @@ class InformationMerchant : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val pointSale: PointSale? = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
+        val service: String? = activity?.intent?.getStringExtra(Constants.POINT_SALE_SERVICE)
+
         if (pointSale != null) {
+            view.findViewById<CardView>(R.id.container_images).visibility = if (service == "MERCADERISMO") View.VISIBLE else View.GONE
+            view.findViewById<CardView>(R.id.container_know).visibility = if (service != "MERCADERISMO") View.VISIBLE else View.GONE
+
             view.findViewById<TextView>(R.id.pdv_client).text = pointSale.client
             view.findViewById<TextView>(R.id.pdv_market).text = pointSale.market
             view.findViewById<TextView>(R.id.pdv_stall_number).text = "N° PUESTO: " + pointSale.stallNumber
@@ -52,7 +55,18 @@ class InformationMerchant : Fragment() {
             view.findViewById<TextView>(R.id.pdv_last_visit).text = pointSale.lastVisit
             view.findViewById<TextView>(R.id.pdv_motive).text = pointSale.management + " - " + pointSale.motive
 
+            val spinnerSpeachScn = view.findViewById<Spinner>(R.id.spinner_speach_scn)
+            val spinnerSpeachRcn = view.findViewById<Spinner>(R.id.spinner_speach_rcn)
+            val spinnerSpeachRct = view.findViewById<Spinner>(R.id.spinner_speach_rct)
+            val spinnerSpeachSct = view.findViewById<Spinner>(R.id.spinner_speach_sct)
+
+            spinnerSpeachScn.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
+            spinnerSpeachRcn.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
+            spinnerSpeachRct.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
+            spinnerSpeachSct.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
+
             val button = view.findViewById<ImageButton>(R.id.button_save)
+            val buttonKnow = view.findViewById<ImageButton>(R.id.button_know_save)
             val editComment = view.findViewById<EditText>(R.id.text_comment)
 
             button.setOnClickListener {
@@ -65,6 +79,22 @@ class InformationMerchant : Fragment() {
 
                     viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
                 }
+            }
+
+            buttonKnow.setOnClickListener {
+                val textSpeachScn = spinnerSpeachScn.selectedItem.toString()
+                val textSpeachRcn = spinnerSpeachRcn.selectedItem.toString()
+                val textSpeachRct = spinnerSpeachRct.selectedItem.toString()
+                val textSpeachSct = spinnerSpeachSct.selectedItem.toString()
+
+                val ob = JSONObject()
+                ob.put("customerid", pointSale.customerId)
+                ob.put("speach_scn", textSpeachScn)
+                ob.put("speach_rcn", textSpeachRcn)
+                ob.put("speach_rct", textSpeachRct)
+                ob.put("speach_sct", textSpeachSct)
+
+                viewModel.executeSupervisor(ob, "QUERY_UPDATE_SPEACH", SharedPrefsCache(view.context).getToken())
             }
 
             viewModel.resExecute.observe(requireActivity()) {

@@ -7,6 +7,11 @@
     <string name="document_number">Número documento</string>
     <string name="contrase_a">Contraseña</string>
     <string name="sign_in">Iniciar sesión</string>
+    <string name="knowledge">Conocimiento</string>
+    <string name="uniform">Uniforme</string>
+    <string name="materials">Materiales</string>
+    <string name="review">Revisión</string>
+    <string name="status_pdv">Estado PDV</string>
     <string name="wait_please">Espere un momento por favor.</string>
     <string name="name">Nombre</string>
     <string name="last_name">Apellido</string>
@@ -62,5 +67,7 @@
     <string name="exit">Salir</string>
     <string name="filter">Filtrar</string>
     <string name="assistance">Asistencia</string>
+    <string name="title_activity_promoter_supervisor">PromoterSupervisorActivity</string>
+    <string name="speach_rcn">SPEACH RCN</string>
 
 </resources>

@@ -1,4 +1,4 @@
-package com.delycomps.myapplication.ui.supervisor
+package com.delycomps.myapplication.ui.supervisorPromoter
 
 import android.content.Context
 import androidx.fragment.app.Fragment
@@ -6,15 +6,15 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.ui.supervisor.InformationMerchant
 
 private val TAB_TITLES = arrayOf(
     R.string.tab_text_1,
-    R.string.tab_text_2,
-    R.string.tab_text_audit,
-    R.string.tab_text_action
+    R.string.review,
+    R.string.status_pdv
 )
 
-class MerchantSectionsPagerAdapter(private val context: Context, fm: FragmentManager) :
+class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) :
     FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
@@ -22,10 +22,9 @@ class MerchantSectionsPagerAdapter(private val context: Context, fm: FragmentMan
         // Return a PlaceholderFragment (defined as a static inner class below).
         return when (position) {
             0 -> InformationMerchant()
-            1 -> MaterialsSupFragment()
-            2 -> AuditFragment()
-            3 -> ActionsFragment()
-            else -> MaterialsSupFragment()
+            1 -> ReviewFragment()
+            2 -> StatusFragment()
+            else -> InformationMerchant()
         }
     }
 
@@ -34,6 +33,6 @@ class MerchantSectionsPagerAdapter(private val context: Context, fm: FragmentMan
     }
 
     override fun getCount(): Int {
-        return 4
+        return 3
     }
 }

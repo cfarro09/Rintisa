@@ -37,7 +37,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private var dialogFilter: AlertDialog? = null
     private lateinit var dialogLoading: AlertDialog
     private lateinit var rv: RecyclerView
-
+    private var service: String = "MERCADERISMO"
     private var marketIdG: Int? = 0
     private lateinit var serviceG: String
 
@@ -148,8 +148,6 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
         }
 
-
-
         val swiper: SwipeRefreshLayout = findViewById(R.id.main_swiper_refresh)
         swiper.setOnRefreshListener {
             if (marketIdG != null) {
@@ -191,9 +189,10 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
                     val intent = Intent(
                         rv.context,
-                        MerchantSupervisorActivity::class.java
+                        if (service == "MERCADERISMO") MerchantSupervisorActivity::class.java else PromoterSupervisorActivity::class.java
                     )
                     intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
+                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
                     startActivityForResult(intent, Constants.RETURN_ACTIVITY)
                 }
             }, true)
@@ -268,6 +267,14 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel)
 
         spinnerService.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MERCADERISMO", "IMPULSADOR"))
+
+        spinnerService.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val valueSelected = spinnerService.selectedItem.toString()
+                service = valueSelected
+            }
+        }
 
         val arrayAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, supervisorViewModel.dataMarket.value?.map { it.description } ?: emptyList())
 
