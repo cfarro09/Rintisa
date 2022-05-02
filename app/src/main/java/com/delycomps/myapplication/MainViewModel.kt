@@ -9,6 +9,7 @@ import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.ResGlobal
+import org.json.JSONObject
 import java.io.File
 
 class MainViewModel : ViewModel() {
@@ -67,6 +68,18 @@ class MainViewModel : ViewModel() {
     fun saveAssistance(latitude: Double, longitude: Double,token: String) {
         _resSaveAssistance.value = ResGlobal(true, "", false)
         Repository().saveAttendance(latitude, longitude, token) { isSuccess, _ ->
+            if (isSuccess) {
+                _resSaveAssistance.value = ResGlobal(false, "", true)
+            }
+            _resSaveAssistance.value = ResGlobal(false, "", false)
+        }
+    }
+    fun closeAssistance(quantity: Int, comment: String, token: String) {
+        _resSaveAssistance.value = ResGlobal(true, "", false)
+        val jo1 = JSONObject()
+        jo1.put("comment", comment)
+        jo1.put("quantity", quantity)
+        Repository().executeSupervisor(jo1, "UFN_ASSISTANCE_CLOSE", token) { isSuccess, _ ->
             if (isSuccess) {
                 _resSaveAssistance.value = ResGlobal(false, "", true)
             }

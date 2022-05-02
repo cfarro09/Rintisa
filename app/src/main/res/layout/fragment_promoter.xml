@@ -5,7 +5,8 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.promoter.InfoPromoterFragment">
+    tools:context=".ui.promoter.InfoPromoterFragment"
+    android:orientation="horizontal">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -72,12 +73,5 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp" />
         </RelativeLayout>
-    </androidx.cardview.widget.CardView>
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-
-
     </androidx.cardview.widget.CardView>
 </LinearLayout>

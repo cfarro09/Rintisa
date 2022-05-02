@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.8.1</string>
+    <string name="version">1.9.0</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -69,5 +69,8 @@
     <string name="assistance">Asistencia</string>
     <string name="title_activity_promoter_supervisor">PromoterSupervisorActivity</string>
     <string name="speach_rcn">SPEACH RCN</string>
+    <string name="close_day">Cerrar día</string>
+    <string name="quantity_day">N° de tickets del día</string>
+    <string name="comment_day">Comentario del día</string>
 
 </resources>

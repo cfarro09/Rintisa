@@ -85,8 +85,9 @@ data class Question (
 
 data class CheckSupPromoter (
     var key: String,
-    var Decription: String,
-    var type: String
+    var decription: String,
+    var type: String,
+    var flag: Boolean
 )
 
 

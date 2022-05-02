@@ -612,7 +612,7 @@ class Repository {
                             dataSupervisor.questions = response.body().data[1].data.toList().map { Question(it["domainvalue"].toString(), it["domaindesc"].toString(), false) }
                         }
                         if (response.body().data[2].success == true) {
-                            dataSupervisor.checks = response.body().data[2].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString()) }
+                            dataSupervisor.checks = response.body().data[2].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString(), false) }
                         }
                         onResult(true, dataSupervisor, null)
                     } else {

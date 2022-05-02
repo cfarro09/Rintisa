@@ -6,6 +6,13 @@
         android:icon="@drawable/ic_baseline_schedule_24"
         app:showAsAction="always"
         android:title="@string/assistance"/>
+
+    <item
+        android:id="@+id/action_finish"
+        android:icon="@drawable/ic_baseline_flag_24"
+        app:showAsAction="always"
+        android:title="@string/close_day"/>
+
     <item
         android:id="@+id/action_exit"
         android:icon="@drawable/ic_baseline_exit_to_app_24"

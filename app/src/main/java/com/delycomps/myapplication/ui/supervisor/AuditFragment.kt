@@ -49,8 +49,8 @@ class AuditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val rv: RecyclerView = view.findViewById(R.id.rv_question)
         val button: ImageButton = view.findViewById(R.id.button_save)
+        val rv: RecyclerView = view.findViewById(R.id.rv_question)
         rv.layoutManager = LinearLayoutManager(view.context)
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 

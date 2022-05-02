@@ -21,10 +21,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -41,7 +38,6 @@ import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rv: RecyclerView
     private lateinit var mainViewModel: MainViewModel
     private lateinit var dialogLoading: AlertDialog
+    private lateinit var dialogClose: AlertDialog
     private lateinit var pointSale: PointSale
     private var permissionCamera = false
     private var permissionGPS = false
@@ -69,9 +66,12 @@ class MainActivity : AppCompatActivity() {
     private var fromImage: String = ""
     private var typeImage: String = ""
 
+    private var mainMenu: Menu? = null
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        mainMenu = menu
         return true
     }
 
@@ -113,6 +113,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
+        } else if (id == R.id.action_finish) {
+            dialogClose.show()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -124,6 +126,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
+
+        val role = SharedPrefsCache(this).get("type", "string")
+
+        mainMenu?.findItem(R.id.action_finish)?.isVisible = (role == "IMPULSADOR")
 
         //PERMISOS
         val locationPermissionRequest = registerForActivityResult(
@@ -198,6 +204,7 @@ class MainActivity : AppCompatActivity() {
             }
             if (!it.loading && it.success) {
                 Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
+                dialogClose.dismiss()
             }
         }
 
@@ -207,6 +214,13 @@ class MainActivity : AppCompatActivity() {
         builderDialogMerchantVisited.setView(dialogMerchantVisitedUI)
         val dialogMerchantVisited = builderDialogMerchantVisited.create()
         manageDialogMerchantVisited(dialogMerchantVisitedUI, dialogMerchantVisited)
+
+        val builderDialogCloseAssistance: AlertDialog.Builder = AlertDialog.Builder(this)
+        val inflater1 = this.layoutInflater
+        val dialogCloseAssistanceUI = inflater1.inflate(R.layout.layout_close_assistance, null)
+        builderDialogCloseAssistance.setView(dialogCloseAssistanceUI)
+        dialogClose = builderDialogCloseAssistance.create()
+        manageDialogCloseAssistance(dialogCloseAssistanceUI, dialogClose)
 
         mainViewModel.listPointSale.observe(this) {
             dialogLoading.dismiss()
@@ -331,6 +345,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportActionBar?.title = SharedPrefsCache(rv.context).get("fullname", "string")?.toString() ?: pointSale.client
+    }
+
+    private fun manageDialogCloseAssistance (view: View, dialog: AlertDialog) {
+        val editQuantityTickets = view.findViewById<EditText>(R.id.quantity_day)
+        val editCommentDay = view.findViewById<EditText>(R.id.comment_day)
+        val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel_assistance)
+        val buttonSave = view.findViewById<Button>(R.id.dialog_save_close_assistance)
+
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        buttonSave.setOnClickListener {
+            val quantity = (if (editQuantityTickets.text.toString() == "") "0" else editQuantityTickets.text.toString()).toInt()
+            val comment = editCommentDay.text.toString()
+
+            mainViewModel.closeAssistance(quantity, comment, SharedPrefsCache(this).getToken())
+
+        }
     }
 
     private fun manageDialogMerchantVisited (view: View, dialog: AlertDialog) {

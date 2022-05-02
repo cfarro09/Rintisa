@@ -136,6 +136,7 @@
                         android:lines="4"
                         android:layout_toStartOf="@+id/button_save"
                         android:spinnerMode="dialog" />
+
                     <ImageButton
                         android:id="@+id/button_save"
                         android:layout_width="wrap_content"

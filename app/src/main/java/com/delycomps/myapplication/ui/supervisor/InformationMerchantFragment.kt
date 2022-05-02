@@ -1,5 +1,6 @@
 package com.delycomps.myapplication.ui.supervisor
 
+import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -40,6 +41,11 @@ class InformationMerchant : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val builderLoading: AlertDialog.Builder = AlertDialog.Builder(view.context)
+        builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
+        builderLoading.setView(R.layout.layout_loading_dialog)
+        val dialogLoading: AlertDialog = builderLoading.create()
 
         val pointSale: PointSale? = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
         val service: String? = activity?.intent?.getStringExtra(Constants.POINT_SALE_SERVICE)
@@ -98,13 +104,29 @@ class InformationMerchant : Fragment() {
             }
 
             viewModel.resExecute.observe(requireActivity()) {
-                if ((it.result ?: "") == "QUERY_UPDATE_COMMENT") {
+                if ((it.result) == "QUERY_UPDATE_COMMENT") {
                     if (!it.loading && it.success) {
+                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Comentario registrado correctamente", Toast.LENGTH_LONG).show()
                     } else if (!it.loading && !it.success) {
+                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
+                    } else if (it.loading) {
+                        dialogLoading.show()
+                    }
+                } else if ((it.result) == "QUERY_UPDATE_SPEACH") {
+                    if (!it.loading && it.success) {
+                        dialogLoading.dismiss()
+                        viewModel.initExecute()
+                        Toast.makeText(view.context, "Conocimientos actualizados correctamente", Toast.LENGTH_LONG).show()
+                    } else if (!it.loading && !it.success) {
+                        dialogLoading.dismiss()
+                        viewModel.initExecute()
+                        Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
+                    } else if (it.loading) {
+                        dialogLoading.show()
                     }
                 }
             }

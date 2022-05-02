@@ -33,6 +33,9 @@ class SupervisorViewModel : ViewModel() {
     private val _dataQuestion: MutableLiveData<List<Question>> = MutableLiveData()
     val dataQuestion: LiveData<List<Question>> = _dataQuestion
 
+    private val _dataCheckSupPromoter: MutableLiveData<List<CheckSupPromoter>> = MutableLiveData()
+    val dataCheckSupPromoter: LiveData<List<CheckSupPromoter>> = _dataCheckSupPromoter
+
     private val _questionAnswered: MutableLiveData<List<Question>> = MutableLiveData()
     val questionAnswered: LiveData<List<Question>> = _questionAnswered
 
@@ -42,11 +45,13 @@ class SupervisorViewModel : ViewModel() {
     fun setMultiInitial(data: DataSupervisor) {
         _dataMarket.value = data.markets
         _dataQuestion.value = data.questions
+        _dataCheckSupPromoter.value = data.checks
     }
 
     fun getMainMultiInitial(token: String) {
         Repository().getMultiSupervisorInitial(token) { isSuccess, result, _ ->
             if (isSuccess) {
+                _dataCheckSupPromoter.value = result?.checks ?: emptyList()
                 _dataQuestion.value = result?.questions ?: emptyList()
                 _dataMarket.value = result?.markets ?: emptyList()
             }

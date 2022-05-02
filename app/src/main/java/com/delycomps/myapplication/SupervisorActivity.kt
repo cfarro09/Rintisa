@@ -5,11 +5,17 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.text.Html
 import android.util.Log
 import android.view.Menu
@@ -19,28 +25,39 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.delycomps.myapplication.adapter.AdapterPointsale
+import com.delycomps.myapplication.adapter.AdapterQuestions
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.DataSupervisor
 import com.delycomps.myapplication.model.PointSale
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
+import org.json.JSONObject
+import java.io.*
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
+
+private const val CODE_RESULT_CAMERA_SELFIE = 10001
+private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
 
 class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
-
     private lateinit var supervisorViewModel: SupervisorViewModel
+    private var currentPhotoPath: String = ""
     private var dialogFilter: AlertDialog? = null
     private lateinit var dialogLoading: AlertDialog
     private lateinit var rv: RecyclerView
     private var service: String = "MERCADERISMO"
     private var marketIdG: Int? = 0
     private lateinit var serviceG: String
-
+    private var permissionCamera = false
+    private lateinit var pointSale: PointSale
 
     private var permissionGPS = false
     private var gpsEnabled = false
@@ -126,13 +143,19 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 mainViewModel.setGPSIsEnabled(true)
                 Log.d("log_carlos", "ACCESS_COARSE_LOCATION")
             }
+            if (permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false)) {
+                permissionCamera = true
+                Log.d("log_carlos", "WRITE_EXTERNAL_STORAGE")
+            }
         }
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
         locationPermissionRequest.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
         ))
 
         mainViewModel.gpsEnabled.observe(this) {
@@ -184,16 +207,75 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
         }
 
+        supervisorViewModel.resExecute.observe(this) {
+            if ((it.result) == "UFN_MANAGE_SUPERVISOR_PROMOTER_INS0") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    supervisorViewModel.initExecute()
+
+                    val intent = Intent(
+                        rv.context,
+                        PromoterSupervisorActivity::class.java
+                    )
+                    intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    supervisorViewModel.initExecute()
+                    Toast.makeText(this, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        mainViewModel.urlSelfie.observe(this) {
+            dialogLoading.dismiss()
+            if (it != "") {
+                val ob = JSONObject()
+                ob.put("customerid", pointSale.customerId)
+                ob.put("image1", it)
+                ob.put("latitude", lastLocation?.latitude ?: 0.00)
+                ob.put("longitude", lastLocation?.longitude ?: 0.00)
+                supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_PROMOTER_INS0", SharedPrefsCache(this).getToken())
+            }
+        }
         supervisorViewModel.listPointSale.observe(this) {
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-                    val intent = Intent(
-                        rv.context,
-                        if (service == "MERCADERISMO") MerchantSupervisorActivity::class.java else PromoterSupervisorActivity::class.java
-                    )
-                    intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
-                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    if (service != "MERCADERISMO") {
+                        if (!permissionCamera || !permissionGPS || !gpsEnabled || lastLocation == null) {
+                            if (!permissionCamera) {
+                                Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de cámara", Toast.LENGTH_SHORT).show()
+                                return
+                            }
+                            if (!permissionGPS) {
+                                Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                                return
+                            }
+                            if (!gpsEnabled) {
+                                Toast.makeText(this@SupervisorActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                                return
+                            }
+                            if (lastLocation != null) {
+                                Toast.makeText(this@SupervisorActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                                return
+                            }
+                        } else {
+                            pointSale = pointSale1
+//                            dialogLoading.show()
+//                            mainViewModel.initPointSale(SharedPrefsCache(rv.context).getToken(), pointSale1.visitId, "", lastLocation!!.latitude, lastLocation!!.longitude)
+                            dispatchTakePictureIntent()
+                        }
+                    } else {
+                        val intent = Intent(
+                            rv.context,
+                            MerchantSupervisorActivity::class.java
+                        )
+                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
+                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    }
                 }
             }, true)
         }
@@ -209,6 +291,80 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
         }
     }
+
+    private fun dispatchTakePictureIntent(code: Int = CODE_RESULT_CAMERA_SELFIE) {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
+            takePictureIntent.resolveActivity(packageManager).also {
+                // Create the File where the photo should go
+                val photoFile: File? = try {
+                    createImageFile(code)
+                } catch (ex: IOException) {
+                    null
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    val photoURI: Uri = FileProvider.getUriForFile(
+                        this,
+                        "com.delycomps.rintisa.provider",
+                        photoFile
+                    )
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    startActivityForResult(takePictureIntent, code)
+                }
+            }
+        }
+    }
+
+    private fun saveBitmapToFile(file: File): File? {
+        return try { // BitmapFactory options to downsize the image
+            val o = BitmapFactory.Options()
+            o.inJustDecodeBounds = true
+            o.inSampleSize = 6
+            // factor of downsizing the image
+            var inputStream = FileInputStream(file)
+            //Bitmap selectedBitmap = null;
+            BitmapFactory.decodeStream(inputStream, null, o)
+            inputStream.close()
+            // The new size we want to scale to
+            val REQUIRED_SIZE = 75
+            // Find the correct scale value. It should be the power of 2.
+            var scale = 1
+            while (o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+                o.outHeight / scale / 2 >= REQUIRED_SIZE
+            ) {
+                scale *= 2
+            }
+            val o2 = BitmapFactory.Options()
+            o2.inSampleSize = scale
+            inputStream = FileInputStream(file)
+            val selectedBitmap = BitmapFactory.decodeStream(inputStream, null, o2)
+            inputStream.close()
+            // here i override the original image file
+            file.createNewFile()
+            val outputStream = FileOutputStream(file)
+            selectedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            file
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun createImageFile(code: Int): File {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
+            currentPhotoPath = absolutePath
+        }
+    }
+
+
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             lastLocation = location
@@ -258,6 +414,42 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
         }
         return filteredModelList
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        imageReturnedIntent: Intent?
+    ){
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
+        when (requestCode) {
+            CODE_RESULT_CAMERA_SELFIE -> if (resultCode == RESULT_OK) {
+                dialogLoading.show()
+                val f = saveBitmapToFile(File(currentPhotoPath))
+                if (f != null) {
+                    mainViewModel.uploadSelfie(f, SharedPrefsCache(this).getToken())
+                } else {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            WRITE_EXTERNAL_STORAGE_PERMISSION ->
+                if (grantResults.count() > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permissionCamera = true
+                } else {
+                    Toast.makeText(this, "Por favor considere en dar permisos de cámara.", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
     private fun manageDialogFilter(view: View) {
