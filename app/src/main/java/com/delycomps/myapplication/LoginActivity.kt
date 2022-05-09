@@ -50,7 +50,6 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
-
         supervisorViewModel.dataMarket.observe(this) {
             val data = DataSupervisor(it, supervisorViewModel.dataQuestion.value ?: emptyList(), supervisorViewModel.dataCheckSupPromoter.value ?: emptyList())
             SharedPrefsCache(this).set("data-supervisor", Gson().toJson(data), "string")

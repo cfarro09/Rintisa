@@ -42,6 +42,21 @@ class SupervisorViewModel : ViewModel() {
     private val _resExecute: MutableLiveData<ResGlobal> = MutableLiveData()
     val resExecute: LiveData<ResGlobal> = _resExecute
 
+    private val _urlImageWithBD: MutableLiveData<ResGlobal> = MutableLiveData()
+    val urlImageWithBD: LiveData<ResGlobal> = _urlImageWithBD
+
+    fun uploadWithBD(file: File, json: String, token: String) {
+        _urlImageWithBD.value = ResGlobal(true, "", false)
+
+        Repository().uploadImage(file, token, json) { isSuccess, result, _ ->
+            if (isSuccess) {
+                _urlImageWithBD.value = ResGlobal(false, result.toString(), true)
+            } else {
+                _urlImageWithBD.value = ResGlobal(false, "", false)
+            }
+        }
+    }
+
     fun setMultiInitial(data: DataSupervisor) {
         _dataMarket.value = data.markets
         _dataQuestion.value = data.questions
@@ -70,7 +85,7 @@ class SupervisorViewModel : ViewModel() {
     }
 
     fun initExecute() {
-        _resExecute.value = ResGlobal(true, "", false)
+        _resExecute.value = ResGlobal(false, "", false)
     }
 
     fun manageQuestion (question: Question, context: Context, customerId: Int) {
@@ -93,9 +108,9 @@ class SupervisorViewModel : ViewModel() {
         }
     }
 
-    fun getListLocation(marketId: Int, service: String, token: String) {
+    fun getListLocation(marketId: Int, service: String, switchDayVisit: Boolean, token: String) {
         _loading.value = true
-        Repository().getPointsSale(token, true, marketId,  service) { isSuccess, result, message ->
+        Repository().getPointsSale(token, true, marketId,  service, switchDayVisit) { isSuccess, result, message ->
             _loading.value = false
             if (isSuccess) {
                 _listPointSale.value = result!!

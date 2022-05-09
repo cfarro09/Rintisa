@@ -61,14 +61,16 @@ class Repository {
         supervisor: Boolean = false,
         marketId: Int = 0,
         service: String = "",
+        switchDayVisit: Boolean = false,
         onResult: (isSuccess: Boolean, result: List<PointSale>?, message: String?) -> Unit
     ) {
-        val method = if (supervisor)  "UFN_CUSTOMER_BY_SUPERVISOR" else "UFN_CUSTOMER_BY_USER_SEL"
+        val method = if (supervisor)  "UFN_CUSTOMER_BY_SUPERVISOR1" else "UFN_CUSTOMER_BY_USER_SEL"
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
             Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
                 "marketid" to marketId,
                 "service" to service,
+                "today" to switchDayVisit,
             )))
         )
         try {

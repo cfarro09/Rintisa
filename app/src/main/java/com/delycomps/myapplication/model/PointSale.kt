@@ -67,6 +67,9 @@ open class PointSale: Parcelable {
     @SerializedName("comment")
     @Expose
     var comment: String? = ""
+    @SerializedName("userid")
+    @Expose
+    var userid: Int? = 0
 
     constructor(
         visitId: Int,
@@ -89,6 +92,8 @@ open class PointSale: Parcelable {
         hourEntry: String? = "",
         motive: String? = "",
         comment: String? = "",
+        userid: Int? = 0,
+
     ) {
         this.visitId = visitId
         this.customerId = customerId
@@ -109,7 +114,8 @@ open class PointSale: Parcelable {
         this.user = user
         this.hourEntry = hourEntry
         this.motive = motive
-        this.comment = motive
+        this.comment = comment
+        this.userid = userid
     }
     protected constructor(parcel: Parcel) {
         this.visitId = parcel.readInt()
@@ -132,6 +138,7 @@ open class PointSale: Parcelable {
         this.hourEntry = parcel.readString()
         this.motive = parcel.readString()
         this.comment = parcel.readString()
+        this.userid = parcel.readInt()
     }
     override fun describeContents(): Int {
         return 0
@@ -157,6 +164,7 @@ open class PointSale: Parcelable {
         p0.writeString(hourEntry)
         p0.writeString(motive)
         p0.writeString(comment)
+        p0.writeInt(userid ?: 0)
     }
     companion object CREATOR : Parcelable.Creator<PointSale> {
         override fun createFromParcel(parcel: Parcel): PointSale {

@@ -160,21 +160,6 @@ class InformationFragment : Fragment() {
         }
     }
 
-    private fun uriToImageFile(uri: Uri): File? {
-        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = requireActivity().contentResolver.query(uri, filePathColumn, null, null, null)
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndex(filePathColumn[0])
-                val filePath = cursor.getString(columnIndex)
-                cursor.close()
-                return File(filePath)
-            }
-            cursor.close()
-        }
-        return null
-    }
-
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,

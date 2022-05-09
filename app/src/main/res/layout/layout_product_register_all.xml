@@ -13,6 +13,34 @@
     />
     <LinearLayout
         android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/dialog_save_product"
+            android:background="@drawable/back_primary"
+            android:textColor="#FFF"
+            android:layout_width="0dp"
+            android:layout_weight=".5"
+            android:layout_marginEnd="20dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/save"
+            />
+        <Button
+            android:id="@+id/dialog_cancel_product"
+            android:background="@drawable/back_primary"
+            android:backgroundTint="@color/colorSecondary"
+            android:textColor="#FFF"
+            android:layout_width="0dp"
+            android:layout_weight=".5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/cancel"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="10dp"
         android:layout_height="wrap_content">
@@ -74,32 +102,5 @@
             tools:listitem="@layout/item_price_product"
         />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/dialog_save_product"
-            android:background="@drawable/back_primary"
-            android:textColor="#FFF"
-            android:layout_width="0dp"
-            android:layout_weight=".5"
-            android:layout_marginEnd="20dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/save"
-            />
-        <Button
-            android:id="@+id/dialog_cancel_product"
-            android:background="@drawable/back_primary"
-            android:backgroundTint="@color/colorSecondary"
-            android:textColor="#FFF"
-            android:layout_width="0dp"
-            android:layout_weight=".5"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/cancel"
-            />
-    </LinearLayout>
+
 </LinearLayout>

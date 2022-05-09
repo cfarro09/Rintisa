@@ -99,8 +99,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dp"
-
                     android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight=".5"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/text_before"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:text="SIN FOTO"
+                        />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight=".5"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/text_after"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:text="SIN FOTO"
+                    />
+
                     <ImageView
                         android:id="@+id/view_image_before"
                         android:layout_width="0dp"
@@ -122,6 +144,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_marginBottom="10dp"
+                android:id="@+id/container_comment"
                 android:layout_height="wrap_content">
                 <RelativeLayout
                     android:layout_width="wrap_content"
@@ -132,9 +155,9 @@
                         android:id="@+id/text_comment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_toStartOf="@+id/button_save"
                         android:hint="Comentario"
                         android:lines="4"
-                        android:layout_toStartOf="@+id/button_save"
                         android:spinnerMode="dialog" />
 
                     <ImageButton
@@ -217,7 +240,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:labelFor="@+id/spinner_speach_scn"
-                            android:text="SPEACH RCN" />
+                            android:text="SPEACH SCN" />
                         <Spinner
                             android:id="@+id/spinner_speach_scn"
                             android:spinnerMode="dialog"

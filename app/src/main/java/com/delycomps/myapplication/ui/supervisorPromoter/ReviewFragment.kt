@@ -46,16 +46,16 @@ class ReviewFragment : Fragment() {
         viewModel.resExecute.observe(requireActivity()) {
             if (it.result == "QUERY_UPDATE_JSON_UNIFORM" || it.result == "QUERY_UPDATE_JSON_MATERIALS") {
                 if (!it.loading && it.success) {
-                    dialogLoading.dismiss()
+//                    dialogLoading.dismiss()
                     viewModel.initExecute()
                     val text = if (it.result == "QUERY_UPDATE_JSON_UNIFORM") "Uniforme actualizado correctamente" else "Materiales actualizado correctamente"
                     Toast.makeText(view.context, text, Toast.LENGTH_LONG).show()
                 } else if (!it.loading && !it.success) {
-                    dialogLoading.dismiss()
+//                    dialogLoading.dismiss()
                     viewModel.initExecute()
                     Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
                 } else if (it.loading) {
-                    dialogLoading.show()
+//                    dialogLoading.show()
                 }
             }
         }

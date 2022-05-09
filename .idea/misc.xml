@@ -63,6 +63,7 @@
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.258" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.258" />
         <entry key="..\:/Users/VCA/StudioProjects/MyApplication/app/src/main/res/xml/file_paths.xml" value="0.19583333333333333" />
+        <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/activity_login2.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/activity_merchant_supervisor.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/activity_promoter.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/activity_promoter_supervisor.xml" value="0.22826086956521738" />
@@ -76,7 +77,10 @@
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/fragment_review.xml" value="0.2" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/fragment_status.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/fragment_uniform.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/information_fragment.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/item_availability.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/item_sale.xml" value="0.264" />
+        <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/item_stock.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_close_assistance.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_material_register.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_merchant_visited.xml" value="0.22826086956521738" />
@@ -85,6 +89,7 @@
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_sale_register.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_stock_promoter_register.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_stock_register.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_supervisor_filter.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/menu/menu_main.xml" value="0.25416666666666665" />
       </map>
     </option>

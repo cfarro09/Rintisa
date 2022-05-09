@@ -36,6 +36,7 @@ import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.DataSupervisor
 import com.delycomps.myapplication.model.PointSale
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import org.json.JSONObject
 import java.io.*
@@ -56,6 +57,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private var service: String = "MERCADERISMO"
     private var marketIdG: Int? = 0
     private lateinit var serviceG: String
+    private var todayG: Boolean = false
     private var permissionCamera = false
     private lateinit var pointSale: PointSale
 
@@ -174,7 +176,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         val swiper: SwipeRefreshLayout = findViewById(R.id.main_swiper_refresh)
         swiper.setOnRefreshListener {
             if (marketIdG != null) {
-                supervisorViewModel.getListLocation(marketIdG!!, serviceG, SharedPrefsCache(this).getToken())
+                supervisorViewModel.getListLocation(marketIdG!!, serviceG, todayG, SharedPrefsCache(this).getToken())
                 swiper.isRefreshing = false
             }
         }
@@ -234,6 +236,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             if (it != "") {
                 val ob = JSONObject()
                 ob.put("customerid", pointSale.customerId)
+                ob.put("aux_userid", pointSale.userid ?: 0)
                 ob.put("image1", it)
                 ob.put("latitude", lastLocation?.latitude ?: 0.00)
                 ob.put("longitude", lastLocation?.longitude ?: 0.00)
@@ -455,6 +458,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private fun manageDialogFilter(view: View) {
         val spinnerService = view.findViewById<Spinner>(R.id.spinner_service)
         val spinnerMarket = view.findViewById<AutoCompleteTextView>(R.id.spinner_market)
+        val switchDayVisit = view.findViewById<SwitchMaterial>(R.id.switch_day_visit)
         val buttonSearch = view.findViewById<Button>(R.id.dialog_search)
         val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel)
 
@@ -483,8 +487,9 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 val marketId = market.split(")")[0].replace("(", "").toDouble().toInt()
                 marketIdG = marketId
                 serviceG = service
+                todayG = switchDayVisit.isChecked
                 dialogFilter?.dismiss()
-                supervisorViewModel.getListLocation(marketId, service, SharedPrefsCache(view.context).getToken())
+                supervisorViewModel.getListLocation(marketId, service, switchDayVisit.isChecked, SharedPrefsCache(view.context).getToken())
             }
         }
     }

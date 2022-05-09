@@ -51,6 +51,7 @@ class InformationMerchant : Fragment() {
         val service: String? = activity?.intent?.getStringExtra(Constants.POINT_SALE_SERVICE)
 
         if (pointSale != null) {
+            view.findViewById<CardView>(R.id.container_comment).visibility = if (service == "MERCADERISMO") View.VISIBLE else View.GONE
             view.findViewById<CardView>(R.id.container_images).visibility = if (service == "MERCADERISMO") View.VISIBLE else View.GONE
             view.findViewById<CardView>(R.id.container_know).visibility = if (service != "MERCADERISMO") View.VISIBLE else View.GONE
 
@@ -106,27 +107,27 @@ class InformationMerchant : Fragment() {
             viewModel.resExecute.observe(requireActivity()) {
                 if ((it.result) == "QUERY_UPDATE_COMMENT") {
                     if (!it.loading && it.success) {
-                        dialogLoading.dismiss()
+//                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Comentario registrado correctamente", Toast.LENGTH_LONG).show()
                     } else if (!it.loading && !it.success) {
-                        dialogLoading.dismiss()
+//                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
                     } else if (it.loading) {
-                        dialogLoading.show()
+//                        dialogLoading.show()
                     }
                 } else if ((it.result) == "QUERY_UPDATE_SPEACH") {
                     if (!it.loading && it.success) {
-                        dialogLoading.dismiss()
+//                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Conocimientos actualizados correctamente", Toast.LENGTH_LONG).show()
                     } else if (!it.loading && !it.success) {
-                        dialogLoading.dismiss()
+//                        dialogLoading.dismiss()
                         viewModel.initExecute()
                         Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
                     } else if (it.loading) {
-                        dialogLoading.show()
+//                        dialogLoading.show()
                     }
                 }
             }
@@ -134,18 +135,31 @@ class InformationMerchant : Fragment() {
             val color = if (pointSale.trafficLights == "AMARILLO") "#FFF8B7" else if (pointSale.trafficLights == "VERDE") "#B6FFA9" else  "#FF9696"
             view.findViewById<View>(R.id.pdv_traffic_light).backgroundTintList = ColorStateList.valueOf(
                 Color.parseColor(color))
+            if ((pointSale.imageBefore ?: "") == "") {
+                view.findViewById<TextView>(R.id.text_before).visibility = View.VISIBLE
+                view.findViewById<ImageView>(R.id.view_image_before).visibility = View.GONE
+            } else {
+                view.findViewById<TextView>(R.id.text_before).visibility = View.GONE
+                view.findViewById<ImageView>(R.id.view_image_before).visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(pointSale.imageBefore)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .placeholder(R.drawable.loadingtmp)
+                    .into(view.findViewById(R.id.view_image_before))
+            }
 
-            Glide.with(this)
-                .load(pointSale.imageBefore)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .placeholder(R.drawable.loadingtmp)
-                .into(view.findViewById(R.id.view_image_before))
-
-            Glide.with(this)
-                .load(pointSale.imageAfter)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .placeholder(R.drawable.loadingtmp)
-                .into(view.findViewById(R.id.view_image_after))
+            if ((pointSale.imageAfter ?: "") == "") {
+                view.findViewById<TextView>(R.id.text_after).visibility = View.VISIBLE
+                view.findViewById<ImageView>(R.id.view_image_after).visibility = View.GONE
+            } else {
+                view.findViewById<TextView>(R.id.text_after).visibility = View.GONE
+                view.findViewById<ImageView>(R.id.view_image_after).visibility = View.VISIBLE
+                Glide.with(this)
+                    .load(pointSale.imageBefore)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .placeholder(R.drawable.loadingtmp)
+                    .into(view.findViewById(R.id.view_image_after))
+            }
         }
     }
 }

@@ -69,8 +69,13 @@ class MainActivity : AppCompatActivity() {
     private var mainMenu: Menu? = null
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val role = SharedPrefsCache(this).get("type", "string")
+
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+        menu.findItem(R.id.action_finish)?.isVisible = (role == "IMPULSADOR")
+
+
         mainMenu = menu
         return true
     }

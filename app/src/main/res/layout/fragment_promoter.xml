@@ -65,6 +65,14 @@
                     android:layout_marginBottom="5dp"
                     android:gravity="center_vertical"
                     app:drawableStartCompat="@drawable/ic_baseline_update_24" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/pdv_comment"
+                    android:drawablePadding="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:gravity="center_vertical"
+                    app:drawableStartCompat="@drawable/ic_baseline_comment_24" />
             </LinearLayout>
             <View
                 android:layout_alignParentEnd="true"
