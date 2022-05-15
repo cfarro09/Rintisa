@@ -45,6 +45,8 @@ class PromoterSupervisorActivity : AppCompatActivity() {
         val dataSupervisor = Gson().fromJson(jsonMerchant.toString(), DataSupervisor::class.java)
         supervisorViewModel.setMultiInitial(dataSupervisor)
 
+        supervisorViewModel.setUserSelected(pointSale.userid ?: 0)
+
         val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
         val viewPager: ViewPager = binding.viewPager
         viewPager.adapter = sectionsPagerAdapter

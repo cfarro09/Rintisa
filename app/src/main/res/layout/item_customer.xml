@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/pdv_background"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+        >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VILLANUEVA ACOSTA VICENTA"
+                android:id="@+id/pdv_client"
+                android:drawablePadding="5dp"
+                app:drawableStartCompat="@drawable/ic_baseline_person_24" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MERCADO MEGA RECORD"
+                android:id="@+id/pdv_market"
+                android:drawablePadding="5dp"
+                app:drawableStartCompat="@drawable/ic_baseline_shopping_cart_24" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N° PUESTO 247"
+                android:id="@+id/pdv_stall_number"
+                android:drawablePadding="5dp"
+                app:drawableStartCompat="@drawable/ic_baseline_person_pin_circle_24" />
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

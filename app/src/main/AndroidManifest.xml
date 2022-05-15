@@ -44,9 +44,20 @@
             android:label="@string/title_activity_merchant_supervisor"
             android:parentActivityName=".SupervisorActivity" />
         <activity
+            android:name=".AuditorDetailActivity"
+            android:exported="false"
+            android:label="Detalle de auditor"
+            android:parentActivityName=".AuditorActivity" />
+        <activity
             android:name=".SupervisorActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".ImageActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="false" />
+        <activity
+            android:name=".AuditorActivity"
+            android:exported="false" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.delycomps.rintisa.provider"

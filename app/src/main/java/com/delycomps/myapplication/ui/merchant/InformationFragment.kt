@@ -32,7 +32,7 @@ import java.util.*
 private const val CODE_RESULT_CAMERA = 10001
 private const val CODE_RESULT_GALLERY = 10002
 private val STATUS_LIST = listOf("EFECTIVA", "NO EFECTIVA")
-private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "PDV cerrado", "No visitado", "FALTA INJUSTIFICADA", "FALTA JUSTIFICADA", "DM", "LICENCIA")
+private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "PDV cerrado", "No visitado")
 
 class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel

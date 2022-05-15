@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.api.Repository
 import com.delycomps.myapplication.cache.SharedPrefsCache
+import com.delycomps.myapplication.model.DataAuditor
 import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.DataPromoter
 import com.delycomps.myapplication.model.DataSupervisor
@@ -24,6 +25,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var merchantViewModel: MerchantViewModel
     private lateinit var promoterViewModel: PromoterViewModel
     private lateinit var supervisorViewModel: SupervisorViewModel
+    private lateinit var auditorViewModel: AuditorViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,7 @@ class LoginActivity : AppCompatActivity() {
         merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
         promoterViewModel = ViewModelProvider(this).get(PromoterViewModel::class.java)
         supervisorViewModel = ViewModelProvider(this).get(SupervisorViewModel::class.java)
+        auditorViewModel = ViewModelProvider(this).get(AuditorViewModel::class.java)
 
         val builderLoading: AlertDialog.Builder = AlertDialog.Builder(this)
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
@@ -51,9 +54,15 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
         supervisorViewModel.dataMarket.observe(this) {
-            val data = DataSupervisor(it, supervisorViewModel.dataQuestion.value ?: emptyList(), supervisorViewModel.dataCheckSupPromoter.value ?: emptyList())
+            val data = DataSupervisor(it, supervisorViewModel.dataQuestion.value ?: emptyList(), supervisorViewModel.dataCheckSupPromoter.value ?: emptyList(), supervisorViewModel.dataUser.value ?: emptyList())
             SharedPrefsCache(this).set("data-supervisor", Gson().toJson(data), "string")
             startActivity(Intent(this, SupervisorActivity::class.java))
+            finish()
+        }
+        auditorViewModel.dataMarket.observe(this) {
+            val data = DataAuditor(it, auditorViewModel.dataCheckSupPromoter.value ?: emptyList())
+            SharedPrefsCache(this).set("data-auditor", Gson().toJson(data), "string")
+            startActivity(Intent(this, AuditorActivity::class.java))
             finish()
         }
 
@@ -79,8 +88,11 @@ class LoginActivity : AppCompatActivity() {
                             result?.role?.uppercase() == "IMPULSADOR" -> {
                                 promoterViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
                             }
-                            else -> {
+                            result?.role?.uppercase() == "SUPERVISOR" -> {
                                 supervisorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                            }
+                            else -> {
+                                auditorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
                             }
                         }
                     } else {

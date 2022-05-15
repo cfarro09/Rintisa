@@ -87,7 +87,8 @@ data class CheckSupPromoter (
     var key: String,
     var decription: String,
     var type: String,
-    var flag: Boolean
+    var flag: Boolean,
+    var value: String? = ""
 )
 
 
@@ -99,10 +100,20 @@ data class DataPromoter(
     var productsSelected: List<SurveyProduct>,
 )
 
+data class UserZyx (
+    var userid: Int,
+    var description: String,
+)
 
 data class DataSupervisor(
     var markets: List<Market>,
     var questions: List<Question>,
+    var checks: List<CheckSupPromoter>,
+    var users: List<UserZyx>,
+)
+
+data class DataAuditor(
+    var markets: List<Market>,
     var checks: List<CheckSupPromoter>,
 )
 

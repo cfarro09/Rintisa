@@ -44,7 +44,7 @@ class ReviewFragment : Fragment() {
         val dialogLoading: AlertDialog = builderLoading.create()
 
         viewModel.resExecute.observe(requireActivity()) {
-            if (it.result == "QUERY_UPDATE_JSON_UNIFORM" || it.result == "QUERY_UPDATE_JSON_MATERIALS") {
+            if (it.result == "QUERY_UPDATE_JSON_UNIFORM1" || it.result == "QUERY_UPDATE_JSON_MATERIALS1") {
                 if (!it.loading && it.success) {
 //                    dialogLoading.dismiss()
                     viewModel.initExecute()
@@ -82,20 +82,22 @@ class ReviewFragment : Fragment() {
                 ob1.put(it.key, it.flag)
             }
             ob.put("json", ob1.toString())
+            ob.put("aux_userid", viewModel.userSelected.value)
 
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_UNIFORM", SharedPrefsCache(view.context).getToken())
+            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_UNIFORM1", SharedPrefsCache(view.context).getToken())
         }
 
         buttonSaveMaterials.setOnClickListener {
             val ob = JSONObject()
             ob.put("customerid", pointSale?.customerId)
+            ob.put("aux_userid", viewModel.userSelected.value)
             val ob1 = JSONObject()
             (rvMaterial.adapter as AdapterCheck).getList().forEach {
                 ob1.put(it.key, it.flag)
             }
             ob.put("json", ob1.toString())
 
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_MATERIALS", SharedPrefsCache(view.context).getToken())
+            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_MATERIALS1", SharedPrefsCache(view.context).getToken())
         }
     }
 }

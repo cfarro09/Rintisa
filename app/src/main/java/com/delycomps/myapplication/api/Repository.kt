@@ -95,6 +95,40 @@ class Repository {
         }
     }
 
+    fun getCustomer(
+        token: String,
+        marketId: Int = 0,
+        onResult: (isSuccess: Boolean, result: List<Customer>?, message: String?) -> Unit
+    ) {
+        val method = "UFN_CUSTOMER_BY_AUDITOR"
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+                "marketid" to marketId
+            )))
+        )
+        try {
+            Connection.instance.getClients2(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<Customer>> {
+                override fun onResponse(
+                    call: Call<ResponseList<Customer>>?,
+                    response: Response<ResponseList<Customer>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<Customer>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
     fun insInitPointSale(
         visitId: Int,
         photo_selfie: String,
@@ -592,6 +626,7 @@ class Repository {
             RequestBodyX(method, method, mapOf<String, Any>()),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "QUESTIONMERCHANT")),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "CHECK_SUPERVISOR_PROMOTER")),
+            RequestBodyX("QUERY_USER_PROMOTER_LST", "QUERY_USER_PROMOTER_LST", mapOf<String, Any>()),
             )
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
@@ -605,7 +640,7 @@ class Repository {
                     response: Response<ResponseMulti>?
                 ) {
                     if (response?.isSuccessful == true && response.body().success == true) {
-                        val dataSupervisor = DataSupervisor(emptyList(), emptyList(), emptyList())
+                        val dataSupervisor = DataSupervisor(emptyList(), emptyList(), emptyList(), emptyList())
 
                         if (response.body().data[0].success == true) {
                             dataSupervisor.markets = response.body().data[0].data.toList().map { Market("(" + it["marketid"].toString() + ") " + it["description"].toString(), it["marketid"].toString().toDouble().toInt()) }
@@ -616,7 +651,53 @@ class Repository {
                         if (response.body().data[2].success == true) {
                             dataSupervisor.checks = response.body().data[2].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString(), false) }
                         }
+                        if (response.body().data[3].success == true) {
+                            dataSupervisor.users = response.body().data[3].data.toList().map { UserZyx(it["userid"].toString().toDouble().toInt(), it["description"].toString()) }
+                        }
                         onResult(true, dataSupervisor, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseMulti>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
+    fun getMultiAuditorInitial(
+        token: String,
+        onResult: (isSuccess: Boolean, result: DataAuditor?, message: String?) -> Unit
+    )  {
+        val method = "QUERY_MARKET_SEL"
+        val multi = listOf(
+            RequestBodyX(method, method, mapOf<String, Any>()),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "QUESTION_AUDITOR")),
+        )
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(multi)
+        )
+        try {
+            Connection.instance.mainMulti(body, "Bearer $token").enqueue(object :
+                Callback<ResponseMulti> {
+                override fun onResponse(
+                    call: Call<ResponseMulti>?,
+                    response: Response<ResponseMulti>?
+                ) {
+                    if (response?.isSuccessful == true && response.body().success == true) {
+                        val dataAuditor = DataAuditor(emptyList(), emptyList())
+
+                        if (response.body().data[0].success == true) {
+                            dataAuditor.markets = response.body().data[0].data.toList().map { Market("(" + it["marketid"].toString() + ") " + it["description"].toString(), it["marketid"].toString().toDouble().toInt()) }
+                        }
+                        if (response.body().data[1].success == true) {
+                            dataAuditor.checks = response.body().data[1].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString(), false) }
+                        }
+                        onResult(true, dataAuditor, null)
                     } else {
                         onResult(false, null, DEFAULT_MESSAGE_ERROR)
                     }

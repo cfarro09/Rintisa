@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">1.9.6</string>
+    <string name="version">1.10.5</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -23,9 +23,9 @@
     <string name="confirm_password">Confirmar contraseña</string>
     <string name="all_obligatory">Todos los campos son obligatorios.</string>
     <string name="username">Usuario</string>
-    <string name="title_activity_client_detail">C
-        lientDetail</string>
+    <string name="title_activity_client_detail">ClientDetail</string>
     <string name="tab_text_1">Info</string>
+    <string name="tab_bins">Tachos</string>
     <string name="tab_text_2">Materiales</string>
     <string name="tab_text_sales">Ventas</string>
     <string name="tab_text_availability">Disponibilidad</string>

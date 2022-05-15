@@ -16,6 +16,9 @@ interface Endpoints {
     fun getClients(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<PointSale>>
 
     @POST("main")
+    fun getClients2(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Customer>>
+
+    @POST("main")
     fun getMaterials(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Material>>
 
     @POST("main/multi")

@@ -30,6 +30,12 @@ class SupervisorViewModel : ViewModel() {
     private val _dataMarket: MutableLiveData<List<Market>> = MutableLiveData()
     val dataMarket: LiveData<List<Market>> = _dataMarket
 
+    private val _userSelected: MutableLiveData<Int> = MutableLiveData()
+    val userSelected: LiveData<Int> = _userSelected
+
+    private val _dataUsers: MutableLiveData<List<UserZyx>> = MutableLiveData()
+    val dataUser: LiveData<List<UserZyx>> = _dataUsers
+
     private val _dataQuestion: MutableLiveData<List<Question>> = MutableLiveData()
     val dataQuestion: LiveData<List<Question>> = _dataQuestion
 
@@ -61,12 +67,14 @@ class SupervisorViewModel : ViewModel() {
         _dataMarket.value = data.markets
         _dataQuestion.value = data.questions
         _dataCheckSupPromoter.value = data.checks
+        _dataUsers.value = data.users
     }
 
     fun getMainMultiInitial(token: String) {
         Repository().getMultiSupervisorInitial(token) { isSuccess, result, _ ->
             if (isSuccess) {
                 _dataCheckSupPromoter.value = result?.checks ?: emptyList()
+                _dataUsers.value = result?.users ?: emptyList()
                 _dataQuestion.value = result?.questions ?: emptyList()
                 _dataMarket.value = result?.markets ?: emptyList()
             }
@@ -82,6 +90,10 @@ class SupervisorViewModel : ViewModel() {
                 _resExecute.value = ResGlobal(false, method, false)
             }
         }
+    }
+
+    fun setUserSelected(userid: Int) {
+        _userSelected.value = userid
     }
 
     fun initExecute() {

@@ -166,9 +166,20 @@ class PriceFragment : Fragment() {
 
 
     private fun manageDialogMaterialAll (view: View, dialog: AlertDialog) {
+        val spinnerCompetence = view.findViewById<Spinner>(R.id.spinner_competence)
+        spinnerCompetence.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("RINTI", "COMPETENCIA"))
+
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
         val rvProduct = view.findViewById<RecyclerView>(R.id.rv_products)
         rvProduct.layoutManager = LinearLayoutManager(view.context)
+
+        spinnerCompetence.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                val valueSelected = spinnerCompetence.selectedItem.toString()
+                spinnerBrand.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.competence == valueSelected }.map { it.brand }.distinct())
+            }
+        }
 
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {

@@ -76,7 +76,7 @@ class StatusFragment : Fragment() {
         }
 
         viewModel.resExecute.observe(requireActivity()) {
-            if (it.result == "QUERY_UPDATE_JSON_STATUS") {
+            if (it.result == "QUERY_UPDATE_JSON_STATUS1") {
                 if (!it.loading && it.success) {
 //                    dialogLoading.dismiss()
                     viewModel.initExecute()
@@ -137,8 +137,9 @@ class StatusFragment : Fragment() {
                 ob1.put(it.key, it.flag)
             }
             ob.put("json", ob1.toString())
+            ob.put("aux_userid", viewModel.userSelected.value)
 
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_STATUS", SharedPrefsCache(view.context).getToken())
+            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_STATUS1", SharedPrefsCache(view.context).getToken())
         }
     }
 
