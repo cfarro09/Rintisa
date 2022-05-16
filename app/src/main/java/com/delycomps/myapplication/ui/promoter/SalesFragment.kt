@@ -2,7 +2,6 @@ package com.delycomps.myapplication.ui.promoter
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -10,7 +9,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -274,22 +272,6 @@ class SalesFragment : Fragment() {
         }
     }
 
-
-    private fun uriToImageFile(uri: Uri): File? {
-        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = requireActivity().contentResolver.query(uri, filePathColumn, null, null, null)
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndex(filePathColumn[0])
-                val filePath = cursor.getString(columnIndex)
-                cursor.close()
-                return File(filePath)
-            }
-            cursor.close()
-        }
-        return null
-    }
-
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -299,7 +281,7 @@ class SalesFragment : Fragment() {
         when (requestCode) {
             CODE_RESULT_CAMERA -> if (resultCode == AppCompatActivity.RESULT_OK) {
                 dialogLoading.show()
-                val f = saveBitmapToFile(File(currentPhotoPath))
+                val f = Helpers().saveBitmapToFile(File(currentPhotoPath))
                 if (f != null) {
                     viewModel.uploadSelfie(f, SharedPrefsCache(requireContext()).getToken())
                 } else {
@@ -334,41 +316,6 @@ class SalesFragment : Fragment() {
                     Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-    }
-
-    private fun saveBitmapToFile(file: File): File? {
-        return try { // BitmapFactory options to downsize the image
-            val o = BitmapFactory.Options()
-            o.inJustDecodeBounds = true
-            o.inSampleSize = 6
-            // factor of downsizing the image
-            var inputStream = FileInputStream(file)
-            //Bitmap selectedBitmap = null;
-            BitmapFactory.decodeStream(inputStream, null, o)
-            inputStream.close()
-            // The new size we want to scale to
-            val REQUIRED_SIZE = 75
-            // Find the correct scale value. It should be the power of 2.
-            var scale = 1
-            while (o.outWidth / scale / 2 >= REQUIRED_SIZE &&
-                o.outHeight / scale / 2 >= REQUIRED_SIZE
-            ) {
-                scale *= 2
-            }
-            val o2 = BitmapFactory.Options()
-            o2.inSampleSize = scale
-            inputStream = FileInputStream(file)
-            val selectedBitmap = BitmapFactory.decodeStream(inputStream, null, o2)
-            inputStream.close()
-            // here i override the original image file
-            file.createNewFile()
-            val outputStream = FileOutputStream(file)
-            selectedBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            file
-        } catch (e: Exception) {
-            Log.d("error_carlos", e.message ?: "")
-            null
         }
     }
 

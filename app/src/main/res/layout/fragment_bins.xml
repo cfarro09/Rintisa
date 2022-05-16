@@ -24,7 +24,6 @@
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
                         android:orientation="horizontal">
                         <ImageButton
                             android:id="@+id/button_save"
@@ -38,18 +37,6 @@
                             android:src="@drawable/ic_baseline_save_24"
                             app:tint="#FFFFFF" />
                     </RelativeLayout>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:textAllCaps="true"
-                        android:textStyle="bold"
-                        android:layout_height="wrap_content"
-                        android:labelFor="@+id/spinner_measure_unit"
-                        android:text="TACHOS" />
-                    <Spinner
-                        android:id="@+id/spinner_bins"
-                        android:spinnerMode="dialog"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/main_rv_bins"
                         android:layout_marginTop="10dp"

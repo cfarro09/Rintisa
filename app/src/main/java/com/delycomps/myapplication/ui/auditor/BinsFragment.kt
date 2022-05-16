@@ -64,25 +64,12 @@ class BinsFragment : Fragment() {
         customer = activity?.intent?.getParcelableExtra(Constants.POINT_CUSTOMER)!!
 
         val button = view.findViewById<ImageButton>(R.id.button_save)
-        val spinnerBins = view.findViewById<Spinner>(R.id.spinner_bins)
-
-        spinnerBins.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("NINGUNO") + (viewModel.dataCheckSupPromoter.value?.map { it.decription }?.toMutableList() ?: ArrayList()))
 
         val rvBins: RecyclerView = view.findViewById(R.id.main_rv_bins)
         rvBins.layoutManager = LinearLayoutManager(view.context)
 
-        rvBins.adapter = AdapterBins(ArrayList())
+        rvBins.adapter = AdapterBins(viewModel.dataCheckSupPromoter.value?.toMutableList() ?: ArrayList())
 
-        spinnerBins.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) { }
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val valueSelected = spinnerBins.selectedItem.toString()
-                val aa = (viewModel.dataCheckSupPromoter.value ?: emptyList()).find { it.decription == valueSelected }
-                if (aa != null) {
-                    (rvBins.adapter as AdapterBins).addBin(aa)
-                }
-            }
-        }
 
         button.setOnClickListener {
             val ob = JSONObject()
@@ -90,7 +77,7 @@ class BinsFragment : Fragment() {
             val ob1 = JSONObject()
 
             (rvBins.adapter as AdapterBins).getList().forEach {
-                ob1.put(it.key, it.flag)
+                ob1.put(it.key, (if (it.value == "") "0" else it.value)?.toInt() ?: 0)
             }
             ob.put("trash_can", ob1.toString())
 
