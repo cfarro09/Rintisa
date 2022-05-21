@@ -6,82 +6,87 @@
     android:layout_height="match_parent"
     tools:context=".LoginActivity">
 
-        <LinearLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:paddingHorizontal="30dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="110dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_capital_human" />
+
+        <ImageView
             android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_centerInParent="true"
-            android:paddingHorizontal="30dp"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="110dp"
-                android:adjustViewBounds="true"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="10dp"
-                android:src="@drawable/logo_capital_human"/>
-            <ImageView
+            android:layout_height="match_parent"
+            android:layout_marginBottom="30dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_rintisa" />
+
+        <EditText
+            android:id="@+id/login_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20sp"
+            android:background="@drawable/input_style"
+            android:drawableStart="@drawable/ic_baseline_person_24"
+            android:drawablePadding="10dp"
+            android:drawableTint="@color/colorSecondary"
+            android:hint="@string/username"
+            android:lines="1"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:singleLine="true"
+            android:text="impulsadordev"
+            android:textColor="#FF636363"
+            android:textColorHint="#636363"
+            android:textSize="15sp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hintEnabled="false"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/colorSecondary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/login_password"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="true"
-                android:layout_marginBottom="30dp"
-                android:src="@drawable/logo_rintisa"/>
-            <EditText
-                android:id="@+id/login_username"
-                android:padding="10dp"
-                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30sp"
                 android:background="@drawable/input_style"
-                android:hint="@string/username"
-                android:drawableStart="@drawable/ic_baseline_person_24"
+                android:drawableStart="@drawable/ic_baseline_lock_24"
                 android:drawablePadding="10dp"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:textColorHint="#636363"
-                android:textColor="#FF636363"
-                android:lines="1"
-                android:singleLine="true"
                 android:drawableTint="@color/colorSecondary"
+                android:hint="@string/contrase_a"
+                android:text="admin"
+                android:inputType="textPassword"
+                android:lines="1"
+                android:maxLines="1"
+                android:padding="10dp"
+                android:textColor="#FF636363"
+                android:textColorHint="#FF636363"
                 android:textSize="15sp"
-                android:layout_marginBottom="20sp"/>
+                app:hintEnabled="false" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:passwordToggleTint="@color/colorSecondary"
-                app:hintEnabled="false"
-                app:passwordToggleEnabled="true">
+        <Button
+            android:id="@+id/login_access"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="50dp"
+            android:background="@drawable/back_primary"
+            android:paddingHorizontal="40dp"
+            android:text="@string/sign_in"
+            android:textColor="#FFF" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/login_password"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="30sp"
-                    android:background="@drawable/input_style"
-                    android:drawableStart="@drawable/ic_baseline_lock_24"
-                    android:drawablePadding="10dp"
-                    android:hint="@string/contrase_a"
-                    android:drawableTint="@color/colorSecondary"
-                    android:inputType="textPassword"
-                    android:lines="1"
-                    android:maxLines="1"
-                    android:padding="10dp"
-                    android:textColor="#FF636363"
-                    android:textColorHint="#FF636363"
-                    android:textSize="15sp"
-                    app:hintEnabled="false" />
-            </com.google.android.material.textfield.TextInputLayout>
-            <Button
-                android:id="@+id/login_access"
-                android:background="@drawable/back_primary"
-                android:textColor="#FFF"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:paddingHorizontal="40dp"
-                android:layout_marginBottom="50dp"
-                android:text="@string/sign_in"
-            />
-
-        </LinearLayout>
+    </LinearLayout>
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="60dp"

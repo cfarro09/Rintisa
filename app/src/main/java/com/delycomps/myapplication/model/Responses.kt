@@ -20,6 +20,12 @@ data class ResponseCommon (
     var key: String?,
 )
 
+data class resImage (
+    var type: String,
+    var path: String,
+    var url: String?,
+)
+
 data class Availability(
     var productid: Int,
     var description: String,

@@ -217,23 +217,29 @@ class Repository {
         motive: String,
         observation: String,
         token: String,
+        dateFinish: String?,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
+        val method = if (dateFinish != null) "UFN_UPLOAD_IMAGE_AFTER_VISIT_FINISH" else "UFN_UPLOAD_IMAGE_AFTER_VISIT3"
+
+        val aa = Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+            "visitid" to visitId,
+            "image_before" to image_before,
+            "image_after" to image_after,
+            "material_list" to material_list,
+            "pricesurvey_list" to price_survey_list,
+            "havesurvey" to haveSurvey,
+            "availability_survey_list" to availability_survey_list,
+            "haveavailability" to haveAvailability,
+            "status_manage" to status_management,
+            "motive_visit" to motive,
+            "observations" to observation,
+            "finish_date_visit" to (dateFinish ?: ""),
+        )))
+        Log.d("caaaa", aa)
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
-            Gson().toJson(RequestBodyX("UFN_UPLOAD_IMAGE_AFTER_VISIT3", "UFN_UPLOAD_IMAGE_AFTER_VISIT3", mapOf<String, Any>(
-                "visitid" to visitId,
-                "image_before" to image_before,
-                "image_after" to image_after,
-                "material_list" to material_list,
-                "pricesurvey_list" to price_survey_list,
-                "havesurvey" to haveSurvey,
-                "availability_survey_list" to availability_survey_list,
-                "haveavailability" to haveAvailability,
-                "status_manage" to status_management,
-                "motive_visit" to motive,
-                "observations" to observation,
-            )))
+            aa
         )
         try {
             Connection.instance.execute(body, "Bearer $token").enqueue(object :
@@ -729,7 +735,6 @@ class Repository {
                     response: Response<ResUploader>?
                 ) {
                     if (response!!.isSuccessful) {
-                        Log.d("carlos_urlimage", "" + response.body().url)
                         onResult(true, response.body().url, null)
                     } else {
                         onResult(false, null, DEFAULT_MESSAGE_ERROR)

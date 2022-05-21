@@ -44,8 +44,7 @@ class MainViewModel : ViewModel() {
     fun getListLocation(context: Context, token: String) {
         Repository().getPointsSale(token) { isSuccess, result, message ->
             if (isSuccess) {
-                _listPointSale.value = result!!
-                BDLocal(context).savePointSales(result)
+                _listPointSale.value = BDLocal(context).savePointSales(result!!)
             } else {
                 _errorOnGetList.value = message
                 val aux = BDLocal(context).getPointSale()

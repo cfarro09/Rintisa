@@ -22,8 +22,6 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
-        p0?.execSQL(SQL_CREATE_TABLE_AVAILABILITY)
-        p0?.execSQL(SQL_CREATE_TABLE_PRICE)
         p0?.execSQL(SQL_CREATE_TABLE_PDV)
     }
 
@@ -32,15 +30,27 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
     fun getPointSale(): List<PointSale> {
         val db = readableDatabase
         val listPDV = ArrayList<PointSale>()
-        val select = arrayOf(PDV_VISITID, PDV_CUSTOMERID, PDV_CLIENTCODE, PDV_CLIENT, PDV_MARKET, PDV_STALLNUMBER, PDV_VISITFREQUENCY, PDV_VISITDAY, PDV_LASTVISIT, PDV_TRAFFICLIGHTS, PDV_SHOWSURVEY, PDV_SHOWAVAILABILITY, PDV_MANAGEMENT, PDV_IMAGEBEFORE, PDV_IMAGEAFTER, UUID, PDV_DATE)
+        val select = arrayOf(
+            PDV_VISITID, PDV_CUSTOMERID, PDV_CLIENTCODE, PDV_CLIENT, PDV_MARKET,
+            PDV_STALLNUMBER, PDV_VISITFREQUENCY, PDV_VISITDAY, PDV_LASTVISIT, PDV_TRAFFICLIGHTS,
+            PDV_SHOWSURVEY, PDV_SHOWAVAILABILITY, PDV_MANAGEMENT, PDV_IMAGEBEFORE, PDV_IMAGEAFTER,
+            UUID, PDV_IMAGEBEFORELOCAL, PDV_IMAGEAFTERLOCAL, PDV_STATUSLOCAL, PDV_DATEFINISHLOCAL,
+            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION)
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         val c = db.query(TABLE_PDV, select, "$PDV_DATE = ?", arrayOf(date), null, null, null, null)
-//        val c = db.query(TABLE_PDV, select, null, null, null, null, null, null)
 
         if (c != null && c.count > 0) {
             c.moveToFirst()
             do {
-                listPDV.add(PointSale(c.getInt(0), c.getInt(1), c.getString(2) ?: "", c.getString(3) ?: "", c.getString(4) ?: "", c.getString(5) ?: "", c.getString(6) ?: "", c.getString(7) ?: "", c.getString(8) ?: "", c.getString(9) ?: "", c.getInt(10) == 1, c.getInt(11) == 1, c.getString(12) ?: "", c.getString(13) ?: "", c.getString(14) ?: "", c.getString(15) ?: ""))
+                val ps = PointSale(c.getInt(0), c.getInt(1), c.getString(2) ?: "", c.getString(3) ?: "", c.getString(4) ?: "", c.getString(5) ?: "", c.getString(6) ?: "", c.getString(7) ?: "", c.getString(8) ?: "", c.getString(9) ?: "", c.getInt(10) == 1, c.getInt(11) == 1, c.getString(12) ?: "", c.getString(13) ?: "", c.getString(14) ?: "", c.getString(15) ?: "")
+                ps.imageBeforeLocal = c.getString(16) ?: ""
+                ps.imageAfterLocal = c.getString(17) ?: ""
+                ps.wasSaveOnBD = (c.getString(18) ?: "") != "NOENVIADO"
+                ps.dateFinish = c.getString(19) ?: ""
+                ps.statusManagement = c.getString(20) ?: ""
+                ps.motiveManagement = c.getString(21) ?: ""
+                ps.observation = c.getString(22) ?: ""
+                listPDV.add(ps)
             } while (c.moveToNext())
         }
         db?.close()
@@ -49,13 +59,91 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         return listPDV
     }
 
+    fun getPointSaleOne(visitID: Int): List<PointSale> {
+        val db = readableDatabase
+        val listPDV = ArrayList<PointSale>()
+        val select = arrayOf(
+            PDV_VISITID, PDV_CUSTOMERID, PDV_CLIENTCODE, PDV_CLIENT, PDV_MARKET,
+            PDV_STALLNUMBER, PDV_VISITFREQUENCY, PDV_VISITDAY, PDV_LASTVISIT, PDV_TRAFFICLIGHTS,
+            PDV_SHOWSURVEY, PDV_SHOWAVAILABILITY, PDV_MANAGEMENT, PDV_IMAGEBEFORE, PDV_IMAGEAFTER,
+            UUID, PDV_IMAGEBEFORELOCAL, PDV_IMAGEAFTERLOCAL, PDV_STATUSLOCAL, PDV_DATEFINISHLOCAL,
+            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION)
 
-    fun savePointSales(list: List<PointSale>) {
+        val c = db.query(TABLE_PDV, select, "$PDV_VISITID = ?", arrayOf(visitID.toString()), null, null, null, null)
+
+        if (c != null && c.count > 0) {
+            c.moveToFirst()
+            do {
+                val ps = PointSale(c.getInt(0), c.getInt(1), c.getString(2) ?: "", c.getString(3) ?: "", c.getString(4) ?: "", c.getString(5) ?: "", c.getString(6) ?: "", c.getString(7) ?: "", c.getString(8) ?: "", c.getString(9) ?: "", c.getInt(10) == 1, c.getInt(11) == 1, c.getString(12) ?: "", c.getString(13) ?: "", c.getString(14) ?: "", c.getString(15) ?: "")
+                ps.imageBeforeLocal = c.getString(16) ?: ""
+                ps.imageAfterLocal = c.getString(17) ?: ""
+                ps.wasSaveOnBD = (c.getString(18) ?: "") != "NOENVIADO"
+                ps.dateFinish = c.getString(19) ?: ""
+                ps.statusManagement = c.getString(20) ?: ""
+                ps.motiveManagement = c.getString(21) ?: ""
+                ps.observation = c.getString(22) ?: ""
+                listPDV.add(ps)
+            } while (c.moveToNext())
+        }
+        db?.close()
+        c?.close()
+
+        return listPDV
+    }
+
+    fun updatePointSaleManagement(visitID: Int, status: String, motive: String, observation: String) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(PDV_STATUSMANAGEMENT, status)
+        values.put(PDV_MOTIVEMANAGEMENT, motive)
+        values.put(PDV_OBSERVATION, observation)
+
+        db.update(
+            TABLE_PDV,
+            values,
+            "$VISIT_ID = ?",
+            arrayOf(visitID.toString())
+        )
+        db.close()
+    }
+
+    fun updatePointSaleLocal(visitID: Int, management: String? = null, statusLocal: String? = null, imageAfterLocal: String? = null, imageBeforeLocal: String? = null, finishDateLocal: String? = null) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        if (management != null)
+            values.put(PDV_MANAGEMENT, management)
+        if (statusLocal != null)
+            values.put(PDV_STATUSLOCAL, statusLocal)
+        if (imageAfterLocal != null)
+            values.put(PDV_IMAGEAFTERLOCAL, imageAfterLocal)
+        if (imageBeforeLocal != null)
+            values.put(PDV_IMAGEBEFORELOCAL, imageBeforeLocal)
+        if (finishDateLocal != null)
+            values.put(PDV_DATEFINISHLOCAL, finishDateLocal)
+
+        db.update(
+            TABLE_PDV,
+            values,
+            "$VISIT_ID = ?",
+            arrayOf(visitID.toString())
+        )
+        db.close()
+    }
+
+    fun deleteAllPointSale () {
         val dbd = this.writableDatabase
         dbd.delete(TABLE_PDV, null, null)
         dbd.close()
+    }
 
-        for (item in list) {
+    fun savePointSales(list: List<PointSale>): List<PointSale> {
+        val listPoint = getPointSale()
+        val dbd = this.writableDatabase
+        dbd.delete(TABLE_PDV, null, null)
+        dbd.close()
+        for ((i, item) in list.withIndex()) {
             val db = this.writableDatabase
             val values = ContentValues()
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
@@ -71,20 +159,38 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             values.put(PDV_LASTVISIT, item.lastVisit)
             values.put(PDV_TRAFFICLIGHTS, item.trafficLights)
             values.put(PDV_SHOWSURVEY, if (item.showSurvey) 1 else 0)
-            values.put(PDV_MANAGEMENT, item.management)
+
             values.put(PDV_IMAGEBEFORE, item.imageBefore)
             values.put(PDV_IMAGEAFTER, item.imageAfter)
             values.put(PDV_DATE, date.toString())
             values.put(UUID, item.uuid)
 
+            val pointSaved = listPoint.find { it.visitId ==item.visitId }
+            if (pointSaved != null) {
+
+                list[i].wasSaveOnBD = pointSaved.wasSaveOnBD
+                list[i].management = pointSaved.management
+                list[i].imageAfterLocal = pointSaved.imageAfterLocal
+                list[i].imageBeforeLocal = pointSaved.imageBeforeLocal
+                list[i].dateFinish = pointSaved.dateFinish
+
+                values.put(PDV_STATUSLOCAL, if (pointSaved.wasSaveOnBD) "ENVIADO" else "NOENVIADO")
+                values.put(PDV_MANAGEMENT, pointSaved.management)
+                values.put(PDV_IMAGEAFTERLOCAL, pointSaved.imageAfterLocal)
+                values.put(PDV_IMAGEBEFORELOCAL, pointSaved.imageBeforeLocal)
+                values.put(PDV_DATEFINISHLOCAL, pointSaved.dateFinish)
+            } else {
+
+                list[i].wasSaveOnBD = item.management == "VISITADO"
+                values.put(PDV_MANAGEMENT, item.management)
+                values.put(PDV_STATUSLOCAL, if(item.management == "VISITADO") "ENVIADO" else "NOENVIADO")
+            }
+
             db.insert(TABLE_PDV, null, values)
             dbd.close()
         }
-
+        return list
     }
-
-
-
 
 
 
@@ -430,6 +536,17 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val PDV_MANAGEMENT = "management"
         private const val PDV_IMAGEBEFORE = "imagebefore"
         private const val PDV_IMAGEAFTER = "imageafter"
+
+        private const val PDV_IMAGEBEFORELOCAL = "imagebeforelocal"
+        private const val PDV_IMAGEAFTERLOCAL = "imageafterlocal"
+        private const val PDV_STATUSLOCAL = "statuslocal"
+        private const val PDV_DATEFINISHLOCAL = "datefinishlocal"
+
+
+        private const val PDV_STATUSMANAGEMENT = "statusmanagement"
+        private const val PDV_MOTIVEMANAGEMENT = "motivemanagement"
+        private const val PDV_OBSERVATION = "observation"
+
         private const val PDV_DATE = "visitdate"
 
         private const val SQL_CREATE_TABLE_PDV = ("" +
@@ -451,6 +568,13 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 " $PDV_IMAGEBEFORE text, " +
                 " $PDV_IMAGEAFTER text, " +
                 " $PDV_DATE text, " +
+                " $PDV_IMAGEBEFORELOCAL text, " +
+                " $PDV_IMAGEAFTERLOCAL text, " +
+                " $PDV_STATUSLOCAL text, " +
+                " $PDV_DATEFINISHLOCAL text, " +
+                " $PDV_STATUSMANAGEMENT text, " +
+                " $PDV_MOTIVEMANAGEMENT text, " +
+                " $PDV_OBSERVATION text, " +
                 " $UUID text" +
                 ")")
 

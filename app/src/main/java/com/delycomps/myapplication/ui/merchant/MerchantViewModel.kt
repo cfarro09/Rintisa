@@ -41,6 +41,9 @@ class MerchantViewModel : ViewModel() {
     private val _urlAfterImage: MutableLiveData<String> = MutableLiveData()
     val urlAfterImage: LiveData<String> = _urlAfterImage
 
+    private val _urlImage: MutableLiveData<String> = MutableLiveData()
+    val urlImage: LiveData<String> = _urlImage
+
     private val _closingMerchant: MutableLiveData<Boolean> = MutableLiveData()
     val closingMerchant: LiveData<Boolean> = _closingMerchant
 
@@ -97,12 +100,6 @@ class MerchantViewModel : ViewModel() {
         _listProductSelected.value = list
     }
 
-//    fun addStocks(stocks: List<Stock>): MutableList<Stock> {
-//        _listStockSelected.value = ((_listStockSelected.value ?: emptyList()) + stocks.filter { (_listStockSelected.value ?: emptyList()).find { r -> r.product == it.product } == null }).toMutableList()
-//
-//        return _listStockSelected.value!!
-//    }
-
 
     fun addProduct (stocks: List<SurveyProduct>) {
         _listProductSelected.value = ((_listProductSelected.value ?: emptyList()) + stocks.filter { (_listProductSelected.value ?: emptyList()).find { r -> r.productId == it.productId && r.measureUnit == it.measureUnit } == null }).toMutableList()
@@ -135,36 +132,32 @@ class MerchantViewModel : ViewModel() {
         }
     }
 
-    fun uploadBeforeImage(file: File, token: String) {
+    fun uploadImage(file: File, token: String) {
         Repository().uploadImage(file, token) { isSuccess, result, _ ->
             if (isSuccess) {
-                _urlBeforeImage.value = result!!
+                _urlImage.value = result!!
             } else {
-                _urlBeforeImage.value = ""
-                Log.d("log_carlos", "URL VACIA")
+                _urlImage.value = ""
             }
+        }
+    }
+
+    fun uploadImageLocal(path: String, type: String) {
+        if (type == "BEFORE") {
+            _urlBeforeImage.value = path
+        } else {
+            _urlAfterImage.value = path
         }
     }
 
     fun closeMerchant(visitId: Int, image_before: String, image_after: String, material_list: String, price_survey_list: String, haveSurvey: Boolean,
                       listAvailability: String, haveAvailability: Boolean,
-                      status_management: String, motive: String, observation: String,token: String) {
+                      status_management: String, motive: String, observation: String, token: String, finishDate: String? = null) {
         Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey,
             listAvailability,
             haveAvailability,
-            status_management, motive, observation, token) { isSuccess, _ ->
+            status_management, motive, observation, token, finishDate) { isSuccess, _ ->
             _closingMerchant.value = isSuccess
-        }
-    }
-
-    fun uploadAfterImage(file: File, token: String) {
-        Repository().uploadImage(file, token) { isSuccess, result, _ ->
-            if (isSuccess) {
-                _urlAfterImage.value = result!!
-            } else {
-                Log.d("log_carlos", "URL VACIA")
-                _urlAfterImage.value = ""
-            }
         }
     }
 

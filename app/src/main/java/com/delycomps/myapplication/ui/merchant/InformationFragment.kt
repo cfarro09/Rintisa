@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.delycomps.myapplication.Constants
 import com.delycomps.myapplication.R
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Management
@@ -41,6 +42,8 @@ class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel
     private var currentPhotoPath: String = ""
     private var currentPhotoBitmap: Bitmap? = null
+    private var pointSale: PointSale? = null
+
     private var fromImage: String = ""
     private var typeImage: String = ""
     private lateinit var dialogLoading: AlertDialog
@@ -67,39 +70,35 @@ class InformationFragment : Fragment() {
             fromImage = "CAMERA"
             dispatchTakePictureIntent(view)
         }
-        view.findViewById<ImageButton>(R.id.image_before_gallery).setOnClickListener {
-            typeImage = "BEFORE"
-            fromImage = "GALLERY"
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            intent.type = "image/*"
-            startActivityForResult(intent,
-                CODE_RESULT_GALLERY
-            )
-        }
         view.findViewById<ImageButton>(R.id.image_after).setOnClickListener {
             typeImage = "AFTER"
             fromImage = "CAMERA"
             dispatchTakePictureIntent(view)
         }
-        view.findViewById<ImageButton>(R.id.image_after_gallery).setOnClickListener {
-            typeImage = "AFTER"
-            fromImage = "GALLERY"
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            startActivityForResult(intent,
-                CODE_RESULT_GALLERY
-            )
-        }
-        val pointSale: PointSale? = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
+        pointSale = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
         if (pointSale != null) {
-            view.findViewById<TextView>(R.id.pdv_client).text = pointSale.client
-            view.findViewById<TextView>(R.id.pdv_market).text = pointSale.market
-            view.findViewById<TextView>(R.id.pdv_stall_number).text = "N° PUESTO: " + pointSale.stallNumber
-            view.findViewById<TextView>(R.id.pdv_date).text = "${pointSale.visitFrequency} (${pointSale.visitDay})"
-            view.findViewById<TextView>(R.id.pdv_last_visit).text = pointSale.lastVisit
-            view.findViewById<TextView>(R.id.pdv_comment).text = pointSale.comment
 
-            val color = if (pointSale.trafficLights == "AMARILLO") "#FFF8B7" else if (pointSale.trafficLights == "VERDE") "#B6FFA9" else  "#FF9696"
+            val listpoint = BDLocal(view.context).getPointSaleOne(pointSale!!.visitId)
+
+            if (listpoint.count() > 0) {
+                val point = listpoint[0]
+                if ((point.imageAfterLocal ?: "") != "") {
+                    viewModel.uploadImageLocal(point.imageAfterLocal!!, "AFTER")
+                    view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(point.imageAfterLocal!!))
+                }
+                if ((point.imageBeforeLocal ?: "") != "") {
+                    viewModel.uploadImageLocal(point.imageBeforeLocal!!, "BEFORE")
+                    view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(point.imageBeforeLocal!!))
+                }
+            }
+            view.findViewById<TextView>(R.id.pdv_client).text = pointSale!!.client
+            view.findViewById<TextView>(R.id.pdv_market).text = pointSale!!.market
+            view.findViewById<TextView>(R.id.pdv_stall_number).text = "N° PUESTO: " + pointSale!!.stallNumber
+            view.findViewById<TextView>(R.id.pdv_date).text = "${pointSale!!.visitFrequency} (${pointSale!!.visitDay})"
+            view.findViewById<TextView>(R.id.pdv_last_visit).text = pointSale!!.lastVisit
+            view.findViewById<TextView>(R.id.pdv_comment).text = pointSale!!.comment
+
+            val color = if (pointSale!!.trafficLights == "AMARILLO") "#FFF8B7" else if (pointSale!!.trafficLights == "VERDE") "#B6FFA9" else  "#FF9696"
             view.findViewById<View>(R.id.pdv_traffic_light).backgroundTintList = ColorStateList.valueOf(Color.parseColor(color))
         }
 
@@ -136,31 +135,6 @@ class InformationFragment : Fragment() {
                 }
             }
         }
-
-        viewModel.urlAfterImage.observe(requireActivity()) {
-            dialogLoading.dismiss()
-            if (it == "") {
-                Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-            } else {
-                if (fromImage == "CAMERA") {
-                    view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                } else {
-                    view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(currentPhotoBitmap)
-                }
-            }
-        }
-        viewModel.urlBeforeImage.observe(requireActivity()) {
-            dialogLoading.dismiss()
-            if (it == "") {
-                Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-            } else {
-                if (fromImage == "CAMERA") {
-                    view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                } else {
-                    view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(currentPhotoBitmap)
-                }
-            }
-        }
     }
 
     override fun onActivityResult(
@@ -171,48 +145,13 @@ class InformationFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
         when (requestCode) {
             CODE_RESULT_CAMERA -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                dialogLoading.show()
                 val f = Helpers().saveBitmapToFile(File(currentPhotoPath))
-                if (f != null) {
-                    if (typeImage == "BEFORE") {
-                        viewModel.uploadBeforeImage(f, SharedPrefsCache(requireContext()).getToken())
-                    } else {
-                        viewModel.uploadAfterImage(f, SharedPrefsCache(requireContext()).getToken())
-                    }
+                viewModel.uploadImageLocal(f!!.path, typeImage)
+                BDLocal(requireContext()).updatePointSaleLocal(pointSale!!.visitId, null, null, if (typeImage == "AFTER") currentPhotoPath else null, if (typeImage != "AFTER") currentPhotoPath else null)
+                if (typeImage == "BEFORE") {
+                    requireActivity().findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 } else {
-                    dialogLoading.dismiss()
-                    Toast.makeText(context, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                }
-            }
-            CODE_RESULT_GALLERY -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                val imageSelected: Uri? = imageReturnedIntent?.data
-                if (imageSelected != null) {
-                    try {
-                        val  imageStream: InputStream? = requireActivity().contentResolver!!.openInputStream(imageSelected)
-
-                        val selectedImage = BitmapFactory.decodeStream(imageStream)
-
-                        currentPhotoBitmap = Helpers().getResizedBitmap(selectedImage, 600)
-
-                        if (currentPhotoBitmap != null) {
-                            val f = Helpers().bitmapToFile(context, currentPhotoBitmap!!, UUID.randomUUID().toString())
-
-                            if (f != null) {
-                                dialogLoading.show()
-                                if (typeImage == "BEFORE") {
-                                    viewModel.uploadBeforeImage(f, SharedPrefsCache(requireContext()).getToken())
-                                } else {
-                                    viewModel.uploadAfterImage(f, SharedPrefsCache(requireContext()).getToken())
-                                }
-                            } else {
-                                Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } catch (e: FileNotFoundException) {
-                        Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                    requireActivity().findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 }
             }
         }

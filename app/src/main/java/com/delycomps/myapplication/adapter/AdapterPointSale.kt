@@ -1,12 +1,14 @@
 package com.delycomps.myapplication.adapter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.model.PointSale
@@ -44,13 +46,10 @@ class AdapterPointsale(
         notifyDataSetChanged()
     }
 
-    fun updateImageBefore(position: Int, url: String){
-        listPointSale[position].imageBefore = url
-        notifyItemChanged(position)
-    }
-
-    fun updateManagement(position: Int, status: String){
+    fun updateManagement(position: Int, status: String, dateFinish: String, statuslocal: String){
         listPointSale[position].management = status
+        listPointSale[position].dateFinish = dateFinish
+        listPointSale[position].wasSaveOnBD = statuslocal == "ENVIADO"
         notifyItemChanged(position)
     }
 
@@ -65,7 +64,7 @@ class AdapterPointsale(
         holder.itemPointSaleClient.text = pointSale.client
         holder.itemPointSaleMarket.text = pointSale.market
         holder.itemPointSaleStallNumber.text = "N° PUESTO: " + (pointSale.stallNumber ?: "")
-        holder.itemPointSaleManagement.text = pointSale.management
+        holder.itemPointSaleManagement.text = pointSale.management // + " -> " + (if (pointSale.wasSaveOnBD) "ENVIADO" else "NOENVIADO") + " <-> " + pointSale.dateFinish
 
         if (supervisor) {
             holder.itemPointSaleManagement.visibility = View.VISIBLE
@@ -75,6 +74,10 @@ class AdapterPointsale(
         } else {
             holder.itemPointSaleUsername.visibility = View.GONE
             holder.itemPointSaleHourEntry.visibility = View.GONE
+
+            if (pointSale.management == "VISITADO" && !pointSale.wasSaveOnBD) {
+                holder.background.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#ff8f8f"))
+            }
         }
     }
 
@@ -87,6 +90,7 @@ class AdapterPointsale(
         internal var itemPointSaleManagement: TextView = itemView.findViewById(R.id.pdv_management)
         internal var itemPointSaleUsername: TextView = itemView.findViewById(R.id.pdv_username)
         internal var itemPointSaleHourEntry: TextView = itemView.findViewById(R.id.pdv_hour_entry)
+        internal var background: CardView = itemView.findViewById(R.id.pdv_background)
 
         init {
             itemView.setOnClickListener(this)
