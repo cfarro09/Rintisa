@@ -32,8 +32,10 @@ open class SurveyProduct: Parcelable {
     @Expose
     var imageEvidence: String?
 
+
     var uuid: String?
     var competence: String?
+    var imageEvidenceLocal: String? = ""
 
     constructor(
         productId: Int,
@@ -45,7 +47,8 @@ open class SurveyProduct: Parcelable {
         merchant: String? = "",
         imageEvidence: String? = "",
         uuid: String = UUID.randomUUID().toString(),
-        competence: String? = ""
+        competence: String? = "",
+        imageEvidenceLocal: String? = ""
     ) {
         this.productId = productId
         this.description = description
@@ -57,6 +60,7 @@ open class SurveyProduct: Parcelable {
         this.imageEvidence = imageEvidence
         this.uuid = uuid
         this.competence = competence
+        this.imageEvidenceLocal = imageEvidenceLocal
     }
     protected constructor(parcel: Parcel) {
         this.productId = parcel.readInt()
@@ -69,6 +73,7 @@ open class SurveyProduct: Parcelable {
         this.imageEvidence = parcel.readString()
         this.uuid = parcel.readString()
         this.competence = parcel.readString()
+        this.imageEvidenceLocal = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -84,6 +89,7 @@ open class SurveyProduct: Parcelable {
         p0.writeString(imageEvidence)
         p0.writeString(uuid)
         p0.writeString(competence)
+        p0.writeString(imageEvidenceLocal)
     }
     companion object CREATOR : Parcelable.Creator<SurveyProduct> {
         override fun createFromParcel(parcel: Parcel): SurveyProduct {

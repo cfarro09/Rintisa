@@ -1,6 +1,7 @@
 package com.delycomps.myapplication.adapter
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
@@ -53,6 +54,7 @@ class AdapterSale(
         listSurveyProduct[index].brand = surveyProduct.brand
 //        listSurveyProduct[index].merchant = surveyProduct.merchant
         listSurveyProduct[index].imageEvidence = surveyProduct.imageEvidence
+        listSurveyProduct[index].imageEvidenceLocal = surveyProduct.imageEvidenceLocal
         listSurveyProduct[index].description = surveyProduct.description
         listSurveyProduct[index].price = surveyProduct.price
         listSurveyProduct[index].quantity = surveyProduct.quantity
@@ -81,7 +83,6 @@ class AdapterSale(
         val measureUnit = surveyProduct.measureUnit
         val quantity = surveyProduct.quantity
 
-
         if (brand == "SUPERCAN" || brand == "SUPERCAT") {
             holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
             holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
@@ -89,35 +90,9 @@ class AdapterSale(
         } else {
             holder.itemContainerMerchant.visibility = View.GONE
         }
-
-        holder.itemProductLoading.visibility = View.VISIBLE
-        Glide.with(holder.itemProductMeasureUnit.context)
-            .load(surveyProduct.imageEvidence)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .circleCrop()
-            .transition(DrawableTransitionOptions.withCrossFade())
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    holder.itemProductLoading.visibility = View.GONE
-                    return false
-                }
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    holder.itemProductLoading.visibility = View.GONE
-                    return false
-                }
-            })
-            .into(holder.itemProductImage)
+        if ((surveyProduct.imageEvidenceLocal ?: "") != "") {
+            holder.itemProductImage.setImageBitmap(BitmapFactory.decodeFile(surveyProduct.imageEvidenceLocal))
+        }
     }
 
     inner class OrderViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -127,7 +102,7 @@ class AdapterSale(
         internal var itemContainerMerchant: RelativeLayout = itemView.findViewById(R.id.container_merchant)
         internal var itemProductMerchant: Spinner = itemView.findViewById(R.id.item_merchant)
         internal var itemProductImage: ImageView = itemView.findViewById(R.id.view_image_evidence)
-        internal var itemProductLoading: ProgressBar = itemView.findViewById(R.id.loading_evidence)
+
         private var buttonRemove: ImageButton = itemView.findViewById(R.id.button_remove)
         private var buttonSave: ImageButton = itemView.findViewById(R.id.button_save)
         private var check = 0

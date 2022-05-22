@@ -423,8 +423,6 @@ class MainActivity : AppCompatActivity() {
         val motive = merchantViewModel.management.value?.motive ?: ""
         val observation = merchantViewModel.management.value?.observation ?: ""
 
-        BDLocal(this).updatePointSaleManagement(pointSale.visitId, statusManagement, motive, observation)
-
         val listMaterialProcessed = listMaterials.map { mapOf<String, Any>(
             "material_visitid" to 0,
             "visitid" to pointSale.visitId,

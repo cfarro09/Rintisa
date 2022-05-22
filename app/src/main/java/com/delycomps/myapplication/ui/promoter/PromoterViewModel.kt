@@ -68,8 +68,8 @@ class PromoterViewModel : ViewModel() {
         }
     }
 
-    fun closePromoter(visitId: Int, material_list: String, sale_list: String, showSale: Boolean, merchandises: String, token: String) {
-        Repository().insCloseManagePromoter(visitId, material_list, sale_list, showSale, merchandises, token) { isSuccess, _ ->
+    fun closePromoter(visitId: Int, material_list: String, sale_list: String, showSale: Boolean, merchandises: String, token: String, finish_date: String? = null) {
+        Repository().insCloseManagePromoter(visitId, material_list, sale_list, showSale, merchandises, token, finish_date) { isSuccess, _ ->
             _closingPromoter.value = isSuccess
         }
     }
@@ -96,6 +96,13 @@ class PromoterViewModel : ViewModel() {
         BDLocal(context).updateSalePromoter(product)
         _listProductSelected.value = _listProductSelected.value!!.mapIndexed { index, item -> if (index == i) product else item }.toMutableList()
         return _listProductSelected.value!!
+    }
+
+    fun updateProductImage (uuid: String, urlImage: String, context: Context) {
+        val product = _listProductSelected.value!!.find { it.uuid == uuid }
+        product?.imageEvidence = urlImage
+        BDLocal(context).updateSalePromoter(product!!)
+        _listProductSelected.value = _listProductSelected.value!!.map { if (it.uuid == uuid) product else it }.toMutableList()
     }
 
     fun updateMerchandise (merchandise: Merchandise, i: Int) {

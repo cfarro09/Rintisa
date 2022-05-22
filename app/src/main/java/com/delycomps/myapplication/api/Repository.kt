@@ -386,9 +386,12 @@ class Repository {
         showSale: Boolean,
         merchandises: String,
         token: String,
+        dateFinish: String?,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
-        val jsonto = Gson().toJson(RequestBodyX("UFN_UPDATE_REPLACE_STOCK_SALE_VISIT", "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT", mapOf<String, Any>(
+        val method = if (dateFinish != null) "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT_FINISH" else "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT"
+
+        val jsonto = Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
             "visitid" to visitId,
             "replace_stock" to stock_list,
             "sale_list" to sales_list,

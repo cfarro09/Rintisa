@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.text.Editable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -51,9 +52,9 @@ class SalesFragment : Fragment() {
     private lateinit var listMerchandise: List<Merchandise>
     private lateinit var listBrand: List<String>
     private var currentPhotoPath: String = ""
+    private var lastpath: String = ""
     private lateinit var dialogLoading: AlertDialog
     private lateinit var imageRegister: ImageView
-    private lateinit var loadingEvidence: ProgressBar
 //    private val listMeasureUnit = listOf("KILO", "SACO", "HUMEDO", "SNACK")
     private lateinit var pointSale: PointSale
     private var indexSelected = 0
@@ -81,45 +82,6 @@ class SalesFragment : Fragment() {
         builderLoading.setView(R.layout.layout_loading_dialog)
         dialogLoading = builderLoading.create()
 
-        viewModel.loadingSelfie.observe(requireActivity()) {
-            if (it == true) {
-                dialogLoading.dismiss()
-                if (viewModel.urlSelfie.value != "") {
-                    imageRegister.visibility = View.VISIBLE
-                    loadingEvidence.visibility = View.VISIBLE
-                    Glide.with(view.context)
-                        .load(viewModel.urlSelfie.value)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .circleCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                loadingEvidence.visibility = View.GONE
-                                return false
-                            }
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                loadingEvidence.visibility = View.GONE
-                                return false
-                            }
-                        })
-                        .into(imageRegister)
-
-                } else {
-                    Toast.makeText(view.context, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
         pointSale = requireActivity().intent.getParcelableExtra<PointSale>(Constants.POINT_SALE_ITEM)!!
 
         listBrandSale = viewModel.dataBrandSale.value ?: emptyList()
@@ -142,42 +104,19 @@ class SalesFragment : Fragment() {
         val buttonRegister = view.findViewById<FloatingActionButton>(R.id.sale_register)
 
         rv.adapter = AdapterSale(listProductsSelected, listMerchandise, object : AdapterSale.ListAdapterListener {
-            override fun onClickAtDetailProduct(surveyProduct: SurveyProduct, position: Int, type: String) {
+            override fun onClickAtDetailProduct(sp: SurveyProduct, position: Int, type: String) {
                 indexSelected = position
                 if (type == "UPDATE") {
-                    viewModel.setUrlSelfie(surveyProduct.imageEvidence ?: "")
-                    dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(surveyProduct.brand))
-                    dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + surveyProduct.quantity)
+                    viewModel.setUrlSelfie(sp.imageEvidence ?: "")
+                    dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(sp.brand))
+                    dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + sp.quantity)
 
-                    imageRegister.visibility = View.VISIBLE
-                    Glide.with(view.context)
-                        .load(viewModel.urlSelfie.value)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .circleCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                loadingEvidence.visibility = View.GONE
-                                return false
-                            }
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                loadingEvidence.visibility = View.GONE
-                                return false
-                            }
-                        })
-                        .into(imageRegister)
-
+                    lastpath = sp.imageEvidenceLocal ?: ""
+                    if ((sp.imageEvidenceLocal ?: "") != "") {
+                        imageRegister.setImageBitmap(BitmapFactory.decodeFile(sp.imageEvidenceLocal))
+                    } else {
+                        imageRegister.setImageDrawable(null);
+                    }
                     dialogMaterial.show()
                 } else {
                     val listProducts = viewModel.removeProduct(position, view.context)
@@ -198,9 +137,9 @@ class SalesFragment : Fragment() {
             dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
             dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("")
+            lastpath = ""
+            imageRegister.setImageDrawable(null);
 
-            loadingEvidence.visibility = View.GONE
-            imageRegister.visibility = View.GONE
             dialogMaterial.show()
         }
     }
@@ -210,17 +149,11 @@ class SalesFragment : Fragment() {
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
         val buttonTakePhoto = view.findViewById<Button>(R.id.dialog_take_photo_product)
-        val buttonSelectImage = view.findViewById<Button>(R.id.dialog_select_gallery_product)
-        loadingEvidence = view.findViewById(R.id.loading_evidence)
+
         imageRegister = view.findViewById(R.id.view_image_evidence)
 
         buttonTakePhoto.setOnClickListener {
             dispatchTakePictureIntent(view)
-        }
-        buttonSelectImage.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            startActivityForResult(intent, CODE_RESULT_GALLERY)
         }
 
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
@@ -233,7 +166,6 @@ class SalesFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
-//                spinnerProduct.adapter = ArrayAdapter<String?>(view!!.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == brand }.map { it.description }.toMutableList())
                 val measures: List<String> = listBrandSale.find { it.brand == brand }?.listMeasure ?: emptyList()
                 spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, measures)
             }
@@ -253,8 +185,8 @@ class SalesFragment : Fragment() {
             val quantity = if (quantityString == "") 0.0 else quantityString.toDouble()
 
             if (brand != "" && brand != "Seleccione" && quantity > 0) {
-
-                val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", viewModel.urlSelfie.value)
+                val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
+                surveyProduct.imageEvidenceLocal = lastpath
                 if (indexSelected == -1) {
                     val listProducts = viewModel.addProduct(surveyProduct, pointSale.visitId, view.context)
                     (rv.adapter as AdapterSale).addProduct(surveyProduct)
@@ -280,38 +212,11 @@ class SalesFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
         when (requestCode) {
             CODE_RESULT_CAMERA -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                dialogLoading.show()
                 val f = Helpers().saveBitmapToFile(File(currentPhotoPath))
                 if (f != null) {
-                    viewModel.uploadSelfie(f, SharedPrefsCache(requireContext()).getToken())
-                } else {
-                    dialogLoading.dismiss()
-                    Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                }
-            }
-            CODE_RESULT_GALLERY -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                val imageSelected: Uri? = imageReturnedIntent?.data
-                if (imageSelected != null) {
-                    try {
-                        val  imageStream: InputStream? = requireActivity().contentResolver!!.openInputStream(imageSelected)
-
-                        val selectedImage = BitmapFactory.decodeStream(imageStream)
-
-                        val currentPhotoBitmap = Helpers().getResizedBitmap(selectedImage, 600)
-
-                        if (currentPhotoBitmap != null) {
-                            val f = Helpers().bitmapToFile(context, currentPhotoBitmap, UUID.randomUUID().toString())
-
-                            if (f != null) {
-                                dialogLoading.show()
-                                viewModel.uploadSelfie(f, SharedPrefsCache(requireContext()).getToken())
-                            } else {
-                                Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } catch (e: FileNotFoundException) {
-                        Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
-                    }
+                    lastpath = f.path
+                    Log.d("caaa", f.path)
+                    imageRegister.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
                 } else {
                     Toast.makeText(requireContext(), "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }

@@ -26,13 +26,6 @@
                 android:layout_gravity="center_horizontal"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY" />
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:id="@+id/loading_evidence"
-                android:visibility="gone"
-                android:layout_centerInParent="true"
-                android:layout_height="wrap_content"
-                />
         </RelativeLayout>
 
         <LinearLayout

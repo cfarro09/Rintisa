@@ -21,6 +21,7 @@ import com.delycomps.myapplication.databinding.ActivityPromoterBinding
 import com.delycomps.myapplication.model.*
 import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.gson.Gson
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,6 +32,9 @@ class PromoterActivity : AppCompatActivity() {
     private lateinit var promoterViewModel: PromoterViewModel
     private lateinit var dialogLoading: AlertDialog
     private lateinit var pointSale: PointSale
+
+    private var imageIndex: Int = 0
+    private var listImages: MutableList<resImage> = arrayListOf()
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -43,50 +47,19 @@ class PromoterActivity : AppCompatActivity() {
         val id = item.itemId
 
         if (id == R.id.action_one) {
-            val listStocks = promoterViewModel.listStockSelected.value ?: emptyList()
-            val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
-
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
                         dialogLoading.show()
-                        val listStockProcessed = listStocks.map { mapOf<String, Any>(
-                            "product" to it.product.toString(),
-                            "brand" to it.brand.toString(),
-                            "type" to it.type.toString()
-                        ) }.toList()
+                        val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
+                        listImages = listProducts.filter { (it.imageEvidenceLocal ?: "") != "" && it.imageEvidence == "" }.map { resImage(it.uuid.toString(), it.imageEvidenceLocal!!, null) }.toMutableList()
 
-                        val listProductProcessed = listProducts.map { mapOf<String, Any>(
-                            "subtotal" to 0,
-                            "total" to 0,
-                            "description_sale" to SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(
-                                Date()
-                            ),
-                            "status_sale" to "ACTIVO",
-                            "type_sale" to "NINGUNO",
-                            "productid" to it.productId,
-                            "quantity" to it.quantity,
-                            "measure_unit" to (it.measureUnit ?: ""),
-                            "price" to 0,
-                            "merchant" to (it.merchant ?: ""),
-                            "url_evidence" to (it.imageEvidence ?: ""),
-                            "total_detail" to 0,
-                            "description_detail" to (it.description ?: ""),
-                            "status_detail" to "ACTIVO",
-                            "type_detail" to "NINGUNO",
-                            "operation" to "INSERT",
-                        ) }.toList()
-
-                        Log.d("carlosss", Gson().toJson(listProductProcessed))
-
-                        promoterViewModel.closePromoter(
-                            pointSale.visitId,
-                            Gson().toJson(listStockProcessed),
-                            Gson().toJson(listProductProcessed),
-                            listProducts.count() > 0,
-                            "",
-                            SharedPrefsCache(this).getToken()
-                        )
+                        if (listImages.count() > 0) {
+                            imageIndex = 0
+                            promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+                        } else {
+                            closePromoter()
+                        }
                     }
                 }
             }
@@ -103,6 +76,45 @@ class PromoterActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun closePromoter() {
+        val listStocks = promoterViewModel.listStockSelected.value ?: emptyList()
+        val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
+
+        val listStockProcessed = listStocks.map { mapOf<String, Any>(
+            "product" to it.product.toString(),
+            "brand" to it.brand.toString(),
+            "type" to it.type.toString()
+        ) }.toList()
+
+        val listProductProcessed = listProducts.map { mapOf<String, Any>(
+            "subtotal" to 0,
+            "total" to 0,
+            "description_sale" to SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(
+                Date()
+            ),
+            "status_sale" to "ACTIVO",
+            "type_sale" to "NINGUNO",
+            "productid" to it.productId,
+            "quantity" to it.quantity,
+            "measure_unit" to (it.measureUnit ?: ""),
+            "price" to 0,
+            "merchant" to (it.merchant ?: ""),
+            "url_evidence" to (it.imageEvidence ?: ""),
+            "total_detail" to 0,
+            "description_detail" to (it.description ?: ""),
+            "status_detail" to "ACTIVO",
+            "type_detail" to "NINGUNO",
+            "operation" to "INSERT",
+        ) }.toList()
+
+        promoterViewModel.closePromoter(
+            pointSale.visitId,
+            Gson().toJson(listStockProcessed),
+            Gson().toJson(listProductProcessed),
+            listProducts.count() > 0,
+            "",
+            SharedPrefsCache(this).getToken())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,21 +138,64 @@ class PromoterActivity : AppCompatActivity() {
         val listProducts: List<SurveyProduct> = BDLocal(this).getSalePromoter(pointSale.visitId)
         promoterViewModel.initialDataPromoter(listStock, listProducts)
 
-        promoterViewModel.closingPromoter.observe(this) {
-            dialogLoading.dismiss()
-            if (it) {
-                Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
-
-                BDLocal(this).deleteSalePromoterFromVisit(pointSale.visitId)
-                BDLocal(this).deleteStockPromoterFromVisit(pointSale.visitId)
-
+        promoterViewModel.urlSelfie.observe(this) {
+            if (it == "") {
+                //error lo regresamos nomas
+                dialogLoading.dismiss()
+                val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "NOENVIADO", null, null, dateString)
                 val output = Intent()
+                output.putExtra("statuslocal", "NOENVIADO")
                 output.putExtra("status", "VISITADO")
-                setResult(RESULT_OK, output);
+                output.putExtra("datefinish", dateString)
+                setResult(RESULT_OK, output)
                 finish()
             } else {
-                Toast.makeText(this, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show()
+                val im = listImages[imageIndex]
+                promoterViewModel.updateProductImage(im.type, it, this)
+
+                imageIndex += 1
+                if (imageIndex == listImages.count()) {
+                    closePromoter()
+                } else {
+                    promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+                }
             }
+        }
+
+        promoterViewModel.closingPromoter.observe(this) {
+            dialogLoading.dismiss()
+            val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+            val output = Intent()
+
+            if (it) {
+                Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+                BDLocal(this).deleteSalePromoterFromVisit(pointSale.visitId)
+                BDLocal(this).deleteStockPromoterFromVisit(pointSale.visitId)
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "ENVIADO")
+
+                output.putExtra("status", "VISITADO")
+                output.putExtra("statuslocal", "ENVIADO")
+
+                listImages.forEach { r ->
+                    try {
+                        val res = File(r.path).delete()
+                        Log.d("file-delete", "${r.path} -> $res")
+                    } catch (e: Exception) {
+                        Log.d("file-delete-error", "${r.path} -> error ${e.message.toString()}")
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                output.putExtra("statuslocal", "NOENVIADO")
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "NOENVIADO", null, null, dateString)
+            }
+
+            output.putExtra("status", "VISITADO")
+            output.putExtra("datefinish", dateString)
+            setResult(RESULT_OK, output)
+            finish()
         }
 
 
