@@ -6,12 +6,13 @@
     android:layout_height="match_parent"
     android:layout_margin="10dp"
     tools:context=".MainActivity">
+
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/remove_point_sale"
-        android:text="limpiar puntos de venta"
-        />
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:text="limpiar puntos de venta" />
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/main_swiper_refresh"
         android:layout_width="match_parent"
