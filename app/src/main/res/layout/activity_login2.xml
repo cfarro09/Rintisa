@@ -42,7 +42,6 @@
             android:maxLines="1"
             android:padding="10dp"
             android:singleLine="true"
-            android:text="impulsadordev"
             android:textColor="#FF636363"
             android:textColorHint="#636363"
             android:textSize="15sp" />
@@ -64,7 +63,6 @@
                 android:drawablePadding="10dp"
                 android:drawableTint="@color/colorSecondary"
                 android:hint="@string/contrase_a"
-                android:text="admin"
                 android:inputType="textPassword"
                 android:lines="1"
                 android:maxLines="1"

@@ -167,7 +167,6 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
             val pointSaved = listPoint.find { it.visitId ==item.visitId }
             if (pointSaved != null) {
-
                 list[i].wasSaveOnBD = pointSaved.wasSaveOnBD
                 list[i].management = pointSaved.management
                 list[i].imageAfterLocal = pointSaved.imageAfterLocal
@@ -179,8 +178,15 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 values.put(PDV_IMAGEAFTERLOCAL, pointSaved.imageAfterLocal)
                 values.put(PDV_IMAGEBEFORELOCAL, pointSaved.imageBeforeLocal)
                 values.put(PDV_DATEFINISHLOCAL, pointSaved.dateFinish)
-            } else {
 
+                if (pointSaved.management == "VISITADO" && item.management == "INICIADO") {
+                    list[i].wasSaveOnBD = false
+                    list[i].management = "INICIADO"
+
+                    values.put(PDV_STATUSLOCAL, "NOENVIADO")
+                    values.put(PDV_MANAGEMENT, "INICIADO")
+                }
+            } else {
                 list[i].wasSaveOnBD = item.management == "VISITADO"
                 values.put(PDV_MANAGEMENT, item.management)
                 values.put(PDV_STATUSLOCAL, if(item.management == "VISITADO") "ENVIADO" else "NOENVIADO")

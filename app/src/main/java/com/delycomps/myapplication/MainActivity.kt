@@ -35,6 +35,7 @@ import com.delycomps.myapplication.model.DataMerchant
 import com.delycomps.myapplication.model.PointSale
 import com.delycomps.myapplication.model.resImage
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
+import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import java.io.*
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private var locationManager : LocationManager? = null
     private var currentPhotoPath: String = ""
     private lateinit var merchantViewModel: MerchantViewModel
+    private lateinit var promoterViewModel: PromoterViewModel
     private var currentMerchantPhotoPath: String = ""
     private var typeImage: String = ""
 
@@ -130,6 +132,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        promoterViewModel = ViewModelProvider(this).get(PromoterViewModel::class.java)
         merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
 
         val role = SharedPrefsCache(this).get("type", "string")
@@ -367,6 +370,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun closeMerchantValidate() {
+        val listPoint = BDLocal(this).getPointSaleOne(pointSale.visitId)
+
+        if (listPoint.count() > 0) {
+            val point = listPoint[0]
+
+            val imageBefore = point.imageBeforeLocal ?: ""
+            val imageAfter = point.imageAfterLocal ?: ""
+
+            listImages = arrayListOf()
+
+            if (imageBefore != "")
+                listImages.add(resImage("BEFORE", imageBefore, null))
+            if (imageAfter != "")
+                listImages.add(resImage("AFTER", imageAfter, null))
+
+            if (listImages.count() > 0) {
+                imageIndex = 0
+                merchantViewModel.uploadImage(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+            } else {
+                closeMerchant(point)
+            }
+        }
+    }
+
+    private fun closePromoterValidate() {
         val listPoint = BDLocal(this).getPointSaleOne(pointSale.visitId)
 
         if (listPoint.count() > 0) {
