@@ -68,6 +68,7 @@ class StatusFragment : Fragment() {
                 val ob = JSONObject()
                 ob.put("customerid", pointSale.customerId)
                 ob.put("comment", comment)
+                ob.put("type", "IMPULSADOR")
 
                 viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
             }

@@ -45,7 +45,10 @@ class AdapterPointsale(
         (listPointSale as ArrayList<PointSale>).addAll(list)
         notifyDataSetChanged()
     }
-
+    fun updateManagementSup(position: Int, status: String){
+        listPointSale[position].managementSup = status
+        notifyItemChanged(position)
+    }
     fun updateManagement(position: Int, status: String, dateFinish: String, statuslocal: String){
         listPointSale[position].management = status
         listPointSale[position].dateFinish = dateFinish
@@ -61,17 +64,23 @@ class AdapterPointsale(
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val pointSale: PointSale = listPointSale[position]
 
-        holder.itemPointSaleClient.text = pointSale.client
+
         holder.itemPointSaleMarket.text = pointSale.market
         holder.itemPointSaleStallNumber.text = "N° PUESTO: " + (pointSale.stallNumber ?: "")
-        holder.itemPointSaleManagement.text = pointSale.management // + " -> " + (if (pointSale.wasSaveOnBD) "ENVIADO" else "NOENVIADO") + " <-> " + pointSale.dateFinish
 
         if (supervisor) {
+            holder.itemPointSaleClient.text = pointSale.client + " " + pointSale.management
+            holder.itemPointSaleManagement.text = pointSale.managementSup
+
             holder.itemPointSaleManagement.visibility = View.VISIBLE
             holder.itemPointSaleHourEntry.visibility = View.VISIBLE
             holder.itemPointSaleUsername.text = pointSale.user
             holder.itemPointSaleHourEntry.text = pointSale.hourEntry
         } else {
+            holder.itemPointSaleClient.text = pointSale.client
+
+            holder.itemPointSaleManagement.text = pointSale.management
+
             holder.itemPointSaleUsername.visibility = View.GONE
             holder.itemPointSaleHourEntry.visibility = View.GONE
 

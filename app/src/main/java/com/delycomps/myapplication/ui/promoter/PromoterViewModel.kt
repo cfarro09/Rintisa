@@ -105,6 +105,10 @@ class PromoterViewModel : ViewModel() {
         _listProductSelected.value = _listProductSelected.value!!.map { if (it.uuid == uuid) product else it }.toMutableList()
     }
 
+    fun updateProductImageLocal (uuid: String, urlImage: String, context: Context) {
+        BDLocal(context).updateSalePromoterOne(uuid, urlImage)
+    }
+
     fun updateMerchandise (merchandise: Merchandise, i: Int) {
         _dataMerchandise.value = _dataMerchandise.value!!.mapIndexed { index, item -> if (index == i) merchandise else item }.toMutableList()
     }

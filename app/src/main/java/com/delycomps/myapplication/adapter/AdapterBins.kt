@@ -2,6 +2,7 @@ package com.delycomps.myapplication.adapter
 
 import android.app.AlertDialog
 import android.content.Context
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import com.delycomps.myapplication.model.CheckSupPromoter
 import com.delycomps.myapplication.model.Material
 import com.delycomps.myapplication.model.Question
 import com.google.android.material.switchmaterial.SwitchMaterial
+import java.lang.Exception
 
 class AdapterBins(
     private var questionList: MutableList<CheckSupPromoter>
@@ -63,7 +65,24 @@ class AdapterBins(
             textValue.addTextChangedListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    questionList[position].value = textValue.text.toString()
+                    try {
+                        if (textValue.text.toString() == "") {
+                            questionList[position].value = "0"
+                        } else {
+                            val ax = textValue.text.toString().toDouble()
+
+                            if (ax > 5) {
+                                textValue.text = Editable.Factory.getInstance().newEditable("")
+                                questionList[position].value = ""
+                            } else {
+                                questionList[position].value = textValue.text.toString()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        textValue.text = Editable.Factory.getInstance().newEditable("")
+                        questionList[position].value = ""
+
+                    }
                 }
             }
         }

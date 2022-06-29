@@ -1,5 +1,6 @@
 package com.delycomps.myapplication
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -24,6 +25,9 @@ class PromoterSupervisorActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+                val output = Intent()
+                output.putExtra("status", "INICIADO")
+                setResult(RESULT_OK, output)
                 finish()
                 return true
             }
@@ -55,5 +59,12 @@ class PromoterSupervisorActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
+    }
+
+    override fun onBackPressed() {
+        val output = Intent()
+        output.putExtra("status", "INICIADO")
+        setResult(RESULT_OK, output)
+        finish()
     }
 }

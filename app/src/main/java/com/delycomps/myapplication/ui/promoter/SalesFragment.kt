@@ -55,7 +55,7 @@ class SalesFragment : Fragment() {
     private var lastpath: String = ""
     private lateinit var dialogLoading: AlertDialog
     private lateinit var imageRegister: ImageView
-//    private val listMeasureUnit = listOf("KILO", "SACO", "HUMEDO", "SNACK")
+    private val listRows = listOf("1 REGISTRO", "2 REGISTROS", "3 REGISTROS", "4 REGISTROS", "5 REGISTROS")
     private lateinit var pointSale: PointSale
     private var indexSelected = 0
 
@@ -107,8 +107,9 @@ class SalesFragment : Fragment() {
             override fun onClickAtDetailProduct(sp: SurveyProduct, position: Int, type: String) {
                 indexSelected = position
                 if (type == "UPDATE") {
-                    viewModel.setUrlSelfie(sp.imageEvidence ?: "")
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(sp.brand))
+                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(if (sp.measureUnit == "KILO") 0 else 1)
+                    dialogProductUI.findViewById<Spinner>(R.id.spinner_count_rows).visibility = View.GONE
                     dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + sp.quantity)
 
                     lastpath = sp.imageEvidenceLocal ?: ""
@@ -132,20 +133,21 @@ class SalesFragment : Fragment() {
         })
 
         buttonRegister.setOnClickListener {
-            viewModel.setUrlSelfie("")
             indexSelected = -1
-            dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(0)
+            dialogProductUI.findViewById<Spinner>(R.id.spinner_count_rows).visibility = View.VISIBLE
+            dialogProductUI.findViewById<Spinner>(R.id.spinner_count_rows).setSelection(0)
+            dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(1)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
-            dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("")
+            dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("1")
             lastpath = ""
             imageRegister.setImageDrawable(null);
-
             dialogMaterial.show()
         }
     }
 
     private fun manageDialogMaterial (view: View, dialog: AlertDialog) {
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
+        val spinnerCountRows = view.findViewById<Spinner>(R.id.spinner_count_rows)
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
         val buttonTakePhoto = view.findViewById<Button>(R.id.dialog_take_photo_product)
@@ -155,7 +157,7 @@ class SalesFragment : Fragment() {
         buttonTakePhoto.setOnClickListener {
             dispatchTakePictureIntent(view)
         }
-
+        spinnerCountRows.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listRows)
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {
                 return position != 0
@@ -167,7 +169,7 @@ class SalesFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
                 val measures: List<String> = listBrandSale.find { it.brand == brand }?.listMeasure ?: emptyList()
-                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, measures)
+                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, listOf("KILO", "HUMEDO"))
             }
         }
 
@@ -180,19 +182,25 @@ class SalesFragment : Fragment() {
 
         buttonSave.setOnClickListener {
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
+            val countRow = spinnerCountRows.selectedItemPosition
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0.0 else quantityString.toDouble()
 
             if (brand != "" && brand != "Seleccione" && quantity > 0) {
-                val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
-                surveyProduct.imageEvidenceLocal = lastpath
                 if (indexSelected == -1) {
-                    val listProducts = viewModel.addProduct(surveyProduct, pointSale.visitId, view.context)
-                    (rv.adapter as AdapterSale).addProduct(surveyProduct)
-                    viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())
+                    var listProducts1 = emptyList<SurveyProduct>()
+                    for (i in 0..countRow) {
+                        val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
+                        surveyProduct.imageEvidenceLocal = lastpath
+                        listProducts1 = viewModel.addProduct(surveyProduct, pointSale.visitId, view.context)
+                        (rv.adapter as AdapterSale).addProduct(surveyProduct)
+                    }
+                    viewModel.updateSales(pointSale.visitId, listProducts1, SharedPrefsCache(view.context).getToken())
                 }
                 else {
+                    val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
+                    surveyProduct.imageEvidenceLocal = lastpath
                     (rv.adapter as AdapterSale).updateItemProduct(surveyProduct, indexSelected)
                     val listProducts = viewModel.updateProduct(surveyProduct, indexSelected, view.context)
                     viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())

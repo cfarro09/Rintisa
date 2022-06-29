@@ -70,7 +70,6 @@ open class PointSale: Parcelable {
     @SerializedName("userid")
     @Expose
     var userid: Int? = 0
-
     var dateFinish: String? = ""
     var wasSaveOnBD: Boolean = false
     var imageBeforeLocal: String? = ""
@@ -78,6 +77,9 @@ open class PointSale: Parcelable {
     var statusManagement: String? = ""
     var motiveManagement: String? = ""
     var observation: String? = ""
+    @SerializedName("management_sup")
+    @Expose
+    var managementSup: String? = ""
 
     constructor(
         visitId: Int,
@@ -107,7 +109,8 @@ open class PointSale: Parcelable {
         imageAfterLocal: String? = "",
         statusManagement: String? = "",
         motiveManagement: String? = "",
-        observation: String? = ""
+        observation: String? = "",
+        managementSup: String? = "",
     ) {
         this.visitId = visitId
         this.customerId = customerId
@@ -137,6 +140,7 @@ open class PointSale: Parcelable {
         this.statusManagement = statusManagement
         this.motiveManagement = motiveManagement
         this.observation = observation
+        this.managementSup = managementSup
 
     }
     protected constructor(parcel: Parcel) {
@@ -163,6 +167,7 @@ open class PointSale: Parcelable {
         this.userid = parcel.readInt()
         this.dateFinish = parcel.readString()
         this.wasSaveOnBD = parcel.readInt() != 0
+        this.managementSup = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -191,7 +196,9 @@ open class PointSale: Parcelable {
         p0.writeInt(userid ?: 0)
         p0.writeString(dateFinish)
         p0.writeByte((if (wasSaveOnBD == true) 1 else 0).toByte())
+        p0.writeString(managementSup)
     }
+
     companion object CREATOR : Parcelable.Creator<PointSale> {
         override fun createFromParcel(parcel: Parcel): PointSale {
             return PointSale(parcel)

@@ -61,7 +61,7 @@ class AuditorViewModel : ViewModel() {
     }
 
     fun initExecute() {
-        _resExecute.value = ResGlobal(false, "", false)
+        _resExecute.value = ResGlobal(false, "REGISTRADO", false)
     }
 
     fun getCustomer(marketId: Int, token: String) {

@@ -28,7 +28,7 @@ class PriceFragment : Fragment() {
     private lateinit var listProduct: List<SurveyProduct>
     private lateinit var listBrand: List<String>
     private lateinit var pointSale: PointSale
-    private val listMeasureUnit = listOf("KILO", "SACO", "UNIDAD")
+    private val listMeasureUnit = listOf("KILO", "SACO")
 
     private var indexSelected = 0
 
@@ -49,8 +49,9 @@ class PriceFragment : Fragment() {
 
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
-        listProductsSelected = BDLocal(view.context).getMerchantPrices(pointSale.visitId).toMutableList()
-        viewModel.initialPriceProduct(listProductsSelected)
+        listProductsSelected = viewModel.listProductSelected.value ?: ArrayList()
+//        listProductsSelected = BDLocal(view.context).getMerchantPrices(pointSale.visitId).toMutableList()
+//        viewModel.initialPriceProduct(listProductsSelected)
 
         viewModel.dataProducts.observe(requireActivity()) {
             listProduct = it //.filter { r -> r.competence == "RINTI" }

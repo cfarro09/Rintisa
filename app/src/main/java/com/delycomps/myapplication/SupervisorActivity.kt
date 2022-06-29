@@ -58,13 +58,12 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private var todayG: Boolean = false
     private var permissionCamera = false
     private lateinit var pointSale: PointSale
-
     private var permissionGPS = false
     private var gpsEnabled = false
     private var lastLocation: Location? = null
     private var locationManager : LocationManager? = null
     private lateinit var mainViewModel: MainViewModel
-
+    private var indexPosition = 0
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -208,19 +207,28 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         }
 
         supervisorViewModel.resExecute.observe(this) {
-            if ((it.result) == "UFN_MANAGE_SUPERVISOR_PROMOTER_INS0") {
+            if ((it.result) == "UFN_MANAGE_SUPERVISOR_PROMOTER_INS1") {
                 if (!it.loading && it.success) {
                     dialogLoading.dismiss()
                     supervisorViewModel.initExecute()
 
-                    val intent = Intent(
-                        rv.context,
-                        PromoterSupervisorActivity::class.java
-                    )
-                    intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
-                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
-
+                    if (service == "MERCADERISMO") {
+                        val intent = Intent(
+                            rv.context,
+                            MerchantSupervisorActivity::class.java
+                        )
+                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    } else {
+                        val intent = Intent(
+                            rv.context,
+                            PromoterSupervisorActivity::class.java
+                        )
+                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    }
                 } else if (!it.loading && !it.success) {
                     dialogLoading.dismiss()
                     supervisorViewModel.initExecute()
@@ -236,15 +244,17 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 ob.put("customerid", pointSale.customerId)
                 ob.put("aux_userid", pointSale.userid ?: 0)
                 ob.put("image1", it)
+                ob.put("service", service)
                 ob.put("latitude", lastLocation?.latitude ?: 0.00)
                 ob.put("longitude", lastLocation?.longitude ?: 0.00)
-                supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_PROMOTER_INS0", SharedPrefsCache(this).getToken())
+                supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_PROMOTER_INS1", SharedPrefsCache(this).getToken())
             }
         }
         supervisorViewModel.listPointSale.observe(this) {
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-                    if (service != "MERCADERISMO") {
+                    indexPosition = position
+//                    if (service != "MERCADERISMO") {
                         if (!permissionCamera || !permissionGPS || !gpsEnabled || lastLocation == null) {
                             if (!permissionCamera) {
                                 Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de cámara", Toast.LENGTH_SHORT).show()
@@ -264,19 +274,17 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                             }
                         } else {
                             pointSale = pointSale1
-//                            dialogLoading.show()
-//                            mainViewModel.initPointSale(SharedPrefsCache(rv.context).getToken(), pointSale1.visitId, "", lastLocation!!.latitude, lastLocation!!.longitude)
                             dispatchTakePictureIntent()
                         }
-                    } else {
-                        val intent = Intent(
-                            rv.context,
-                            MerchantSupervisorActivity::class.java
-                        )
-                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
-                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
-                    }
+//                    } else {
+//                        val intent = Intent(
+//                            rv.context,
+//                            MerchantSupervisorActivity::class.java
+//                        )
+//                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
+//                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+//                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+//                    }
                 }
             }, true)
         }
@@ -338,9 +346,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
             Toast.makeText(this@SupervisorActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
         }
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-
-        }
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) { }
         override fun onProviderEnabled(provider: String) {
             gpsEnabled = true
             mainViewModel.setGPSIsEnabled(true)
@@ -398,6 +404,11 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 } else {
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                }
+            }
+            Constants.RETURN_ACTIVITY -> {
+                if ((imageReturnedIntent?.getStringExtra("status") ?: "") != "") {
+                    (rv.adapter as AdapterPointsale).updateManagementSup(indexPosition, imageReturnedIntent?.getStringExtra("status") ?: "")
                 }
             }
         }

@@ -42,7 +42,7 @@ class BinsFragment : Fragment() {
     private var numberImage: String = "0"
     private lateinit var dialogLoading: AlertDialog
     private lateinit var customer: Customer
-
+    private var status2 = "EN ESPERA"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -89,6 +89,7 @@ class BinsFragment : Fragment() {
                 if (!it.loading && it.success) {
 //                    dialogLoading.dismiss()
                     viewModel.initExecute()
+                    status2 = "GESTIONADO"
                     val text = "Se insertó correctamente"
                     Toast.makeText(view.context, text, Toast.LENGTH_LONG).show()
                 } else if (!it.loading && !it.success) {
@@ -101,5 +102,7 @@ class BinsFragment : Fragment() {
             }
         }
     }
+
+
 
 }

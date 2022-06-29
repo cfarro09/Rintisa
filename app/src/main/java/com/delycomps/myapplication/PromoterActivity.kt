@@ -71,6 +71,13 @@ class PromoterActivity : AppCompatActivity() {
             alert.show()
 
             return true
+        } else if (item.itemId == android.R.id.home) {
+            val output = Intent()
+            output.putExtra("status", "INICIADO")
+            BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
+            setResult(RESULT_OK, output)
+            finish()
+            return true
         }
 
         return super.onOptionsItemSelected(item)
@@ -210,8 +217,9 @@ class PromoterActivity : AppCompatActivity() {
     }
     override fun onBackPressed() {
         val output = Intent()
+        BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
         output.putExtra("status", "INICIADO")
-        setResult(RESULT_OK, output);
+        setResult(RESULT_OK, output)
         finish()
 //        super.onBackPressed()
     }

@@ -44,11 +44,17 @@ class AdapterCustomer(
         notifyDataSetChanged()
     }
 
+    fun updateStatus(position: Int, status: String){
+        listCustomer[position].status = status
+        notifyItemChanged(position)
+    }
+
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val pointSale: Customer = listCustomer[position]
 
         holder.itemCustomerClient.text = pointSale.client
         holder.itemCustomerMarket.text = pointSale.market
+        holder.itemCustomerStatus.text = pointSale.status
         holder.itemCustomerStallNumber.text = "N° PUESTO: " + (pointSale.stallNumber ?: "")
 
     }
@@ -59,6 +65,7 @@ class AdapterCustomer(
         internal var itemCustomerClient: TextView = itemView.findViewById(R.id.pdv_client)
         internal var itemCustomerMarket: TextView = itemView.findViewById(R.id.pdv_market)
         internal var itemCustomerStallNumber: TextView = itemView.findViewById(R.id.pdv_stall_number)
+        internal var itemCustomerStatus: TextView = itemView.findViewById(R.id.pdv_status)
 
         init {
             itemView.setOnClickListener(this)

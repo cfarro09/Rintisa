@@ -91,6 +91,9 @@ class LoginActivity : AppCompatActivity() {
                             result?.role?.uppercase() == "SUPERVISOR" -> {
                                 supervisorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
                             }
+                            result?.role?.uppercase() == "SUPERVISOR RINTI" -> {
+                                supervisorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                            }
                             else -> {
                                 auditorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
                             }

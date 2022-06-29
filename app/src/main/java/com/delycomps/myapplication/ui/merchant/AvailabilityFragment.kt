@@ -48,9 +48,6 @@ class AvailabilityFragment : Fragment() {
 
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
-//        listProductsSelected = BDLocal(view.context).getMerchantPrices(pointSale.visitId).toMutableList()
-        viewModel.initialProductAvailability(BDLocal(view.context).getProductsAvailability(pointSale.visitId).toMutableList())
-
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
         spinnerBrand.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.competence == "RINTI" }.map { it.brand }.distinct())
 

@@ -168,6 +168,7 @@ class MerchantActivity : AppCompatActivity() {
         val dataMerchant = Gson().fromJson(jsonMerchant.toString(), DataMerchant::class.java)
         merchantViewModel.initMainMulti(dataMerchant)
 
+
         merchantViewModel.closingMerchant.observe(this) {
             dialogLoading.dismiss()
             val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
@@ -232,6 +233,10 @@ class MerchantActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         pointSale = intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
+
+        merchantViewModel.initialPriceProduct(BDLocal(this).getMerchantPrices(pointSale.visitId).toMutableList())
+
+        merchantViewModel.initialProductAvailability(BDLocal(this).getProductsAvailability(pointSale.visitId).toMutableList())
 
         val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager, pointSale.showSurvey, pointSale.showAvailability)
         val viewPager: ViewPager = binding.viewPager

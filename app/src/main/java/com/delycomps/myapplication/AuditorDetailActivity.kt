@@ -28,6 +28,17 @@ class AuditorDetailActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+                val output = Intent()
+                if (auditorViewModel.resExecute.value != null) {
+                    if (auditorViewModel.resExecute.value?.result == "REGISTRADO") {
+                        output.putExtra("status", "GESTIONADO")
+                    } else {
+                        output.putExtra("status", "EN ESPERA")
+                    }
+                } else {
+                    output.putExtra("status", "GESTIONADO")
+                }
+                setResult(RESULT_OK, output);
                 finish()
                 return true
             }
@@ -56,5 +67,20 @@ class AuditorDetailActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = customer.client
+    }
+
+    override fun onBackPressed() {
+        val output = Intent()
+        if (auditorViewModel.resExecute.value != null) {
+            if (auditorViewModel.resExecute.value?.result == "REGISTRADO") {
+                output.putExtra("status", "GESTIONADO")
+            } else {
+                output.putExtra("status", "EN ESPERA")
+            }
+        } else {
+            output.putExtra("status", "GESTIONADO")
+        }
+        setResult(RESULT_OK, output);
+        finish()
     }
 }

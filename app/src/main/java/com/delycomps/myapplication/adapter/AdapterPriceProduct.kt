@@ -1,6 +1,7 @@
 package com.delycomps.myapplication.adapter
 
 import android.content.Context
+import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.model.PriceProduct
 import com.google.android.material.switchmaterial.SwitchMaterial
+import java.lang.Exception
 
 class AdapterPriceProduct(
     private var listProduct: MutableList<PriceProduct>) : RecyclerView.Adapter<AdapterPriceProduct.OrderViewHolder>() {
@@ -50,13 +52,23 @@ class AdapterPriceProduct(
             itemK.addTextChangedListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    listProduct[position].price_k = (if (itemK.text.toString() == "") "0" else itemK.text.toString()).toDouble()
+                    try {
+                        listProduct[position].price_k = (if (itemK.text.toString() == "") "0" else itemK.text.toString()).toDouble()
+                    } catch (e: Exception) {
+                        itemK.text = Editable.Factory.getInstance().newEditable("")
+                    }
                 }
             }
             itemS.addTextChangedListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    listProduct[position].price_s = (if (itemS.text.toString() == "") "0" else itemS.text.toString()).toDouble()
+
+                    try {
+                        listProduct[position].price_s = (if (itemS.text.toString() == "") "0" else itemS.text.toString()).toDouble()
+                    } catch (e: Exception) {
+
+                    }
+
                 }
             }
         }

@@ -159,6 +159,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             values.put(PDV_LASTVISIT, item.lastVisit)
             values.put(PDV_TRAFFICLIGHTS, item.trafficLights)
             values.put(PDV_SHOWSURVEY, if (item.showSurvey) 1 else 0)
+            values.put(PDV_SHOWAVAILABILITY, if (item.showAvailability) 1 else 0)
 
             values.put(PDV_IMAGEBEFORE, item.imageBefore)
             values.put(PDV_IMAGEAFTER, item.imageAfter)
@@ -167,24 +168,26 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
             val pointSaved = listPoint.find { it.visitId ==item.visitId }
             if (pointSaved != null) {
-                list[i].wasSaveOnBD = pointSaved.wasSaveOnBD
-                list[i].management = pointSaved.management
                 list[i].imageAfterLocal = pointSaved.imageAfterLocal
                 list[i].imageBeforeLocal = pointSaved.imageBeforeLocal
                 list[i].dateFinish = pointSaved.dateFinish
 
-                values.put(PDV_STATUSLOCAL, if (pointSaved.wasSaveOnBD) "ENVIADO" else "NOENVIADO")
-                values.put(PDV_MANAGEMENT, pointSaved.management)
                 values.put(PDV_IMAGEAFTERLOCAL, pointSaved.imageAfterLocal)
                 values.put(PDV_IMAGEBEFORELOCAL, pointSaved.imageBeforeLocal)
                 values.put(PDV_DATEFINISHLOCAL, pointSaved.dateFinish)
 
-                if (pointSaved.management == "VISITADO" && item.management == "INICIADO") {
+                if (pointSaved.management == "VISITADO" && item.management == "INICIADO" && pointSaved.wasSaveOnBD) {
                     list[i].wasSaveOnBD = false
                     list[i].management = "INICIADO"
 
                     values.put(PDV_STATUSLOCAL, "NOENVIADO")
                     values.put(PDV_MANAGEMENT, "INICIADO")
+                } else {
+                    list[i].wasSaveOnBD = pointSaved.wasSaveOnBD
+                    list[i].management = pointSaved.management
+
+                    values.put(PDV_MANAGEMENT, pointSaved.management)
+                    values.put(PDV_STATUSLOCAL, if (pointSaved.wasSaveOnBD) "ENVIADO" else "NOENVIADO")
                 }
             } else {
                 list[i].wasSaveOnBD = item.management == "VISITADO"
@@ -197,9 +200,6 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         }
         return list
     }
-
-
-
 
     fun getProductsAvailability(visitID: Int): List<Availability> {
         val db = readableDatabase
@@ -442,6 +442,19 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             values,
             "$UUID = ?",
             arrayOf(product.uuid)
+        )
+        db.close()
+    }
+
+    fun updateSalePromoterOne(uuid: String, url: String) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put(SALES_IMAGE_EVIDENCE, url)
+        db.update(
+            TABLE_SALES,
+            values,
+            "$UUID = ?",
+            arrayOf(uuid)
         )
         db.close()
     }

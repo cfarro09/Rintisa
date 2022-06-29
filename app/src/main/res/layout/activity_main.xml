@@ -10,8 +10,8 @@
     <Button
         android:id="@+id/remove_point_sale"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:text="limpiar puntos de venta" />
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/main_swiper_refresh"

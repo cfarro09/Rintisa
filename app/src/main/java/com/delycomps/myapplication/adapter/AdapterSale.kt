@@ -83,7 +83,7 @@ class AdapterSale(
         val measureUnit = surveyProduct.measureUnit
         val quantity = surveyProduct.quantity
 
-        if (brand == "SUPERCAN" || brand == "SUPERCAT") {
+        if (brand == "RICOCAN" || brand == "RICOCAT" || brand == "SUPERCAN" || brand == "SUPERCAT") {
             holder.itemProductMerchant.adapter = ArrayAdapter(holder.itemProductMerchant.context, android.R.layout.simple_spinner_item, listOf("NINGUNO") + listMerchandise.map { it.description })
             holder.itemProductMerchant.setSelection((listOf("NINGUNO") + listMerchandise.map { it.description }).indexOf(surveyProduct.merchant))
             holder.itemContainerMerchant.visibility = View.VISIBLE

@@ -20,6 +20,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="EN ESPERA"
+                android:layout_gravity="right"
+                android:id="@+id/pdv_status"
+                android:drawablePadding="5dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="VILLANUEVA ACOSTA VICENTA"
                 android:id="@+id/pdv_client"
                 android:drawablePadding="5dp"

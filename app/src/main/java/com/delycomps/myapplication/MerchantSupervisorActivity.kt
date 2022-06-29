@@ -10,6 +10,7 @@ import com.google.android.material.tabs.TabLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
+import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.databinding.ActivityPromoterBinding
 import com.delycomps.myapplication.model.DataSupervisor
@@ -27,6 +28,9 @@ class MerchantSupervisorActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+                val output = Intent()
+                output.putExtra("status", "INICIADO")
+                setResult(RESULT_OK, output)
                 finish()
                 return true
             }
@@ -57,5 +61,11 @@ class MerchantSupervisorActivity : AppCompatActivity() {
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = pointSale.client
+    }
+    override fun onBackPressed() {
+        val output = Intent()
+        output.putExtra("status", "INICIADO")
+        setResult(RESULT_OK, output)
+        finish()
     }
 }

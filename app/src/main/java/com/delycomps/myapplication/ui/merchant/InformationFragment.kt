@@ -36,7 +36,7 @@ import java.util.*
 private const val CODE_RESULT_CAMERA = 10001
 private const val CODE_RESULT_GALLERY = 10002
 private val STATUS_LIST = listOf("EFECTIVA", "NO EFECTIVA")
-private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "PDV cerrado", "No visitado")
+private val MOTIVES_LIST = listOf("Cambio de rubro", "No permite el ingreso", "PDV cerrado", "No visitado", "Capacitación")
 
 class InformationFragment : Fragment() {
     private lateinit var viewModel: MerchantViewModel
@@ -83,10 +83,12 @@ class InformationFragment : Fragment() {
             if (listpoint.count() > 0) {
                 val point = listpoint[0]
                 if ((point.imageAfterLocal ?: "") != "") {
+                    view.findViewById<TextView>(R.id.path_image_after).text = point.imageBeforeLocal
                     viewModel.uploadImageLocal(point.imageAfterLocal!!, "AFTER")
                     view.findViewById<ImageView>(R.id.view_image_after).setImageBitmap(BitmapFactory.decodeFile(point.imageAfterLocal!!))
                 }
                 if ((point.imageBeforeLocal ?: "") != "") {
+                    view.findViewById<TextView>(R.id.path_image_before).text = point.imageBeforeLocal
                     viewModel.uploadImageLocal(point.imageBeforeLocal!!, "BEFORE")
                     view.findViewById<ImageView>(R.id.view_image_before).setImageBitmap(BitmapFactory.decodeFile(point.imageBeforeLocal!!))
                 }

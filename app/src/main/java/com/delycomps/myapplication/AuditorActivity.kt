@@ -33,6 +33,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.delycomps.myapplication.adapter.AdapterCustomer
 import com.delycomps.myapplication.adapter.AdapterPointsale
 import com.delycomps.myapplication.adapter.AdapterQuestions
+import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
 import com.delycomps.myapplication.model.Customer
 import com.delycomps.myapplication.model.DataAuditor
@@ -42,6 +43,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import org.json.JSONObject
 import java.io.*
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -55,6 +57,7 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var rv: RecyclerView
 
     private var marketIdG: Int? = 0
+    private var positionG: Int? = 0
 
 
     private lateinit var mainViewModel: MainViewModel
@@ -70,6 +73,7 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         super.onCreateOptionsMenu(menu)
         return true
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -145,14 +149,20 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         }
 
         auditorViewModel.listCustomer.observe(this) {
+            val a = this
             rv.adapter = AdapterCustomer(it, object : AdapterCustomer.ListAdapterListener {
                 override fun onClickAtDetailCustomer(pointSale1: Customer, position: Int) {
-                    val intent = Intent(
-                        rv.context,
-                        AuditorDetailActivity::class.java
-                    )
-                    intent.putExtra(Constants.POINT_CUSTOMER, pointSale1)
-                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    if (pointSale1.status == "EN ESPERA") {
+                        positionG = position
+                        val intent = Intent(
+                            rv.context,
+                            AuditorDetailActivity::class.java
+                        )
+                        intent.putExtra(Constants.POINT_CUSTOMER, pointSale1)
+                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                    } else {
+                        Toast.makeText(a, "El cliente ${pointSale1.client} ya fue gestionado", Toast.LENGTH_LONG).show()
+                    }
                 }
             }, true)
         }
@@ -165,6 +175,21 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
             if (!it.loading && it.success) {
                 Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        imageReturnedIntent: Intent?
+    ){
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
+        when (requestCode) {
+            Constants.RETURN_ACTIVITY -> {
+                if ((imageReturnedIntent?.getStringExtra("status") ?: "") != "") {
+                    (rv.adapter as AdapterCustomer).updateStatus(positionG ?: 0, imageReturnedIntent?.getStringExtra("status") ?: "")
+                }
             }
         }
     }
@@ -212,10 +237,14 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             val market = spinnerMarket.text.toString()
 
             if (market != "") {
-                val marketId = market.split(")")[0].replace("(", "").toDouble().toInt()
-                marketIdG = marketId
-                dialogFilter?.dismiss()
-                auditorViewModel.getCustomer(marketId, SharedPrefsCache(view.context).getToken())
+                try {
+                    val marketId = market.split(")")[0].replace("(", "").toDouble().toInt()
+                    marketIdG = marketId
+                    dialogFilter?.dismiss()
+                    auditorViewModel.getCustomer(marketId, SharedPrefsCache(view.context).getToken())
+                } catch (e: Exception) {
+                    Toast.makeText(this, "No es un mercado valido", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

@@ -31,9 +31,7 @@ import com.delycomps.myapplication.adapter.AdapterPointsale
 import com.delycomps.myapplication.cache.BDLocal
 import com.delycomps.myapplication.cache.Helpers
 import com.delycomps.myapplication.cache.SharedPrefsCache
-import com.delycomps.myapplication.model.DataMerchant
-import com.delycomps.myapplication.model.PointSale
-import com.delycomps.myapplication.model.resImage
+import com.delycomps.myapplication.model.*
 import com.delycomps.myapplication.ui.merchant.MerchantViewModel
 import com.delycomps.myapplication.ui.promoter.PromoterViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -114,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
                     return true
                 }
-                if (lastLocation != null) {
+                if (lastLocation == null) {
                     Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
                     return true
                 }
@@ -234,11 +232,15 @@ class MainActivity : AppCompatActivity() {
 //                    pointSale1.management = "EN ESPERA"
                     indexPosition = position
                     if (pointSale1.management == "VISITADO") {
-                        val role = SharedPrefsCache(rv.context).get("type", "string")
-                        if (role == "MERCADERISTA" && !pointSale1.wasSaveOnBD) {
+                        if (!pointSale1.wasSaveOnBD) {
                             pointSale = pointSale1
                             dialogLoading.show()
-                            closeMerchantValidate()
+                            val role = SharedPrefsCache(rv.context).get("type", "string")
+                            if (role == "MERCADERISTA") {
+                                closeMerchantValidate()
+                            } else {
+                                closePromoterValidate()
+                            }
                         } else {
                             Toast.makeText(this@MainActivity, "El punto de venta ya fue gestionado", Toast.LENGTH_SHORT).show()
                         }
@@ -302,8 +304,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.title = SharedPrefsCache(rv.context).get("fullname", "string")?.toString() ?: pointSale.client
 
         merchantViewModel.urlImage.observe(this) {
-            if (it == "") {
-                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+            if (false) {
+                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar - URL IMAGE", Toast.LENGTH_LONG).show()
                 dialogLoading.dismiss()
             } else {
                 val im = listImages[imageIndex]
@@ -321,15 +323,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        promoterViewModel.urlSelfie.observe(this) {
+            if (it == "") {
+                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                dialogLoading.dismiss()
+            } else {
+                val im = listImages[imageIndex]
+                promoterViewModel.updateProductImageLocal(im.type, it, this)
+
+                imageIndex += 1
+                if (imageIndex == listImages.count()) {
+                    closePromoter()
+                } else {
+                    promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+                }
+            }
+        }
         merchantViewModel.closingMerchant.observe(this) {
             dialogLoading.dismiss()
-
             if (it) {
                 Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
                 //limpiar información de materiales, encuesta de precios y de disponibilidad
                 BDLocal(this).deleteMerchantPricesFromVisit(pointSale.visitId)
                 BDLocal(this).deleteMaterialFromVisit(pointSale.visitId)
                 BDLocal(this).deleteProductAvailabilityFromVisit(pointSale.visitId)
+                //actualizar localmente el punto de venta
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "ENVIADO")
+                //actualizar el adaptador
+                (rv.adapter as AdapterPointsale).updateManagement(indexPosition, "VISITADO", "", "ENVIADO")
 
                 listImages.forEach { r ->
                     try {
@@ -339,11 +360,31 @@ class MainActivity : AppCompatActivity() {
                         Log.d("file-delete-error", "${r.path} -> error ${e.message.toString()}")
                     }
                 }
+            } else {
+                Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar - CIERRE MERCHANT", Toast.LENGTH_LONG).show()
+            }
+        }
+        promoterViewModel.closingPromoter.observe(this) {
+            dialogLoading.dismiss()
 
-                //actualizar localmente el punto de venta
+            if (it) {
+                Toast.makeText(this, "Se actualizó el punto de venta", Toast.LENGTH_LONG).show()
+                BDLocal(this).deleteSalePromoterFromVisit(pointSale.visitId)
+                BDLocal(this).deleteStockPromoterFromVisit(pointSale.visitId)
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "ENVIADO")
+
                 BDLocal(this).updatePointSaleLocal(pointSale.visitId, "VISITADO", "ENVIADO")
                 //actualizar el adaptador
                 (rv.adapter as AdapterPointsale).updateManagement(indexPosition, "VISITADO", "", "ENVIADO")
+
+                listImages.forEach { r ->
+                    try {
+                        val res = File(r.path).delete()
+                        Log.d("file-delete", "${r.path} -> $res")
+                    } catch (e: Exception) {
+                        Log.d("file-delete-error", "${r.path} -> error ${e.message.toString()}")
+                    }
+                }
             } else {
                 Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
             }
@@ -395,27 +436,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun closePromoterValidate() {
-        val listPoint = BDLocal(this).getPointSaleOne(pointSale.visitId)
+        val listProducts: List<SurveyProduct> = BDLocal(this).getSalePromoter(pointSale.visitId)
 
-        if (listPoint.count() > 0) {
-            val point = listPoint[0]
+        listImages = listProducts.filter { (it.imageEvidenceLocal ?: "") != "" && it.imageEvidence == "" }.map { resImage(it.uuid.toString(), it.imageEvidenceLocal!!, null) }.toMutableList()
 
-            val imageBefore = point.imageBeforeLocal ?: ""
-            val imageAfter = point.imageAfterLocal ?: ""
-
-            listImages = arrayListOf()
-
-            if (imageBefore != "")
-                listImages.add(resImage("BEFORE", imageBefore, null))
-            if (imageAfter != "")
-                listImages.add(resImage("AFTER", imageAfter, null))
-
-            if (listImages.count() > 0) {
-                imageIndex = 0
-                merchantViewModel.uploadImage(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
-            } else {
-                closeMerchant(point)
-            }
+        if (listImages.count() > 0) {
+            imageIndex = 0
+            promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+        } else {
+            closePromoter()
         }
     }
 
@@ -430,7 +459,7 @@ class MainActivity : AppCompatActivity() {
         val jsonMerchant = SharedPrefsCache(this).get("data-merchant", "string")
         val dataMerchant = Gson().fromJson(jsonMerchant.toString(), DataMerchant::class.java)
 
-        val listAvailabilitiesProcessed = (dataMerchant.products ?: emptyList())
+        val listAvailabilitiesProcessed = (dataMerchant.products)
             .map { mapOf(
                 "customerid" to pointSale.customerId,
                 "description_availability" to point.dateFinish,
@@ -490,6 +519,48 @@ class MainActivity : AppCompatActivity() {
             listAvailability.count() > 0,
             statusManagement, motive, observation, SharedPrefsCache(this).getToken(),
             point.dateFinish
+        )
+    }
+
+    private fun closePromoter() {
+        val listStocks: List<Stock> = BDLocal(this).getStockPromoter(pointSale.visitId)
+        val listProducts: List<SurveyProduct> = BDLocal(this).getSalePromoter(pointSale.visitId)
+
+        val listStockProcessed = listStocks.map { mapOf<String, Any>(
+            "product" to it.product.toString(),
+            "brand" to it.brand.toString(),
+            "type" to it.type.toString()
+        ) }.toList()
+
+        val listProductProcessed = listProducts.map { mapOf<String, Any>(
+            "subtotal" to 0,
+            "total" to 0,
+            "description_sale" to SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(
+                Date()
+            ),
+            "status_sale" to "ACTIVO",
+            "type_sale" to "NINGUNO",
+            "productid" to it.productId,
+            "quantity" to it.quantity,
+            "measure_unit" to (it.measureUnit ?: ""),
+            "price" to 0,
+            "merchant" to (it.merchant ?: ""),
+            "url_evidence" to (it.imageEvidence ?: ""),
+            "total_detail" to 0,
+            "description_detail" to (it.description ?: ""),
+            "status_detail" to "ACTIVO",
+            "type_detail" to "NINGUNO",
+            "operation" to "INSERT",
+        ) }.toList()
+
+        promoterViewModel.closePromoter(
+            pointSale.visitId,
+            Gson().toJson(listStockProcessed),
+            Gson().toJson(listProductProcessed),
+            listProducts.count() > 0,
+            "",
+            SharedPrefsCache(this).getToken(),
+            pointSale.dateFinish
         )
     }
 

@@ -397,6 +397,7 @@ class Repository {
             "sale_list" to sales_list,
             "have" to showSale,
             "merchandising" to merchandises,
+            "finish_date_visit" to (dateFinish ?: ""),
         )))
         Log.d("log_carlos_json", jsonto)
         val body: RequestBody = RequestBody.create(
