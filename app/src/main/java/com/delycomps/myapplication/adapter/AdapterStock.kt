@@ -50,7 +50,7 @@ class AdapterStock(
     }
 
     fun addStock(p: Stock): Boolean {
-        if (listStock.find { it.product == p.product && it.type == p.type && it.brand == p.brand} == null) {
+        if (listStock.find { it.product == p.product && it.type == p.type && it.brand == p.brand } == null) {
             listStock.add(p)
             notifyItemInserted(listStock.count() - 1)
             return true

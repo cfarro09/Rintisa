@@ -51,24 +51,11 @@ class StockFragment : Fragment() {
         rv = view.findViewById(R.id.rv_stock)
         rv.layoutManager = LinearLayoutManager(view.context)
 
-
-//        viewModel.loadingInital.observe(requireActivity()) {
-//            if (it == false) {
-//                listProduct = viewModel.dataStocks.value ?: emptyList()
-//                listStockSelected = (viewModel.listStockSelected.value ?: ArrayList())
-//                starALL(view)
-//            }
-//        }
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
         listProduct = viewModel.dataStocks.value ?: emptyList()
         listStockSelected = viewModel.listStockSelected.value!!.toMutableList()
         starALL(view)
-
-//        viewModel.listStockSelected.observe(requireActivity()) {
-//            val listReady = it ?: emptyList()
-//
-//        }
     }
 
     private fun starALL (view : View) {
@@ -112,8 +99,6 @@ class StockFragment : Fragment() {
         val rvProduct = view.findViewById<RecyclerView>(R.id.rv_products_stock)
         rvProduct.layoutManager = LinearLayoutManager(view.context)
 
-//        spinnerProduct.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, emptyList())
-
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {
                 return position != 0
@@ -147,7 +132,7 @@ class StockFragment : Fragment() {
         buttonSave.setOnClickListener {
             val listStockSelected = (rvProduct.adapter as AdapterStockProduct).getList().filter { it.flag }
 
-            if (listStockSelected.count() > 0) {
+            if (listStockSelected.isNotEmpty()) {
                 listStockSelected.forEach { r ->
                     run {
                         val insert = (rv.adapter as AdapterStock).addStock(r)

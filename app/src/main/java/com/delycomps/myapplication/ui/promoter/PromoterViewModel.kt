@@ -75,7 +75,9 @@ class PromoterViewModel : ViewModel() {
     }
 
     fun addStocks(stocks: List<Stock>): MutableList<Stock> {
-        _listStockSelected.value = ((_listStockSelected.value ?: emptyList()) + stocks.filter { (_listStockSelected.value ?: emptyList()).find { r -> r.product == it.product } == null }).toMutableList()
+        val listStock = (_listStockSelected.value ?: emptyList())
+        val listToAdd = stocks.filter { listStock.find { r -> r.product == it.product && r.type == it.type && r.brand == it.brand } == null }
+        _listStockSelected.value = (listStock + listToAdd).toMutableList()
 
         return _listStockSelected.value!!
     }

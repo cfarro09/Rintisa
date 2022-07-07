@@ -221,7 +221,6 @@ class PromoterActivity : AppCompatActivity() {
             finish()
         }
 
-
         val sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
         val viewPager: ViewPager = binding.promoterViewPager
         viewPager.adapter = sectionsPagerAdapter
@@ -237,16 +236,5 @@ class PromoterActivity : AppCompatActivity() {
         output.putExtra("status", "INICIADO")
         setResult(RESULT_OK, output)
         finish()
-//        super.onBackPressed()
     }
-
-//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//        return super.onKeyDown(keyCode, event)
-//        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-//            val output = Intent()
-//            output.putExtra("status", "INICIADO")
-//            setResult(RESULT_OK, output);
-//        }
-//    }
-
 }
