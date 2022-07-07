@@ -47,6 +47,22 @@ class PromoterActivity : AppCompatActivity() {
         val id = item.itemId
 
         if (id == R.id.action_one) {
+            val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
+            val listStocks = promoterViewModel.listStockSelected.value ?: emptyList()
+
+            val resume = mutableMapOf<String, Double>()
+            val warningStock = if (listStocks.count() < 6) "<span style='color: red'><b>Tiene ${listStocks.count()} producto(s) en stock<b><span>, ¿Aún está seguro de cerrar el punto de venta? " else "¿Está seguro de cerrar el punto de venta?"
+            listProducts.forEach {
+                val key = "${it.brand}-${it.measureUnit}"
+                if (resume.containsKey(key)) {
+                    resume[key] = resume[key]!! + it.quantity
+                } else {
+                    resume[key] = it.quantity
+                }
+            }
+
+            val resumeString = resume.toList().fold("") { acc, pair -> acc + "<br>• ${pair.first}: ${pair.second}" }
+
             val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
@@ -64,7 +80,7 @@ class PromoterActivity : AppCompatActivity() {
                 }
             }
             val builder = AlertDialog.Builder(this)
-            builder.setMessage("¿Está seguro de cerrar el punto de venta?")
+            builder.setMessage(Html.fromHtml("RESUMEN DE VENTAS<br>${resumeString}<br><br>${warningStock}"))
                 .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
                 .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
             val alert = builder.create()

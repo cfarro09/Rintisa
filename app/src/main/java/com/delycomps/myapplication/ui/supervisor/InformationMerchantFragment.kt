@@ -185,7 +185,7 @@ class InformationMerchant : Fragment() {
                 view.findViewById<TextView>(R.id.text_after).visibility = View.GONE
                 imageAfter.visibility = View.VISIBLE
                 Glide.with(this)
-                    .load(pointSale.imageBefore)
+                    .load(pointSale.imageAfter)
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .placeholder(R.drawable.loadingtmp)
                     .into(view.findViewById(R.id.view_image_after))

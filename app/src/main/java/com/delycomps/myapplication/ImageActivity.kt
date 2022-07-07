@@ -61,17 +61,18 @@ class ImageActivity : AppCompatActivity() {
 
         val urlImage: String? = intent?.getStringExtra(Constants.URL_IMAGE)
 
-        if ((urlImage ?: "") != "")
-        Glide.with(this)
-            .asBitmap()
-            .load(urlImage)
-            .into(object : CustomTarget<Bitmap>(){
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    imageview.setImageBitmap(resource)
-                }
-                override fun onLoadCleared(placeholder: Drawable?) {
+        if ((urlImage ?: "") != "") {
+            Glide.with(this)
+                .asBitmap()
+                .load(urlImage)
+                .into(object : CustomTarget<Bitmap>(){
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                        imageview.setImageBitmap(resource)
+                    }
+                    override fun onLoadCleared(placeholder: Drawable?) {
 
-                }
-            })
+                    }
+                })
+        }
     }
 }

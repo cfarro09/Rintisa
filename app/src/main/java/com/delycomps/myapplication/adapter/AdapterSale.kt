@@ -1,6 +1,7 @@
 package com.delycomps.myapplication.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
@@ -15,6 +16,8 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.delycomps.myapplication.Constants
+import com.delycomps.myapplication.ImageActivity
 import com.delycomps.myapplication.R
 import com.delycomps.myapplication.model.Merchandise
 import com.delycomps.myapplication.model.SurveyProduct
@@ -125,6 +128,18 @@ class AdapterSale(
                             refListenerMerchant.onChangeMerchant(product, position)
                         }
                     }
+                }
+            }
+
+            itemProductImage.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val intent = Intent(
+                        mContext,
+                        ImageActivity::class.java
+                    )
+                    intent.putExtra(Constants.URL_IMAGE, listSurveyProduct[position].imageEvidenceLocal)
+                    mContext.startActivity(intent)
                 }
             }
 

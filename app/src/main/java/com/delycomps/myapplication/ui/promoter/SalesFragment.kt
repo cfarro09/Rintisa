@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.provider.MediaStore
 import android.text.Editable
 import android.util.Log
@@ -107,8 +108,18 @@ class SalesFragment : Fragment() {
             override fun onClickAtDetailProduct(sp: SurveyProduct, position: Int, type: String) {
                 indexSelected = position
                 if (type == "UPDATE") {
+
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(sp.brand))
-                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(if (sp.measureUnit == "KILO") 0 else 1)
+
+                    val measures: List<String> = listBrandSale.find { it.brand == sp.brand }?.listMeasure ?: emptyList()
+
+                    dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, measures)
+
+
+                    Handler().postDelayed({
+                        dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(measures.indexOfFirst { it == sp.measureUnit })
+                    }, 100)
+
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_count_rows).visibility = View.GONE
                     dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + sp.quantity)
 
@@ -169,7 +180,7 @@ class SalesFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
                 val measures: List<String> = listBrandSale.find { it.brand == brand }?.listMeasure ?: emptyList()
-                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, listOf("KILO", "HUMEDO"))
+                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, measures)
             }
         }
 
