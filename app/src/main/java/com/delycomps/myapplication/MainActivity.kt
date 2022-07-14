@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     private var permissionGPS = false
     private var gpsEnabled = false
     private var indexPosition = 0
+    private var lastLatitude: Double = 0.0
+    private var lastLongitude: Double = 0.0
     private var lastLocation: Location? = null
     private var locationManager : LocationManager? = null
     private var currentPhotoPath: String = ""
@@ -81,45 +83,48 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
 
-        if (id == R.id.action_exit) {
-            val dialogClickListener = DialogInterface.OnClickListener { _, which ->
-                when (which) {
-                    DialogInterface.BUTTON_POSITIVE -> {
-                        locationManager?.removeUpdates(locationListener)
-                        SharedPrefsCache(this).removeToken()
-                        startActivity(Intent(this, LoginActivity::class.java))
-                        finish()
-                     }
+        when (item.itemId) {
+            R.id.action_exit -> {
+                val dialogClickListener = DialogInterface.OnClickListener { _, which ->
+                    when (which) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            locationManager?.removeUpdates(locationListener)
+                            SharedPrefsCache(this).removeToken()
+                            startActivity(Intent(this, LoginActivity::class.java))
+                            finish()
+                        }
+                    }
                 }
+                val builder = AlertDialog.Builder(this)
+                builder.setMessage("¿Está seguro de cerrar su sesión?")
+                    .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
+                    .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
+                val alert = builder.create()
+                alert.show()
+                return true
             }
-            val builder = AlertDialog.Builder(this)
-            builder.setMessage("¿Está seguro de cerrar su sesión?")
-                .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
-                .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
-            val alert = builder.create()
-            alert.show()
-            return true
-        } else if (id == R.id.action_assist) {
+            R.id.action_assist -> {
 
-            if (!permissionGPS || !gpsEnabled || lastLocation == null) {
-                if (!permissionGPS) {
-                    Toast.makeText(this@MainActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
-                    return true
+                if (!permissionGPS || !gpsEnabled || lastLocation == null) {
+                    if (!permissionGPS) {
+                        Toast.makeText(this@MainActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                    if (!gpsEnabled) {
+                        Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                    if (lastLocation == null) {
+                        Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
                 }
-                if (!gpsEnabled) {
-                    Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
-                    return true
-                }
-                if (lastLocation == null) {
-                    Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
-                    return true
-                }
+                mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
             }
-            mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
-        } else if (id == R.id.action_finish) {
-            dialogClose.show()
+            R.id.action_finish -> {
+                dialogClose.show()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -278,6 +283,8 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             pointSale = pointSale1
                             dialogLoading.show()
+                            lastLatitude = lastLocation!!.latitude
+                            lastLongitude = lastLocation!!.longitude
                             mainViewModel.initPointSale(SharedPrefsCache(rv.context).getToken(), pointSale1.visitId, "", lastLocation!!.latitude, lastLocation!!.longitude)
                         }
                     }
@@ -287,18 +294,28 @@ class MainActivity : AppCompatActivity() {
 
         mainViewModel.sendInitPointSale.observe(this) {
             dialogLoading.dismiss()
-            if (it == true) {
-                val role = SharedPrefsCache(rv.context).get("type", "string")
-                val intent = Intent(
-                    rv.context,
-                    if (role == "IMPULSADOR") PromoterActivity::class.java else MerchantActivity::class.java
-                )
-                intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
-                locationManager?.removeUpdates(locationListener)
-                startActivityForResult(intent, RETURN_ACTIVITY)
+            if (it != true) {
+                val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+                BDLocal(rv.context).updatePDVStartDate(pointSale.visitId, dateString, lastLatitude, lastLongitude)
+                (rv.adapter as AdapterPointsale).updateDateStart(indexPosition, dateString, lastLatitude, lastLongitude)
+
+                pointSale.dateStart = dateString
+                pointSale.latitudeStart = lastLatitude
+                pointSale.longitudeStart = lastLongitude
             } else {
-                Toast.makeText(this@MainActivity, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
+                BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO")
+                (rv.adapter as AdapterPointsale).updateManagement(indexPosition, "INICIADO")
             }
+            BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
+            val role = SharedPrefsCache(rv.context).get("type", "string")
+            val intent = Intent(
+                rv.context,
+                if (role == "IMPULSADOR") PromoterActivity::class.java else MerchantActivity::class.java
+            )
+
+            intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+            locationManager?.removeUpdates(locationListener)
+            startActivityForResult(intent, RETURN_ACTIVITY)
         }
 
         supportActionBar?.title = SharedPrefsCache(rv.context).get("fullname", "string")?.toString() ?: pointSale.client
@@ -413,7 +430,7 @@ class MainActivity : AppCompatActivity() {
     private fun closeMerchantValidate() {
         val listPoint = BDLocal(this).getPointSaleOne(pointSale.visitId)
 
-        if (listPoint.count() > 0) {
+        if (listPoint.isNotEmpty()) {
             val point = listPoint[0]
 
             val imageBefore = point.imageBeforeLocal ?: ""
@@ -426,7 +443,7 @@ class MainActivity : AppCompatActivity() {
             if (imageAfter != "")
                 listImages.add(resImage("AFTER", imageAfter, null))
 
-            if (listImages.count() > 0) {
+            if (listImages.isNotEmpty()) {
                 imageIndex = 0
                 merchantViewModel.uploadImage(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
             } else {
@@ -440,7 +457,7 @@ class MainActivity : AppCompatActivity() {
 
         listImages = listProducts.filter { (it.imageEvidenceLocal ?: "") != "" && it.imageEvidence == "" }.map { resImage(it.uuid.toString(), it.imageEvidenceLocal!!, null) }.toMutableList()
 
-        if (listImages.count() > 0) {
+        if (listImages.isNotEmpty()) {
             imageIndex = 0
             promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
         } else {
@@ -514,11 +531,11 @@ class MainActivity : AppCompatActivity() {
             imageAfter,
             Gson().toJson(listMaterialProcessed),
             Gson().toJson(listProductProcessed),
-            listProductProcessed.count() > 0,
+            listProductProcessed.isNotEmpty(),
             Gson().toJson(listAvailabilitiesProcessed),
-            listAvailability.count() > 0,
+            listAvailability.isNotEmpty(),
             statusManagement, motive, observation, SharedPrefsCache(this).getToken(),
-            point.dateFinish
+            point.dateFinish, point.dateStart, point.latitudeStart, point.longitudeStart
         )
     }
 
@@ -557,10 +574,11 @@ class MainActivity : AppCompatActivity() {
             pointSale.visitId,
             Gson().toJson(listStockProcessed),
             Gson().toJson(listProductProcessed),
-            listProducts.count() > 0,
+            listProducts.isNotEmpty(),
             "",
             SharedPrefsCache(this).getToken(),
-            pointSale.dateFinish
+            pointSale.dateFinish,
+            pointSale.dateStart, pointSale.latitudeStart, pointSale.longitudeStart
         )
     }
 

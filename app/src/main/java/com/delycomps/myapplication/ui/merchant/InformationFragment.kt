@@ -78,10 +78,10 @@ class InformationFragment : Fragment() {
         pointSale = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
         if (pointSale != null) {
 
-            val listpoint = BDLocal(view.context).getPointSaleOne(pointSale!!.visitId)
+            val listPoint = BDLocal(view.context).getPointSaleOne(pointSale!!.visitId)
 
-            if (listpoint.count() > 0) {
-                val point = listpoint[0]
+            if (listPoint.isNotEmpty()) {
+                val point = listPoint[0]
                 if ((point.imageAfterLocal ?: "") != "") {
                     view.findViewById<TextView>(R.id.path_image_after).text = point.imageBeforeLocal
                     viewModel.uploadImageLocal(point.imageAfterLocal!!, "AFTER")

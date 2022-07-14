@@ -49,10 +49,22 @@ class AdapterPointsale(
         listPointSale[position].managementSup = status
         notifyItemChanged(position)
     }
+    fun updateManagement(position: Int, status: String){
+        listPointSale[position].management = status
+        notifyItemChanged(position)
+    }
     fun updateManagement(position: Int, status: String, dateFinish: String, statuslocal: String){
         listPointSale[position].management = status
         listPointSale[position].dateFinish = dateFinish
         listPointSale[position].wasSaveOnBD = statuslocal == "ENVIADO"
+        notifyItemChanged(position)
+    }
+
+    fun updateDateStart(position: Int, dateStart: String, latitude: Double, longitude: Double){
+        listPointSale[position].dateStart = dateStart
+        listPointSale[position].latitudeStart = latitude
+        listPointSale[position].longitudeStart = longitude
+        listPointSale[position].management = "INICIADO"
         notifyItemChanged(position)
     }
 

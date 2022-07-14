@@ -80,6 +80,9 @@ open class PointSale: Parcelable {
     @SerializedName("management_sup")
     @Expose
     var managementSup: String? = ""
+    var dateStart: String? = ""
+    var latitudeStart: Double = 0.0
+    var longitudeStart: Double = 0.0
 
     constructor(
         visitId: Int,
@@ -111,6 +114,9 @@ open class PointSale: Parcelable {
         motiveManagement: String? = "",
         observation: String? = "",
         managementSup: String? = "",
+        dateStart: String? = "",
+        latitudeStart: Double = 0.0,
+        longitudeStart: Double = 0.0,
     ) {
         this.visitId = visitId
         this.customerId = customerId
@@ -141,7 +147,9 @@ open class PointSale: Parcelable {
         this.motiveManagement = motiveManagement
         this.observation = observation
         this.managementSup = managementSup
-
+        this.dateStart = dateStart
+        this.latitudeStart = latitudeStart
+        this.longitudeStart = longitudeStart
     }
     protected constructor(parcel: Parcel) {
         this.visitId = parcel.readInt()
@@ -168,6 +176,9 @@ open class PointSale: Parcelable {
         this.dateFinish = parcel.readString()
         this.wasSaveOnBD = parcel.readInt() != 0
         this.managementSup = parcel.readString()
+        this.dateStart = parcel.readString()
+        this.latitudeStart = parcel.readDouble()
+        this.longitudeStart = parcel.readDouble()
     }
     override fun describeContents(): Int {
         return 0
@@ -195,8 +206,11 @@ open class PointSale: Parcelable {
         p0.writeString(comment)
         p0.writeInt(userid ?: 0)
         p0.writeString(dateFinish)
-        p0.writeByte((if (wasSaveOnBD == true) 1 else 0).toByte())
+        p0.writeByte((if (wasSaveOnBD) 1 else 0).toByte())
         p0.writeString(managementSup)
+        p0.writeString(dateStart)
+        p0.writeDouble(latitudeStart)
+        p0.writeDouble(longitudeStart)
     }
 
     companion object CREATOR : Parcelable.Creator<PointSale> {

@@ -61,15 +61,15 @@ class PromoterViewModel : ViewModel() {
                 _dataMerchandise.value = result?.merchandises ?: emptyList()
                 _dataBrandSale.value = result?.saleBrand ?: emptyList()
                 _dataStocks.value = result?.stocks ?: emptyList()
-//                _listStockSelected.value = result?.stocksSelected?.toMutableList() ?: ArrayList()
-//                _listProductSelected.value = result?.productsSelected?.toMutableList() ?: ArrayList()
-//                _loadingInital.value = false
             }
         }
     }
 
-    fun closePromoter(visitId: Int, material_list: String, sale_list: String, showSale: Boolean, merchandises: String, token: String, finish_date: String? = null) {
-        Repository().insCloseManagePromoter(visitId, material_list, sale_list, showSale, merchandises, token, finish_date) { isSuccess, _ ->
+    fun closePromoter(visitId: Int, material_list: String, sale_list: String, showSale: Boolean, merchandises: String, token: String, finish_date: String? = null,
+                      startDate: String? = null, latitudeStart: Double = 0.0, longitudeStart: Double = 0.0
+                      ) {
+        Repository().insCloseManagePromoter(visitId, material_list, sale_list, showSale, merchandises, token, finish_date,
+            startDate, latitudeStart, longitudeStart) { isSuccess, _ ->
             _closingPromoter.value = isSuccess
         }
     }

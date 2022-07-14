@@ -3,6 +3,7 @@ package com.delycomps.myapplication.api
 import android.util.Log
 import com.delycomps.myapplication.model.*
 import com.google.gson.Gson
+import com.google.gson.JsonNull
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -218,9 +219,12 @@ class Repository {
         observation: String,
         token: String,
         dateFinish: String?,
+        dateStart: String? = "",
+        latitude: Double = 0.0,
+        longitude: Double = 0.0,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
-        val method = if (dateFinish != null) "UFN_UPLOAD_IMAGE_AFTER_VISIT_FINISH" else "UFN_UPLOAD_IMAGE_AFTER_VISIT3"
+        val method = if (dateFinish != null) "UFN_UPLOAD_IMAGE_AFTER_VISIT_FINISH_X" else "UFN_UPLOAD_IMAGE_AFTER_VISIT3_X"
 
         val aa = Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
             "visitid" to visitId,
@@ -235,8 +239,11 @@ class Repository {
             "motive_visit" to motive,
             "observations" to observation,
             "finish_date_visit" to (dateFinish ?: ""),
+            "start_date_visit" to (dateStart ?: ""),
+            "latitude_start" to (latitude),
+            "longitude_start" to (longitude),
         )))
-        Log.d("caaaa", aa)
+
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
             aa
@@ -387,9 +394,12 @@ class Repository {
         merchandises: String,
         token: String,
         dateFinish: String?,
+        dateStart: String? = "",
+        latitude: Double = 0.0,
+        longitude: Double = 0.0,
         onResult: (isSuccess: Boolean, message: String?) -> Unit
     )  {
-        val method = if (dateFinish != null) "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT_FINISH" else "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT"
+        val method = if (dateFinish != null) "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT_FINISH_X" else "UFN_UPDATE_REPLACE_STOCK_SALE_VISIT_X"
 
         val jsonto = Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
             "visitid" to visitId,
@@ -398,44 +408,11 @@ class Repository {
             "have" to showSale,
             "merchandising" to merchandises,
             "finish_date_visit" to (dateFinish ?: ""),
+            "start_date_visit" to (dateStart ?: ""),
+            "latitude_start" to (latitude),
+            "longitude_start" to (longitude),
         )))
-        Log.d("log_carlos_json", jsonto)
-        val body: RequestBody = RequestBody.create(
-            MediaType.parse("application/json"),
-            jsonto
-        )
-        try {
-            Connection.instance.execute(body, "Bearer $token").enqueue(object :
-                Callback<ResponseCommon> {
-                override fun onResponse(
-                    call: Call<ResponseCommon>?,
-                    response: Response<ResponseCommon>?
-                ) {
-                    if (response!!.isSuccessful) {
-                        onResult(true, null)
-                    } else {
-                        onResult(false, DEFAULT_MESSAGE_ERROR)
-                    }
-                }
-                override fun onFailure(call: Call<ResponseCommon>?, t: Throwable?) {
-                    onResult(false, DEFAULT_MESSAGE_ERROR)
-                }
-            })
-        } catch (e: java.lang.Exception){
-            onResult(false, DEFAULT_MESSAGE_ERROR)
-        }
-    }
 
-    fun insCloseIncompleteManage(
-        visitId: Int,
-        observation: String,
-        token: String,
-        onResult: (isSuccess: Boolean, message: String?) -> Unit
-    )  {
-        val jsonto = Gson().toJson(RequestBodyX("UFN_UFN_CLOSE_MANAGE_VISIT", "UFN_UFN_CLOSE_MANAGE_VISIT", mapOf<String, Any>(
-            "visitid" to visitId,
-            "observation" to observation
-        )))
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
             jsonto

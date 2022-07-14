@@ -143,16 +143,19 @@ class MerchantActivity : AppCompatActivity() {
             "type_pricesurveydetail" to "NINGUNO",
             "operation" to "INSERT"
         ) }.toList()
+
         merchantViewModel.closeMerchant(
             pointSale.visitId,
             imageBefore,
             imageAfter,
             Gson().toJson(listMaterialProcessed),
             Gson().toJson(listProductProcessed),
-            listProductProcessed.count() > 0,
+            listProductProcessed.isNotEmpty(),
             Gson().toJson(listAvailabilitiesProcessed),
-            (merchantViewModel.productsAvailability.value ?: emptyList()).count() > 0,
-            statusManagement, motive, observation, SharedPrefsCache(this).getToken())
+            (merchantViewModel.productsAvailability.value ?: emptyList()).isNotEmpty(),
+            statusManagement, motive, observation, SharedPrefsCache(this).getToken(),
+            null, pointSale.dateStart, pointSale.latitudeStart, pointSale.longitudeStart
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -249,9 +252,9 @@ class MerchantActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        val output = Intent()
-        output.putExtra("status", "INICIADO")
-        setResult(RESULT_OK, output);
+//        val output = Intent()
+//        output.putExtra("status", "INICIADO")
+//        setResult(RESULT_OK, output);
         finish()
     }
 }

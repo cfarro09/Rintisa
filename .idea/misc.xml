@@ -101,10 +101,11 @@
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_stock_register.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/layout/layout_supervisor_filter.xml" value="0.22826086956521738" />
         <entry key="..\:/Users/fd_ca/StudioProjects/Rintisa/app/src/main/res/menu/menu_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/menu/menu_main.xml" value="0.25416666666666665" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

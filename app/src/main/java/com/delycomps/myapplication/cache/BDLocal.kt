@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Point
+import androidx.core.database.getDoubleOrNull
 import com.delycomps.myapplication.model.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -35,7 +36,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             PDV_STALLNUMBER, PDV_VISITFREQUENCY, PDV_VISITDAY, PDV_LASTVISIT, PDV_TRAFFICLIGHTS,
             PDV_SHOWSURVEY, PDV_SHOWAVAILABILITY, PDV_MANAGEMENT, PDV_IMAGEBEFORE, PDV_IMAGEAFTER,
             UUID, PDV_IMAGEBEFORELOCAL, PDV_IMAGEAFTERLOCAL, PDV_STATUSLOCAL, PDV_DATEFINISHLOCAL,
-            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION)
+            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION, PDV_DATESTARTLOCAL, PDV_LATITUDESTARTLOCAL, PDV_LONGITUDESTARTLOCAL)
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         val c = db.query(TABLE_PDV, select, "$PDV_DATE = ?", arrayOf(date), null, null, null, null)
 
@@ -50,6 +51,9 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 ps.statusManagement = c.getString(20) ?: ""
                 ps.motiveManagement = c.getString(21) ?: ""
                 ps.observation = c.getString(22) ?: ""
+                ps.dateStart = c.getString(23) ?: ""
+                ps.latitudeStart = c.getDoubleOrNull(24) ?: 0.0
+                ps.longitudeStart = c.getDoubleOrNull(25) ?: 0.0
                 listPDV.add(ps)
             } while (c.moveToNext())
         }
@@ -67,7 +71,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             PDV_STALLNUMBER, PDV_VISITFREQUENCY, PDV_VISITDAY, PDV_LASTVISIT, PDV_TRAFFICLIGHTS,
             PDV_SHOWSURVEY, PDV_SHOWAVAILABILITY, PDV_MANAGEMENT, PDV_IMAGEBEFORE, PDV_IMAGEAFTER,
             UUID, PDV_IMAGEBEFORELOCAL, PDV_IMAGEAFTERLOCAL, PDV_STATUSLOCAL, PDV_DATEFINISHLOCAL,
-            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION)
+            PDV_STATUSMANAGEMENT, PDV_MOTIVEMANAGEMENT, PDV_OBSERVATION, PDV_DATESTARTLOCAL, PDV_LATITUDESTARTLOCAL, PDV_LONGITUDESTARTLOCAL)
 
         val c = db.query(TABLE_PDV, select, "$PDV_VISITID = ?", arrayOf(visitID.toString()), null, null, null, null)
 
@@ -82,6 +86,9 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 ps.statusManagement = c.getString(20) ?: ""
                 ps.motiveManagement = c.getString(21) ?: ""
                 ps.observation = c.getString(22) ?: ""
+                ps.dateStart = c.getString(23) ?: ""
+                ps.latitudeStart = c.getDoubleOrNull(24) ?: 0.0
+                ps.longitudeStart = c.getDoubleOrNull(25) ?: 0.0
                 listPDV.add(ps)
             } while (c.moveToNext())
         }
@@ -89,6 +96,24 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         c?.close()
 
         return listPDV
+    }
+
+    fun updatePDVStartDate(visitID: Int, dateStart: String, latitude: Double, longitude: Double) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(PDV_DATESTARTLOCAL, dateStart)
+        values.put(PDV_LATITUDESTARTLOCAL, latitude)
+        values.put(PDV_LONGITUDESTARTLOCAL, longitude)
+        values.put(PDV_MANAGEMENT, "INICIADO")
+
+        db.update(
+            TABLE_PDV,
+            values,
+            "$VISIT_ID = ?",
+            arrayOf(visitID.toString())
+        )
+        db.close()
     }
 
     fun updatePointSaleManagement(visitID: Int, status: String, motive: String, observation: String) {
@@ -172,11 +197,19 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 list[i].imageBeforeLocal = pointSaved.imageBeforeLocal
                 list[i].dateFinish = pointSaved.dateFinish
 
+                list[i].dateStart = pointSaved.dateStart
+                list[i].latitudeStart = pointSaved.latitudeStart
+                list[i].longitudeStart = pointSaved.longitudeStart
+
                 values.put(PDV_IMAGEAFTERLOCAL, pointSaved.imageAfterLocal)
                 values.put(PDV_IMAGEBEFORELOCAL, pointSaved.imageBeforeLocal)
                 values.put(PDV_DATEFINISHLOCAL, pointSaved.dateFinish)
 
-                if (pointSaved.management == "VISITADO" && item.management == "INICIADO" && pointSaved.wasSaveOnBD) {
+                values.put(PDV_DATESTARTLOCAL, pointSaved.dateStart)
+                values.put(PDV_LATITUDESTARTLOCAL, pointSaved.latitudeStart)
+                values.put(PDV_LONGITUDESTARTLOCAL, pointSaved.longitudeStart)
+
+                if (pointSaved.management == "VISITADO" && (item.management == "INICIADO" || item.management == "EN ESPERA") && pointSaved.wasSaveOnBD) {
                     list[i].wasSaveOnBD = false
                     list[i].management = "INICIADO"
 
@@ -565,6 +598,9 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val PDV_IMAGEAFTERLOCAL = "imageafterlocal"
         private const val PDV_STATUSLOCAL = "statuslocal"
         private const val PDV_DATEFINISHLOCAL = "datefinishlocal"
+        private const val PDV_DATESTARTLOCAL = "datestartlocal"
+        private const val PDV_LATITUDESTARTLOCAL = "latitudestartlocal"
+        private const val PDV_LONGITUDESTARTLOCAL = "longitudestartlocal"
 
         private const val PDV_STATUSMANAGEMENT = "statusmanagement"
         private const val PDV_MOTIVEMANAGEMENT = "motivemanagement"
@@ -595,6 +631,9 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 " $PDV_IMAGEAFTERLOCAL text, " +
                 " $PDV_STATUSLOCAL text, " +
                 " $PDV_DATEFINISHLOCAL text, " +
+                " $PDV_DATESTARTLOCAL text, " +
+                " $PDV_LATITUDESTARTLOCAL double, " +
+                " $PDV_LONGITUDESTARTLOCAL double, " +
                 " $PDV_STATUSMANAGEMENT text, " +
                 " $PDV_MOTIVEMANAGEMENT text, " +
                 " $PDV_OBSERVATION text, " +

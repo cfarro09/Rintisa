@@ -70,7 +70,7 @@ class PromoterActivity : AppCompatActivity() {
                         val listProducts = promoterViewModel.listProductSelected.value ?: emptyList()
                         listImages = listProducts.filter { (it.imageEvidenceLocal ?: "") != "" && it.imageEvidence == "" }.map { resImage(it.uuid.toString(), it.imageEvidenceLocal!!, null) }.toMutableList()
 
-                        if (listImages.count() > 0) {
+                        if (listImages.isNotEmpty()) {
                             imageIndex = 0
                             promoterViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
                         } else {
@@ -88,10 +88,6 @@ class PromoterActivity : AppCompatActivity() {
 
             return true
         } else if (item.itemId == android.R.id.home) {
-            val output = Intent()
-            output.putExtra("status", "INICIADO")
-            BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
-            setResult(RESULT_OK, output)
             finish()
             return true
         }
@@ -134,9 +130,11 @@ class PromoterActivity : AppCompatActivity() {
             pointSale.visitId,
             Gson().toJson(listStockProcessed),
             Gson().toJson(listProductProcessed),
-            listProducts.count() > 0,
+            listProducts.isNotEmpty(),
             "",
-            SharedPrefsCache(this).getToken())
+            SharedPrefsCache(this).getToken(),
+            null, pointSale.dateStart, pointSale.latitudeStart, pointSale.longitudeStart
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -231,10 +229,10 @@ class PromoterActivity : AppCompatActivity() {
         supportActionBar?.title = pointSale.client
     }
     override fun onBackPressed() {
-        val output = Intent()
-        BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
-        output.putExtra("status", "INICIADO")
-        setResult(RESULT_OK, output)
+//        val output = Intent()
+//        BDLocal(this).updatePointSaleLocal(pointSale.visitId, "INICIADO", "NOENVIADO", null, null, null)
+//        output.putExtra("status", "INICIADO")
+//        setResult(RESULT_OK, output)
         finish()
     }
 }

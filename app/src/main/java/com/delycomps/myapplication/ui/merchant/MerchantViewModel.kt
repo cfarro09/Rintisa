@@ -152,11 +152,15 @@ class MerchantViewModel : ViewModel() {
 
     fun closeMerchant(visitId: Int, image_before: String, image_after: String, material_list: String, price_survey_list: String, haveSurvey: Boolean,
                       listAvailability: String, haveAvailability: Boolean,
-                      status_management: String, motive: String, observation: String, token: String, finishDate: String? = null) {
+                      status_management: String, motive: String, observation: String, token: String, finishDate: String? = null,
+                      startDate: String? = null, latitudeStart: Double = 0.0, longitudeStart: Double = 0.0
+                      ) {
         Repository().insCloseManageMerchant(visitId, image_before, image_after, material_list, price_survey_list, haveSurvey,
             listAvailability,
             haveAvailability,
-            status_management, motive, observation, token, finishDate) { isSuccess, _ ->
+            status_management, motive, observation, token, finishDate,
+            startDate, latitudeStart, longitudeStart
+        ) { isSuccess, _ ->
             _closingMerchant.value = isSuccess
         }
     }
