@@ -14,9 +14,14 @@
         android:title="@string/close_day"/>
 
     <item
+        android:id="@+id/action_share_location"
+        app:showAsAction="never"
+        android:title="@string/share_location"/>
+
+    <item
         android:id="@+id/action_exit"
         android:icon="@drawable/ic_baseline_exit_to_app_24"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/exit"/>
 
 </menu>

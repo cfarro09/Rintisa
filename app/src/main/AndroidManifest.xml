@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.delycomps.myapplication">
+    package="com.delycomps.rintisa">
 
     <queries>
         <intent>
@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
@@ -34,29 +35,29 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".PromoterSupervisorActivity"
+            android:name="com.delycomps.rintisa.PromoterSupervisorActivity"
             android:exported="false"
             android:label="@string/title_activity_promoter_supervisor"
-            android:parentActivityName=".SupervisorActivity" />
+            android:parentActivityName="com.delycomps.rintisa.SupervisorActivity" />
         <activity
-            android:name=".MerchantSupervisorActivity"
+            android:name="com.delycomps.rintisa.MerchantSupervisorActivity"
             android:exported="false"
             android:label="@string/title_activity_merchant_supervisor"
-            android:parentActivityName=".SupervisorActivity" />
+            android:parentActivityName="com.delycomps.rintisa.SupervisorActivity" />
         <activity
-            android:name=".AuditorDetailActivity"
+            android:name="com.delycomps.rintisa.AuditorDetailActivity"
             android:exported="false"
             android:label="Detalle de auditor"
-            android:parentActivityName=".AuditorActivity" />
+            android:parentActivityName="com.delycomps.rintisa.AuditorActivity" />
         <activity
-            android:name=".SupervisorActivity"
+            android:name="com.delycomps.rintisa.SupervisorActivity"
             android:exported="false" />
         <activity
-            android:name=".ImageActivity"
+            android:name="com.delycomps.rintisa.ImageActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="false" />
         <activity
-            android:name=".AuditorActivity"
+            android:name="com.delycomps.rintisa.AuditorActivity"
             android:exported="false" />
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -69,26 +70,26 @@
         </provider>
 
         <activity
-            android:name=".PromoterActivity"
+            android:name="com.delycomps.rintisa.PromoterActivity"
             android:exported="true"
             android:label="@string/title_activity_promoter"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="com.delycomps.rintisa.MainActivity" />
         <activity
-            android:name=".MerchantActivity"
+            android:name="com.delycomps.rintisa.MerchantActivity"
             android:exported="false"
             android:label="@string/title_activity_client_detail"
             android:screenOrientation="portrait"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="com.delycomps.rintisa.MainActivity" />
         <activity
-            android:name=".LoginActivity"
+            android:name="com.delycomps.rintisa.LoginActivity"
             android:exported="false"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.delycomps.rintisa.MainActivity"
             android:exported="false"
             android:label="Puntos de venta" />
         <activity
-            android:name=".SplashActivity"
+            android:name="com.delycomps.rintisa.SplashActivity"
             android:exported="true"
             android:noHistory="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -98,6 +99,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name="com.delycomps.rintisa.LocationUpdatesService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location" />
     </application>
 
 </manifest>

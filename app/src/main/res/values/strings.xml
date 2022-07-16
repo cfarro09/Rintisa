@@ -72,5 +72,6 @@
     <string name="close_day">Cerrar día</string>
     <string name="quantity_day">N° de tickets del día</string>
     <string name="comment_day">Comentario del día</string>
+    <string name="share_location">Compartir mi ubicación</string>
 
 </resources>
