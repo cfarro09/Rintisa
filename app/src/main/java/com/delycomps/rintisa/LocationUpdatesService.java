@@ -331,8 +331,7 @@ public class LocationUpdatesService extends Service {
 //
         SharedPrefsCache dd = new SharedPrefsCache(getApplicationContext());
 
-        String idUser = Objects.requireNonNull(dd.get("id_user", "string")).toString();
-        String plateNumber = Objects.requireNonNull(dd.get("plate_number", "string")).toString();
+        String idUser = Objects.requireNonNull(dd.get("userid", "string")).toString();
 
         shareLocation(location, idUser);
         mLocation = location;

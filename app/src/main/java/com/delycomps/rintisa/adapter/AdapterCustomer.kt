@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.delycomps.rintisa.R
 import com.delycomps.rintisa.model.Customer
 import java.util.ArrayList
 

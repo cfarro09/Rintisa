@@ -159,7 +159,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     }
 
     @SuppressLint("MissingPermission")
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         myReceiver = MyReceiver()
@@ -289,8 +288,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                             if (role == "IMPULSADOR") PromoterActivity::class.java else MerchantActivity::class.java
                         )
                         intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
-                        startActivityForResult(intent, RETURN_ACTIVITY)
                         locationManager?.removeUpdates(locationListener)
+                        startActivityForResult(intent, RETURN_ACTIVITY)
                     }
                     else
                     {
@@ -345,7 +344,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             )
 
             intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
-            locationManager?.removeUpdates(locationListener)
             startActivityForResult(intent, RETURN_ACTIVITY)
         }
 
@@ -440,7 +438,16 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
         }
 
-
+//        val builderDialogGeo: AlertDialog.Builder = AlertDialog.Builder(this)
+//        val inflater2 = this.layoutInflater
+//        val dialogGeoUI = inflater2.inflate(R.layout.layout_share_location, null)
+//        builderDialogGeo.setView(dialogGeoUI)
+//        dialogGeolocation = builderDialogGeo.create()
+//
+//        mRequestLocationUpdatesButton = dialogGeoUI.findViewById(R.id.request_location_updates_button)
+//        mRemoveLocationUpdatesButton = dialogGeoUI.findViewById(R.id.remove_location_updates_button)
+//
+//        FirebaseApp.initializeApp(this)
     }
 
     private fun manageDialogCloseAssistance (view: View, dialog: AlertDialog) {
@@ -695,10 +702,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         }
     }
 
-
-
-
-
     override fun onStart() {
         super.onStart()
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -720,6 +723,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         })
         mRemoveLocationUpdatesButton!!.setOnClickListener(View.OnClickListener { mService!!.removeLocationUpdates() })
 
+
         // Restore the state of the buttons when the activity (re)launches.
         setButtonsState(Utils.requestingLocationUpdates(this))
 
@@ -740,7 +744,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     }
 
     override fun onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver!!)
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver!!)
+        }catch (e: Exception) {
+
+        }
+
         super.onPause()
     }
 
@@ -752,8 +761,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             unbindService(mServiceConnection)
             mBound = false
         }
-        PreferenceManager.getDefaultSharedPreferences(this)
-            .unregisterOnSharedPreferenceChangeListener(this)
+        try {
+
+            PreferenceManager.getDefaultSharedPreferences(applicationContext).unregisterOnSharedPreferenceChangeListener(this)
+        }catch (e: Exception) {
+
+        }
         super.onStop()
     }
 

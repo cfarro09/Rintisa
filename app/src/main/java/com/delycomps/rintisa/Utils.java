@@ -18,6 +18,7 @@ package com.delycomps.rintisa;
 
 
 import android.content.Context;
+import android.icu.text.SimpleDateFormat;
 import android.location.Location;
 import android.preference.PreferenceManager;
 
@@ -68,7 +69,10 @@ class Utils {
     static void shareLocation (Location location, String userid) {
         DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
-        LocationDTO locationDTO = new LocationDTO(location.getLatitude(), location.getLongitude(), "");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String aa = dateFormat.format(date);
+        LocationDTO locationDTO = new LocationDTO(location.getLatitude(), location.getLongitude(), aa);
 
         database.child("locations").child("user_" + userid).setValue(locationDTO);
     }

@@ -78,6 +78,7 @@ class LoginActivity : AppCompatActivity() {
                         SharedPrefsCache(this).set("type", result?.role?.uppercase() ?: "", "string")
                         SharedPrefsCache(this).set("token", result?.token, "string")
                         SharedPrefsCache(this).set("fullname", result?.fullname, "string")
+                        SharedPrefsCache(this).set("userid", "${result?.userId}", "string")
                         Toast.makeText(this, "Bienvenido $username (${result?.role?.uppercase() ?: ""})", Toast.LENGTH_SHORT).show()
 
                         when {
