@@ -10,7 +10,6 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -21,7 +20,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
@@ -29,10 +27,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.delycomps.rintisa.adapter.AdapterPointsale
+import com.delycomps.rintisa.adapter.AdapterVisitPending
+import com.delycomps.rintisa.cache.BDLocal
 import com.delycomps.rintisa.cache.Helpers
 import com.delycomps.rintisa.cache.SharedPrefsCache
-import com.delycomps.rintisa.model.DataSupervisor
-import com.delycomps.rintisa.model.PointSale
+import com.delycomps.rintisa.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
@@ -42,7 +41,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 private const val CODE_RESULT_CAMERA_SELFIE = 10001
 private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
 
@@ -50,20 +48,26 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var supervisorViewModel: SupervisorViewModel
     private var currentPhotoPath: String = ""
     private var dialogFilter: AlertDialog? = null
+    private var dialogPending: AlertDialog? = null
     private lateinit var dialogLoading: AlertDialog
     private lateinit var rv: RecyclerView
+    private lateinit var rvPending: RecyclerView
     private var service: String = "MERCADERISMO"
     private var marketIdG: Int? = 0
     private lateinit var serviceG: String
     private var todayG: Boolean = false
     private var permissionCamera = false
     private lateinit var pointSale: PointSale
+    private lateinit var visitPending: VisitSupervisor
     private var permissionGPS = false
     private var gpsEnabled = false
     private var lastLocation: Location? = null
     private var locationManager : LocationManager? = null
     private lateinit var mainViewModel: MainViewModel
     private var indexPosition = 0
+    private var typeUpload = ""
+    private var listImages: MutableList<resImage> = arrayListOf()
+    private var imageIndex: Int = 0
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -114,12 +118,48 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 }
                 mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
             }
+            R.id.action_pending -> {
+                val visits = BDLocal(this).getListVisitSupervisor()
+                val context = this
+                rvPending.adapter = AdapterVisitPending(visits, object : AdapterVisitPending.ListAdapterListener {
+                    override fun onClickAtDetailVisitSupervisor(ps: VisitSupervisor, position: Int) {
+                        visitPending = ps
+                        dialogLoading.show()
+                        if (ps.createDate.isNullOrEmpty()) {
+                            sendVisitPending()
+                        } else {
+                            listImages = arrayListOf()
+                            if (ps.type == "MERCADERISMO") {
+                                imageIndex = 0
+                                listImages.add(resImage("image1", ps.image1 ?: "", null))
+                                typeUpload = "cacheo"
+                                mainViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(context).getToken())
+                            }
+                        }
+                    }
+                })
+                dialogPending?.show()
+            }
         }
         return false
     }
 
+    fun sendVisitPending() {
+        val ob = JSONObject()
+        ob.put("auditdetail", visitPending.auditjson)
+        ob.put("customerid", visitPending.customerId)
+        ob.put("image1", visitPending.image1)
+        ob.put("initdate", visitPending.createDate)
+        ob.put("latitude", visitPending.latitude)
+        ob.put("longitude", visitPending.longitude)
+        ob.put("aux_userid", visitPending.userId)
+        ob.put("type", visitPending.type)
+        ob.put("visitid", visitPending.visitId)
+        ob.put("comment", visitPending.comment)
+        supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF", SharedPrefsCache(this).getToken())
+    }
+
     @SuppressLint("MissingPermission")
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_supervisor)
@@ -160,7 +200,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         mainViewModel.gpsEnabled.observe(this) {
             if (it == true) {
                 try {
-                    locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
+                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, locationListener)
                     gpsEnabled = true
                     Log.d("log_carlos", "CONNECTION UBICATION OK")
                 } catch (e: java.lang.Exception) {
@@ -189,6 +229,14 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         dialogFilter = builderFilter.create()
         manageDialogFilter(dialogFilterView)
 
+        val builderPending: AlertDialog.Builder = AlertDialog.Builder(this)
+        val inflater1 = this.layoutInflater
+        val dialogPendingView = inflater1.inflate(R.layout.layout_supervisor_pending, null)
+        builderPending.setView(dialogPendingView)
+        dialogPending = builderPending.create()
+        rvPending = dialogPendingView.findViewById(R.id.supervisor_rv_pending)
+        rvPending.layoutManager = LinearLayoutManager(this)
+
         val builderLoading: AlertDialog.Builder = AlertDialog.Builder(this)
         builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
         builderLoading.setView(R.layout.layout_loading_dialog)
@@ -200,91 +248,99 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             else
                 dialogLoading.dismiss()
         }
+
         supervisorViewModel.error.observe(this) {
             if ((it ?: "") != "") {
                 Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
         }
 
-        supervisorViewModel.resExecute.observe(this) {
-            if ((it.result) == "UFN_MANAGE_SUPERVISOR_PROMOTER_INS1") {
-                if (!it.loading && it.success) {
-                    dialogLoading.dismiss()
-                    supervisorViewModel.initExecute()
-
-                    if (service == "MERCADERISMO") {
-                        val intent = Intent(
-                            rv.context,
-                            MerchantSupervisorActivity::class.java
-                        )
-                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
-                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
-                    } else {
-                        val intent = Intent(
-                            rv.context,
-                            PromoterSupervisorActivity::class.java
-                        )
-                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
-                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+        mainViewModel.urlSelfie.observe(this) {
+            dialogLoading.dismiss()
+            val userid = SharedPrefsCache(this).get("userid", "string").toString().toInt()
+            if (typeUpload == "cacheo") {
+                if (it == "") {
+                    Toast.makeText(this, "Tiene problemas de red, cuando tenga internet por favor volver a intentar", Toast.LENGTH_LONG).show()
+                } else {
+                    when (listImages[imageIndex].type) {
+                        "image1" -> visitPending.image1 = it
+                        "image2" -> visitPending.image2 = it
+                        "image3" -> visitPending.image3 = it
+                        "image4" -> visitPending.image4 = it
+                        "image5" -> visitPending.image5 = it
                     }
-                } else if (!it.loading && !it.success) {
-                    dialogLoading.dismiss()
-                    supervisorViewModel.initExecute()
-                    Toast.makeText(this, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
+                    imageIndex++
+                    if (imageIndex == listImages.count()) {
+                        sendVisitPending()
+                    } else {
+                        typeUpload = "cacheo"
+                        mainViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(this).getToken())
+                    }
+                }
+            } else {
+                if (it == "") {
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    val fullDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
+                    val visitSup = VisitSupervisor(pointSale.customerId, pointSale.userid ?: 0, userid, date, fullDate, currentPhotoPath, service, lastLocation?.latitude ?: 0.00, lastLocation?.longitude ?: 0.00)
+                    visitSup.customer = pointSale.client
+                    visitSup.visitId = pointSale.visitId
+                    BDLocal(this).addVisitSupervisor(visitSup)
+                    Toast.makeText(this, "Tiene problemas de red, cuando tenga internet por favor proceder a enviar la visita", Toast.LENGTH_LONG).show()
+                } else {
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    val visitSup = VisitSupervisor(pointSale.customerId, pointSale.userid ?: 0, userid, date, "", "", service, 0.00, 0.00)
+                    visitSup.customer = pointSale.client
+                    visitSup.visitId = pointSale.visitId
+                    BDLocal(this).addVisitSupervisor(visitSup)
+                }
+
+                (rv.adapter as AdapterPointsale).updateManagementSup(indexPosition, "INICIADO")
+
+                if (service == "MERCADERISMO") {
+                    val intent = Intent(
+                        rv.context,
+                        MerchantSupervisorActivity::class.java
+                    )
+                    intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                } else {
+                    val intent = Intent(
+                        rv.context,
+                        PromoterSupervisorActivity::class.java
+                    )
+                    intent.putExtra(Constants.POINT_SALE_ITEM, pointSale)
+                    intent.putExtra(Constants.POINT_SALE_SERVICE, service)
+                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
                 }
             }
         }
 
-        mainViewModel.urlSelfie.observe(this) {
-            dialogLoading.dismiss()
-            if (it != "") {
-                val ob = JSONObject()
-                ob.put("customerid", pointSale.customerId)
-                ob.put("aux_userid", pointSale.userid ?: 0)
-                ob.put("image1", it)
-                ob.put("service", service)
-                ob.put("latitude", lastLocation?.latitude ?: 0.00)
-                ob.put("longitude", lastLocation?.longitude ?: 0.00)
-                supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_PROMOTER_INS1", SharedPrefsCache(this).getToken())
-            }
-        }
         supervisorViewModel.listPointSale.observe(this) {
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
                     indexPosition = position
-//                    if (service != "MERCADERISMO") {
-                        if (!permissionCamera || !permissionGPS || !gpsEnabled || lastLocation == null) {
-                            if (!permissionCamera) {
-                                Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de cámara", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                            if (!permissionGPS) {
-                                Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                            if (!gpsEnabled) {
-                                Toast.makeText(this@SupervisorActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                            if (lastLocation != null) {
-                                Toast.makeText(this@SupervisorActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                        } else {
-                            pointSale = pointSale1
-                            dispatchTakePictureIntent()
+                    if (!permissionCamera || !permissionGPS || !gpsEnabled || lastLocation == null) {
+                        if (!permissionCamera) {
+                            Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de cámara", Toast.LENGTH_SHORT).show()
+                            return
                         }
-//                    } else {
-//                        val intent = Intent(
-//                            rv.context,
-//                            MerchantSupervisorActivity::class.java
-//                        )
-//                        intent.putExtra(Constants.POINT_SALE_ITEM, pointSale1)
-//                        intent.putExtra(Constants.POINT_SALE_SERVICE, service)
-//                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
-//                    }
+                        if (!permissionGPS) {
+                            Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        if (!gpsEnabled) {
+                            Toast.makeText(this@SupervisorActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        if (lastLocation != null) {
+                            Toast.makeText(this@SupervisorActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    } else {
+                        pointSale = pointSale1
+                        dispatchTakePictureIntent()
+                    }
                 }
             }, true)
         }
@@ -297,6 +353,21 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             }
             if (!it.loading && it.success) {
                 Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        supervisorViewModel.resExecute.observe(this) {
+            if ((it.result) == "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF") {
+                if (!it.loading && it.success) {
+                    BDLocal(this).deleteSupervisorVisit(visitPending.uuid!!)
+                    dialogLoading.dismiss()
+                    dialogPending?.dismiss()
+                    Toast.makeText(this, "Se envió correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -339,24 +410,20 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         }
     }
 
-
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             lastLocation = location
-
             Toast.makeText(this@SupervisorActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) { }
         override fun onProviderEnabled(provider: String) {
             gpsEnabled = true
             mainViewModel.setGPSIsEnabled(true)
-            Log.d("log_carlos", "PROVIDER ENABLED")
             Snackbar.make(rv, "GPS activado", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
                 R.color.colorPrimary
             )).show()
         }
         override fun onProviderDisabled(provider: String) {
-            Log.d("log_carlos", "PROVIDER DISABLED")
             gpsEnabled = false
             mainViewModel.setGPSIsEnabled(false)
             Snackbar.make(rv, "Debe activar su GPS", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
@@ -374,8 +441,8 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         }
         return false
     }
-    private fun filter(models: List<PointSale>, query: String): List<PointSale> {
 
+    private fun filter(models: List<PointSale>, query: String): List<PointSale> {
         val filteredModelList = ArrayList<PointSale>()
         for (model in models) {
             val text = model.client?.lowercase() + ""
@@ -400,7 +467,17 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 dialogLoading.show()
                 val f = Helpers().saveBitmapToFile(File(currentPhotoPath))
                 if (f != null) {
-                    mainViewModel.uploadSelfie(f, SharedPrefsCache(this).getToken())
+                    val jsonRb = Gson().toJson(
+                        RequestBodyX("UFN_MANAGE_SUPERVISOR_PROMOTER_INS1", "UFN_MANAGE_SUPERVISOR_PROMOTER_INS1", mapOf<String, Any>(
+                            "customerid" to pointSale.customerId,
+                            "aux_userid" to (pointSale.userid ?: 0),
+                            "service" to service,
+                            "latitude" to (lastLocation?.latitude ?: 0.00),
+                            "longitude" to (lastLocation?.longitude ?: 0.00),
+                        ))
+                    )
+                    typeUpload = "selfie"
+                    mainViewModel.uploadSelfie(f, SharedPrefsCache(this).getToken(), jsonRb)
                 } else {
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
@@ -422,7 +499,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             WRITE_EXTERNAL_STORAGE_PERMISSION ->
-                if (grantResults.count() > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     permissionCamera = true
                 } else {
                     Toast.makeText(this, "Por favor considere en dar permisos de cámara.", Toast.LENGTH_SHORT).show()

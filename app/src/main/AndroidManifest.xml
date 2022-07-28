@@ -42,6 +42,7 @@
             android:name="com.delycomps.rintisa.MerchantSupervisorActivity"
             android:exported="false"
             android:label="@string/title_activity_merchant_supervisor"
+            android:screenOrientation="portrait"
             android:parentActivityName="com.delycomps.rintisa.SupervisorActivity" />
         <activity
             android:name="com.delycomps.rintisa.AuditorDetailActivity"
@@ -50,6 +51,7 @@
             android:parentActivityName="com.delycomps.rintisa.AuditorActivity" />
         <activity
             android:name="com.delycomps.rintisa.SupervisorActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name="com.delycomps.rintisa.ImageActivity"

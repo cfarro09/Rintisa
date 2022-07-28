@@ -8,7 +8,6 @@ import androidx.core.database.getDoubleOrNull
 import com.delycomps.rintisa.model.*
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION){
 
@@ -19,13 +18,13 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.execSQL(SQL_CREATE_TABLE_PRICE)
         db.execSQL(SQL_CREATE_TABLE_AVAILABILITY)
         db.execSQL(SQL_CREATE_TABLE_PDV)
+        db.execSQL(SQL_CREATE_TABLE_SUPERVISOR_VISIT)
     }
 
     override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
         p0?.execSQL(SQL_CREATE_TABLE_PDV)
+        p0?.execSQL(SQL_CREATE_TABLE_SUPERVISOR_VISIT)
     }
-
-
 
     fun getPointSale(): List<PointSale> {
         val db = readableDatabase
@@ -279,7 +278,6 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.close()
     }
 
-
     fun getMerchantPrices(visitID: Int): List<SurveyProduct> {
         val db = readableDatabase
         val listSurveyProduct = ArrayList<SurveyProduct>()
@@ -408,6 +406,133 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.close()
     }
 
+    //#SUPERVISOR MANAGE
+    fun getVisitSupervisor(useridVisit: Int, customerId: Int, userId: Int): VisitSupervisor? {
+        val db = readableDatabase
+        var visit: VisitSupervisor? = null
+        val select = arrayOf(
+            SUPERVISOR_CUSTOMER_ID,
+            SUPERVISOR_USERID, SUPERVISOR_USERID_CREATED, SUPERVISOR_DATE, SUPERVISOR_CREATE_DATE, SUPERVISOR_IMAGE1,
+            SUPERVISOR_TYPE, SUPERVISOR_LATITUDE, SUPERVISOR_LONGITUDE, SUPERVISOR_COMMENT, SUPERVISOR_AUDIT_MERCHANT,
+            SUPERVISOR_STATUS, SUPERVISOR_CUSTOMER, SUPERVISOR_VISITID, SUPERVISOR_IMAGE2, SUPERVISOR_IMAGE3,
+            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5, UUID
+        )
+
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val c = db.query(TABLE_SUPERVISOR_VISIT, select, "$SUPERVISOR_USERID = ? and $SUPERVISOR_CUSTOMER_ID = ? and $SUPERVISOR_USERID_CREATED = ? and $SUPERVISOR_DATE = ?",
+            arrayOf(useridVisit.toString(), customerId.toString(), userId.toString(), date), null, null, null, null)
+
+        if (c != null && c.count > 0) {
+            c.moveToFirst()
+            do {
+                visit = VisitSupervisor(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6),
+                    c.getDoubleOrNull(7) ?: 0.0, c.getDoubleOrNull(8) ?: 0.0, c.getString(9), c.getString(10),
+                    c.getString(11), c.getString(12), c.getInt(13), c.getString(14), c.getString(15), c.getString(16), c.getString(17),
+                    c.getString(18))
+            } while (c.moveToNext())
+        }
+        db?.close()
+        c?.close()
+
+        return visit
+    }
+
+    fun getListVisitSupervisor(): List<VisitSupervisor> {
+        val db = readableDatabase
+        val visits = ArrayList<VisitSupervisor>()
+        val select = arrayOf(
+            SUPERVISOR_CUSTOMER_ID,
+            SUPERVISOR_USERID, SUPERVISOR_USERID_CREATED, SUPERVISOR_DATE, SUPERVISOR_CREATE_DATE, SUPERVISOR_IMAGE1,
+            SUPERVISOR_TYPE, SUPERVISOR_LATITUDE, SUPERVISOR_LONGITUDE, SUPERVISOR_COMMENT, SUPERVISOR_AUDIT_MERCHANT,
+            SUPERVISOR_STATUS, SUPERVISOR_CUSTOMER, SUPERVISOR_VISITID, SUPERVISOR_IMAGE2, SUPERVISOR_IMAGE3,
+            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5, UUID
+        )
+
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val c = db.query(
+            TABLE_SUPERVISOR_VISIT, select, "$SUPERVISOR_DATE = ?",
+            arrayOf(date), null, null, null, null)
+
+        if (c != null && c.count > 0) {
+            c.moveToFirst()
+            do {
+                visits.add(VisitSupervisor(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6),
+                        c.getDoubleOrNull(7) ?: 0.0, c.getDoubleOrNull(8) ?: 0.0, c.getString(9), c.getString(10),
+                        c.getString(11), c.getString(12), c.getInt(13), c.getString(14), c.getString(15), c.getString(16), c.getString(17),
+                        c.getString(18))
+                )
+            } while (c.moveToNext())
+        }
+        db?.close()
+        c?.close()
+
+        return visits
+    }
+
+    fun updateMerchantSupervisor(visit: VisitSupervisor) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        if (visit.comment != null) {
+            values.put(SUPERVISOR_COMMENT, visit.comment)
+        }
+        if (visit.auditjson != null) {
+            values.put(SUPERVISOR_AUDIT_MERCHANT, visit.auditjson)
+        }
+        if (visit.status != null) {
+            values.put(SUPERVISOR_STATUS, visit.status)
+        }
+
+        db.update(
+            TABLE_SUPERVISOR_VISIT,
+            values,
+            "$UUID = ?", arrayOf(visit.uuid)
+        )
+        db.close()
+    }
+
+    fun deleteSupervisorVisit(uuid: String) {
+        val db = readableDatabase
+        db.delete(TABLE_SUPERVISOR_VISIT, "$UUID = ?", arrayOf(uuid))
+        db.close()
+    }
+
+    fun addVisitSupervisor(visit: VisitSupervisor) {
+        val visitFound = getVisitSupervisor(visit.userId, visit.customerId, visit.userIdCreated)
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(SUPERVISOR_USERID, visit.userId)
+        values.put(SUPERVISOR_CUSTOMER_ID, visit.customerId)
+        values.put(SUPERVISOR_USERID_CREATED, visit.userIdCreated)
+        values.put(SUPERVISOR_VISITID, visit.visitId)
+        values.put(SUPERVISOR_DATE, visit.date)
+        values.put(SUPERVISOR_CREATE_DATE, visit.createDate)
+        values.put(SUPERVISOR_IMAGE1, visit.image1)
+        values.put(SUPERVISOR_CUSTOMER, visit.customer)
+        values.put(UUID, visit.uuid)
+        values.put(SUPERVISOR_TYPE, visit.type)
+        values.put(SUPERVISOR_LATITUDE, visit.latitude)
+        values.put(SUPERVISOR_LONGITUDE, visit.longitude)
+        values.put(SUPERVISOR_STATUS, visitFound?.status ?: "INICIADO")
+
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+
+        if (visitFound != null) {
+            db.update(
+                TABLE_SUPERVISOR_VISIT,
+                values,
+                "$SUPERVISOR_USERID = ? and $SUPERVISOR_CUSTOMER_ID = ? and $SUPERVISOR_USERID_CREATED = ? and $SUPERVISOR_DATE = ?",
+                arrayOf(visit.userId.toString(), visit.customerId.toString(), visit.userIdCreated.toString(), date)
+            )
+        } else {
+            values.put(UUID, visit.uuid)
+            db.insert(TABLE_SUPERVISOR_VISIT, null, values)
+        }
+        db.close()
+    }
+    //#END SUPERVISOR
+
     //#SALE PROMOTER
     fun getSalePromoter(visitID: Int): List<SurveyProduct> {
         val db = readableDatabase
@@ -430,6 +555,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
         return listStock
     }
+
     fun addSalePromoter(product: SurveyProduct, visitID: Int) {
         val db = this.writableDatabase
         val values = ContentValues()
@@ -446,6 +572,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.insert(TABLE_SALES, null, values)
         db.close()
     }
+
     fun deleteSalePromoter(uuid: String) {
         val db = readableDatabase
         db.delete(TABLE_SALES, "$UUID = ?", arrayOf(uuid))
@@ -511,6 +638,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
         return listStock
     }
+
     fun addStockPromoter(stock: Stock, visitID: Int) {
         val db = this.writableDatabase
         val values = ContentValues()
@@ -524,6 +652,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.insert(TABLE_STOCK1, null, values)
         db.close()
     }
+
     fun deleteStockPromoter(uuid: String) {
         val db = readableDatabase
         db.delete(TABLE_STOCK1, "$UUID = ?", arrayOf(uuid))
@@ -600,12 +729,44 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val PDV_DATESTARTLOCAL = "datestartlocal"
         private const val PDV_LATITUDESTARTLOCAL = "latitudestartlocal"
         private const val PDV_LONGITUDESTARTLOCAL = "longitudestartlocal"
-
         private const val PDV_STATUSMANAGEMENT = "statusmanagement"
         private const val PDV_MOTIVEMANAGEMENT = "motivemanagement"
         private const val PDV_OBSERVATION = "observation"
-
         private const val PDV_DATE = "visitdate"
+
+
+
+
+
+
+
+        private const val TABLE_SUPERVISOR_VISIT = "supervisor_visit"
+        private const val SUPERVISOR_USERID = "userid"
+        private const val SUPERVISOR_CUSTOMER_ID = "customerid"
+        private const val SUPERVISOR_DATE = "date"
+        private const val SUPERVISOR_CREATE_DATE = "fulldate"
+        private const val SUPERVISOR_IMAGE1 = "image1"
+        private const val SUPERVISOR_IMAGE2 = "image2"
+        private const val SUPERVISOR_IMAGE3 = "image3"
+        private const val SUPERVISOR_IMAGE4 = "image4"
+        private const val SUPERVISOR_IMAGE5 = "image5"
+        private const val SUPERVISOR_LATITUDE = "latitude"
+        private const val SUPERVISOR_LONGITUDE = "longitude"
+        private const val SUPERVISOR_TYPE = "type"
+        private const val SUPERVISOR_USERID_CREATED = "userid_created"
+        private const val SUPERVISOR_VISITID = "visitid"
+
+        private const val SUPERVISOR_COMMENT = "comment"
+        private const val SUPERVISOR_AUDIT_MERCHANT = "audit"
+        private const val SUPERVISOR_STATUS = "status"
+        private const val SUPERVISOR_CUSTOMER = "customer"
+
+
+
+
+
+
+
 
         private const val SQL_CREATE_TABLE_PDV = ("" +
                 "create table $TABLE_PDV (" +
@@ -693,6 +854,30 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "   $AVAILABILITY_COMPETENCE text," +
                 "   $UUID text," +
                 "   $VISIT_ID integer" +
+                ")")
+
+        private const val SQL_CREATE_TABLE_SUPERVISOR_VISIT = ("" +
+                "create table $TABLE_SUPERVISOR_VISIT (" +
+                "  _id integer primary key autoincrement," +
+                "   $SUPERVISOR_USERID integer," +
+                "   $SUPERVISOR_CUSTOMER_ID integer," +
+                "   $SUPERVISOR_USERID_CREATED integer," +
+                "   $SUPERVISOR_VISITID integer," +
+                "   $SUPERVISOR_DATE text," +
+                "   $SUPERVISOR_CREATE_DATE text," +
+                "   $SUPERVISOR_IMAGE1 text," +
+                "   $SUPERVISOR_IMAGE2 text," +
+                "   $SUPERVISOR_IMAGE3 text," +
+                "   $SUPERVISOR_IMAGE4 text," +
+                "   $SUPERVISOR_IMAGE5 text," +
+                "   $UUID text," +
+                "   $SUPERVISOR_TYPE text," +
+                "   $SUPERVISOR_COMMENT text," +
+                "   $SUPERVISOR_STATUS text," +
+                "   $SUPERVISOR_CUSTOMER text," +
+                "   $SUPERVISOR_AUDIT_MERCHANT text," +
+                "   $SUPERVISOR_LATITUDE double, " +
+                "   $SUPERVISOR_LONGITUDE double " +
                 ")")
 
     }

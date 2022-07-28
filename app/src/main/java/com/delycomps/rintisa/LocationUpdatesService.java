@@ -102,7 +102,7 @@ public class LocationUpdatesService extends Service {
     /**
      * The identifier for the notification displayed for the foreground service.
      */
-    private static final int NOTIFICATION_ID = 12345678;
+    private static final int NOTIFICATION_ID = 123456789;
 
     /**
      * Used to check whether the bound activity has really gone away and not unbound as part of an
@@ -282,12 +282,14 @@ public class LocationUpdatesService extends Service {
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
         // The PendingIntent that leads to a call to onStartCommand() in this service.
-        PendingIntent servicePendingIntent = PendingIntent.getService(this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // The PendingIntent to launch activity.
-        PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), 0);
+        PendingIntent servicePendingIntent = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            servicePendingIntent = PendingIntent.getService(this, 0, intent,
+                    PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            servicePendingIntent = PendingIntent.getService(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .addAction(R.mipmap.ic_launcher, "Dejar de compartir",

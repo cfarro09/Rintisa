@@ -46,6 +46,12 @@ class SupervisorViewModel : ViewModel() {
     private val _urlImageWithBD: MutableLiveData<ResGlobal> = MutableLiveData()
     val urlImageWithBD: LiveData<ResGlobal> = _urlImageWithBD
 
+    private val _comment: MutableLiveData<String> = MutableLiveData()
+    val comment: LiveData<String> = _comment
+
+    private val _auditJson: MutableLiveData<String> = MutableLiveData()
+    val auditJson: LiveData<String> = _auditJson
+
     fun uploadWithBD(file: File, json: String, token: String) {
         _urlImageWithBD.value = ResGlobal(true, "", false)
 
@@ -56,6 +62,14 @@ class SupervisorViewModel : ViewModel() {
                 _urlImageWithBD.value = ResGlobal(false, "", false)
             }
         }
+    }
+
+    fun setComment(comment: String) {
+        _comment.value = comment
+    }
+
+    fun setAudit(auditJson: String) {
+        _auditJson.value = auditJson
     }
 
     fun setMultiInitial(data: DataSupervisor) {
@@ -93,18 +107,6 @@ class SupervisorViewModel : ViewModel() {
 
     fun initExecute() {
         _resExecute.value = ResGlobal(false, "", false)
-    }
-
-    fun manageQuestion (question: Question, context: Context, customerId: Int) {
-//        BDLocal(context).addMaterialStock(material, visitId)
-        if (question.flag) {
-            _questionAnswered.value = ((_questionAnswered.value ?: emptyList()) + listOf(question)).toMutableList()
-//            BDLocal(context).addProductsAvailability(question, visitId)
-        } else {
-//            val uuid = _questionAnswered.value?.find { it.text == question.text }?.uuid ?: ""
-//            BDLocal(context).deleteProductAvailability(uuid)
-            _questionAnswered.value = _questionAnswered.value!!.filter { it.text != question.text }.toMutableList()
-        }
     }
 
     fun getMaterials(visitId: Int, token: String) {

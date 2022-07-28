@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         mainViewModel.gpsEnabled.observe(this) {
             if (it == true) {
                 try {
-                    locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
+                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, locationListener)
                     gpsEnabled = true
                     Log.d("log_carlos", "CONNECTION UBICATION OK")
                 } catch (e: java.lang.Exception) {

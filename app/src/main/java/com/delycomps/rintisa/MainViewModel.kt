@@ -52,9 +52,9 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun uploadSelfie(file: File, token: String) {
+    fun uploadSelfie(file: File, token: String, rb: String = "") {
         _loadingSelfie.value = true
-        Repository().uploadImage(file, token) { isSuccess, result, _ ->
+        Repository().uploadImage(file, token, rb) { isSuccess, result, _ ->
             if (isSuccess) {
                 _urlSelfie.value = result!!
             } else {

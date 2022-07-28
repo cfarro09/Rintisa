@@ -5,19 +5,23 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.cardview.widget.CardView
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.delycomps.rintisa.*
 import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.model.PointSale
 import org.json.JSONObject
+import java.lang.Exception
 
 
 class InformationMerchant : Fragment() {
@@ -87,20 +91,23 @@ class InformationMerchant : Fragment() {
             spinnerSpeachSct.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
 
 
-            val button = view.findViewById<ImageButton>(R.id.button_save)
+//            val button = view.findViewById<ImageButton>(R.id.button_save)
             val buttonKnow = view.findViewById<ImageButton>(R.id.button_know_save)
             val editComment = view.findViewById<EditText>(R.id.text_comment)
 
-            button.setOnClickListener {
-                val comment = editComment.text.toString()
-                if (comment != "") {
-                    val ob = JSONObject()
-                    ob.put("customerid", pointSale.customerId)
-                    ob.put("comment", comment)
-                    ob.put("type", "MERCADERISMO")
-                    viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
-                }
+            editComment.addTextChangedListener {
+                viewModel.setComment(editComment.text.toString())
             }
+//            button.setOnClickListener {
+//                val comment = editComment.text.toString()
+//                if (comment != "") {
+//                    val ob = JSONObject()
+//                    ob.put("customerid", pointSale.customerId)
+//                    ob.put("comment", comment)
+//                    ob.put("type", "MERCADERISMO")
+//                    viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
+//                }
+//            }
 
             buttonKnow.setOnClickListener {
                 val textSpeachScn = spinnerSpeachScn.selectedItem.toString()

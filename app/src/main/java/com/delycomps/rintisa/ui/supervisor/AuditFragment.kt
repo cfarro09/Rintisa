@@ -44,7 +44,6 @@ class AuditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val button: ImageButton = view.findViewById(R.id.button_save)
         val rv: RecyclerView = view.findViewById(R.id.rv_question)
         rv.layoutManager = LinearLayoutManager(view.context)
         pointSale = requireActivity().intent.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
@@ -56,55 +55,18 @@ class AuditFragment : Fragment() {
 
         rv.adapter = AdapterQuestions(viewModel.dataQuestion.value?.toMutableList() ?: ArrayList(), object : AdapterQuestions.ListAdapterListener {
             override fun availability(question: Question, position: Int) {
-                viewModel.manageQuestion(question, rv.context, 0)
+                val json = Gson().toJson((rv.adapter as AdapterQuestions).getList().map { mapOf<String, Any>(
+                    "description_audit" to SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.US).format(Date()),
+                    "type_audit" to "NINGUNO",
+                    "question" to it.text,
+                    "flag" to it.flag,
+                    "score" to it.score,
+                    "description_auditdetail" to it.text,
+                    "type_auditdetail" to "NINGUNO",
+                )})
+                viewModel.setAudit(json)
             }
         })
 
-        viewModel.resExecute.observe(requireActivity()) {
-            if ((it.result ?: "") == "UFN_AUDIT_DETAIL_INS") {
-                if (!it.loading && it.success) {
-                    dialogLoading.dismiss()
-                    (rv.adapter as AdapterQuestions).updateQuestion(viewModel.dataQuestion.value?.toMutableList() ?: ArrayList())
-                    Toast.makeText(view.context, "Auditoria registrada correctamente", Toast.LENGTH_LONG).show()
-                    viewModel.initExecute()
-                } else if (!it.loading && !it.success) {
-                    dialogLoading.dismiss()
-                    viewModel.initExecute()
-                    Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-
-        button.setOnClickListener {
-            val json = Gson().toJson((rv.adapter as AdapterQuestions).getList().map { mapOf<String, Any>(
-                "description_audit" to SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.US).format(Date()),
-                "type_audit" to "NINGUNO",
-                "question" to it.text,
-                "flag" to it.flag,
-                "score" to it.score,
-                "description_auditdetail" to it.text,
-                "type_auditdetail" to "NINGUNO",
-            )})
-            val ob = JSONObject()
-            ob.put("auditdetail", json)
-            ob.put("customerid", pointSale.customerId)
-            ob.put("visitid", pointSale.visitId)
-
-            val dialogClickListener = DialogInterface.OnClickListener { _, which ->
-                when (which) {
-                    DialogInterface.BUTTON_POSITIVE -> {
-                        dialogLoading.show()
-                        viewModel.executeSupervisor(ob, "UFN_AUDIT_DETAIL_INS", SharedPrefsCache(view.context).getToken())
-                    }
-                }
-            }
-            val builder = AlertDialog.Builder(view.context)
-            builder.setMessage("¿Está seguro de enviar la auditoria??")
-                .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
-                .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
-            val alert = builder.create()
-            alert.show()
-
-        }
     }
 }
