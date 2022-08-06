@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.text.Editable
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,15 +13,10 @@ import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.delycomps.rintisa.*
-import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.model.PointSale
-import org.json.JSONObject
-import java.lang.Exception
-
 
 class InformationMerchant : Fragment() {
     private lateinit var viewModel: SupervisorViewModel
@@ -91,68 +85,58 @@ class InformationMerchant : Fragment() {
             spinnerSpeachSct.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("MUY BIEN", "REFORZAR"))
 
 
+            spinnerSpeachSct.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                    val value = spinnerSpeachSct.selectedItem.toString()
+                    viewModel.setSpeechSCT(value)
+                }
+            }
+            spinnerSpeachRct.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                    val value = spinnerSpeachRct.selectedItem.toString()
+                    viewModel.setSpeechRCT(value)
+                }
+            }
+            spinnerSpeachScn.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                    val value = spinnerSpeachScn.selectedItem.toString()
+                    viewModel.setSpeechSCN(value)
+                }
+            }
+            spinnerSpeachRcn.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) { }
+                override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                    val value = spinnerSpeachRcn.selectedItem.toString()
+                    viewModel.setSpeechRCN(value)
+                }
+            }
 //            val button = view.findViewById<ImageButton>(R.id.button_save)
-            val buttonKnow = view.findViewById<ImageButton>(R.id.button_know_save)
+//            val buttonKnow = view.findViewById<ImageButton>(R.id.button_know_save)
             val editComment = view.findViewById<EditText>(R.id.text_comment)
 
             editComment.addTextChangedListener {
                 viewModel.setComment(editComment.text.toString())
             }
-//            button.setOnClickListener {
-//                val comment = editComment.text.toString()
-//                if (comment != "") {
-//                    val ob = JSONObject()
-//                    ob.put("customerid", pointSale.customerId)
-//                    ob.put("comment", comment)
-//                    ob.put("type", "MERCADERISMO")
-//                    viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
-//                }
+
+//            buttonKnow.setOnClickListener {
+//                val textSpeachScn = spinnerSpeachScn.selectedItem.toString()
+//                val textSpeachRcn = spinnerSpeachRcn.selectedItem.toString()
+//                val textSpeachRct = spinnerSpeachRct.selectedItem.toString()
+//                val textSpeachSct = spinnerSpeachSct.selectedItem.toString()
+//
+//                val ob = JSONObject()
+//                ob.put("customerid", pointSale.customerId)
+//                ob.put("speach_scn", textSpeachScn)
+//                ob.put("speach_rcn", textSpeachRcn)
+//                ob.put("speach_rct", textSpeachRct)
+//                ob.put("speach_sct", textSpeachSct)
+//                ob.put("aux_userid", viewModel.userSelected.value)
+//
+//                viewModel.executeSupervisor(ob, "QUERY_UPDATE_SPEACH1", SharedPrefsCache(view.context).getToken())
 //            }
-
-            buttonKnow.setOnClickListener {
-                val textSpeachScn = spinnerSpeachScn.selectedItem.toString()
-                val textSpeachRcn = spinnerSpeachRcn.selectedItem.toString()
-                val textSpeachRct = spinnerSpeachRct.selectedItem.toString()
-                val textSpeachSct = spinnerSpeachSct.selectedItem.toString()
-
-                val ob = JSONObject()
-                ob.put("customerid", pointSale.customerId)
-                ob.put("speach_scn", textSpeachScn)
-                ob.put("speach_rcn", textSpeachRcn)
-                ob.put("speach_rct", textSpeachRct)
-                ob.put("speach_sct", textSpeachSct)
-                ob.put("aux_userid", viewModel.userSelected.value)
-
-                viewModel.executeSupervisor(ob, "QUERY_UPDATE_SPEACH1", SharedPrefsCache(view.context).getToken())
-            }
-
-            viewModel.resExecute.observe(requireActivity()) {
-                if ((it.result) == "QUERY_UPDATE_COMMENT") {
-                    if (!it.loading && it.success) {
-//                        dialogLoading.dismiss()
-                        viewModel.initExecute()
-                        Toast.makeText(view.context, "Comentario registrado correctamente", Toast.LENGTH_LONG).show()
-                    } else if (!it.loading && !it.success) {
-//                        dialogLoading.dismiss()
-                        viewModel.initExecute()
-                        Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
-                    } else if (it.loading) {
-//                        dialogLoading.show()
-                    }
-                } else if ((it.result) == "QUERY_UPDATE_SPEACH1") {
-                    if (!it.loading && it.success) {
-//                        dialogLoading.dismiss()
-                        viewModel.initExecute()
-                        Toast.makeText(view.context, "Conocimientos actualizados correctamente", Toast.LENGTH_LONG).show()
-                    } else if (!it.loading && !it.success) {
-//                        dialogLoading.dismiss()
-                        viewModel.initExecute()
-                        Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
-                    } else if (it.loading) {
-//                        dialogLoading.show()
-                    }
-                }
-            }
 
             val color = if (pointSale.trafficLights == "AMARILLO") "#FFF8B7" else if (pointSale.trafficLights == "VERDE") "#B6FFA9" else  "#FF9696"
             view.findViewById<View>(R.id.pdv_traffic_light).backgroundTintList = ColorStateList.valueOf(

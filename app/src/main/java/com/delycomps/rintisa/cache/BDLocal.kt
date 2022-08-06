@@ -415,7 +415,10 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             SUPERVISOR_USERID, SUPERVISOR_USERID_CREATED, SUPERVISOR_DATE, SUPERVISOR_CREATE_DATE, SUPERVISOR_IMAGE1,
             SUPERVISOR_TYPE, SUPERVISOR_LATITUDE, SUPERVISOR_LONGITUDE, SUPERVISOR_COMMENT, SUPERVISOR_AUDIT_MERCHANT,
             SUPERVISOR_STATUS, SUPERVISOR_CUSTOMER, SUPERVISOR_VISITID, SUPERVISOR_IMAGE2, SUPERVISOR_IMAGE3,
-            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5, UUID
+            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5,
+            SUPERVISOR_SPEECHSCN, SUPERVISOR_SPEECHRCN, SUPERVISOR_SPEECHRCT, SUPERVISOR_SPEECHSCT, SUPERVISOR_UNIFORMJSON,
+            SUPERVISOR_MATERIALJSON, SUPERVISOR_STATUSJSON, SUPERVISOR_USERIDSELECTED,
+            UUID
         )
 
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
@@ -428,7 +431,8 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 visit = VisitSupervisor(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6),
                     c.getDoubleOrNull(7) ?: 0.0, c.getDoubleOrNull(8) ?: 0.0, c.getString(9), c.getString(10),
                     c.getString(11), c.getString(12), c.getInt(13), c.getString(14), c.getString(15), c.getString(16), c.getString(17),
-                    c.getString(18))
+                    c.getString(18), c.getString(19), c.getString(20), c.getString(21), c.getString(22), c.getString(23), c.getString(24), c.getInt(25),
+                    c.getString(26))
             } while (c.moveToNext())
         }
         db?.close()
@@ -445,21 +449,25 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             SUPERVISOR_USERID, SUPERVISOR_USERID_CREATED, SUPERVISOR_DATE, SUPERVISOR_CREATE_DATE, SUPERVISOR_IMAGE1,
             SUPERVISOR_TYPE, SUPERVISOR_LATITUDE, SUPERVISOR_LONGITUDE, SUPERVISOR_COMMENT, SUPERVISOR_AUDIT_MERCHANT,
             SUPERVISOR_STATUS, SUPERVISOR_CUSTOMER, SUPERVISOR_VISITID, SUPERVISOR_IMAGE2, SUPERVISOR_IMAGE3,
-            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5, UUID
+            SUPERVISOR_IMAGE4, SUPERVISOR_IMAGE5,
+            SUPERVISOR_SPEECHSCN, SUPERVISOR_SPEECHRCN, SUPERVISOR_SPEECHRCT, SUPERVISOR_SPEECHSCT, SUPERVISOR_UNIFORMJSON,
+            SUPERVISOR_MATERIALJSON, SUPERVISOR_STATUSJSON, SUPERVISOR_USERIDSELECTED,
+            UUID
         )
 
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         val c = db.query(
-            TABLE_SUPERVISOR_VISIT, select, "$SUPERVISOR_DATE = ?",
-            arrayOf(date), null, null, null, null)
+            TABLE_SUPERVISOR_VISIT, select, "$SUPERVISOR_DATE = ? and $SUPERVISOR_STATUS = ?",
+            arrayOf(date, "PORENVIAR"), null, null, null, null)
 
         if (c != null && c.count > 0) {
             c.moveToFirst()
             do {
                 visits.add(VisitSupervisor(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getString(6),
                         c.getDoubleOrNull(7) ?: 0.0, c.getDoubleOrNull(8) ?: 0.0, c.getString(9), c.getString(10),
-                        c.getString(11), c.getString(12), c.getInt(13), c.getString(14), c.getString(15), c.getString(16), c.getString(17),
-                        c.getString(18))
+                    c.getString(11), c.getString(12), c.getInt(13), c.getString(14), c.getString(15), c.getString(16), c.getString(17),
+                    c.getString(18), c.getString(19), c.getString(20), c.getString(21), c.getString(22), c.getString(23), c.getString(24), c.getInt(25),
+                    c.getString(26))
                 )
             } while (c.moveToNext())
         }
@@ -481,6 +489,47 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         }
         if (visit.status != null) {
             values.put(SUPERVISOR_STATUS, visit.status)
+        }
+
+
+        if (visit.image2 != null) {
+            values.put(SUPERVISOR_IMAGE2, visit.image2)
+        }
+        if (visit.image3 != null) {
+            values.put(SUPERVISOR_IMAGE3, visit.image3)
+        }
+        if (visit.image4 != null) {
+            values.put(SUPERVISOR_IMAGE4, visit.image4)
+        }
+        if (visit.image5 != null) {
+            values.put(SUPERVISOR_IMAGE5, visit.image5)
+        }
+
+
+
+        if (visit.speechSCN != null) {
+            values.put(SUPERVISOR_SPEECHSCN, visit.speechSCN)
+        }
+        if (visit.speechRCN != null) {
+            values.put(SUPERVISOR_SPEECHRCN, visit.speechRCN)
+        }
+        if (visit.speechRCT != null) {
+            values.put(SUPERVISOR_SPEECHRCT, visit.speechRCT)
+        }
+        if (visit.speechSCT != null) {
+            values.put(SUPERVISOR_SPEECHSCT, visit.speechSCT)
+        }
+        if (visit.uniformJson != null) {
+            values.put(SUPERVISOR_UNIFORMJSON, visit.uniformJson)
+        }
+        if (visit.materialJson != null) {
+            values.put(SUPERVISOR_MATERIALJSON, visit.materialJson)
+        }
+        if (visit.statusJson != null) {
+            values.put(SUPERVISOR_STATUSJSON, visit.statusJson)
+        }
+        if (visit.userIdSelected != 0) {
+            values.put(SUPERVISOR_USERIDSELECTED, visit.userIdSelected)
         }
 
         db.update(
@@ -762,10 +811,14 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val SUPERVISOR_CUSTOMER = "customer"
 
 
-
-
-
-
+        private const val SUPERVISOR_SPEECHSCN = "speechscn"
+        private const val SUPERVISOR_SPEECHRCN = "speechrcn"
+        private const val SUPERVISOR_SPEECHRCT = "speechrct"
+        private const val SUPERVISOR_SPEECHSCT = "speechsct"
+        private const val SUPERVISOR_UNIFORMJSON = "uniformjson"
+        private const val SUPERVISOR_MATERIALJSON = "materialjson"
+        private const val SUPERVISOR_STATUSJSON = "statusjson"
+        private const val SUPERVISOR_USERIDSELECTED = "useridselected"
 
 
         private const val SQL_CREATE_TABLE_PDV = ("" +
@@ -876,6 +929,14 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "   $SUPERVISOR_STATUS text," +
                 "   $SUPERVISOR_CUSTOMER text," +
                 "   $SUPERVISOR_AUDIT_MERCHANT text," +
+                "   $SUPERVISOR_SPEECHSCN text, " +
+                "   $SUPERVISOR_SPEECHRCN text, " +
+                "   $SUPERVISOR_SPEECHRCT text, " +
+                "   $SUPERVISOR_SPEECHSCT text, " +
+                "   $SUPERVISOR_UNIFORMJSON text, " +
+                "   $SUPERVISOR_MATERIALJSON text, " +
+                "   $SUPERVISOR_STATUSJSON text, " +
+                "   $SUPERVISOR_USERIDSELECTED integer, " +
                 "   $SUPERVISOR_LATITUDE double, " +
                 "   $SUPERVISOR_LONGITUDE double " +
                 ")")

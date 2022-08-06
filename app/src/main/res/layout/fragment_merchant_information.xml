@@ -205,20 +205,6 @@
                     android:orientation="vertical"
                     android:layout_height="wrap_content">
 
-
-                    <ImageButton
-                        android:id="@+id/button_know_save"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="right"
-                        android:background="@drawable/back_rounded"
-                        android:backgroundTint="#00A303"
-                        android:contentDescription="@string/button_save"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_baseline_save_24"
-                        app:tint="#FFFFFF" />
-
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:orientation="vertical"

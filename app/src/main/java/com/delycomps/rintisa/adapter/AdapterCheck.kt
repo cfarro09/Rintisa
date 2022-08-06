@@ -7,14 +7,19 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.delycomps.rintisa.R
+import com.delycomps.rintisa.model.Availability
 import com.delycomps.rintisa.model.CheckSupPromoter
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 class AdapterCheck(
-    private var questionList: MutableList<CheckSupPromoter>
+    private var questionList: MutableList<CheckSupPromoter>,
+    private val refListener: ListAdapterListener
 ) : RecyclerView.Adapter<AdapterCheck.OrderViewHolder>() {
     private lateinit var mContext: Context
 
+    interface ListAdapterListener { // create an interface
+        fun updateList(qList: List<CheckSupPromoter>)  // create callback function
+    }
 
     override fun getItemCount(): Int {
         return questionList.size
@@ -49,8 +54,8 @@ class AdapterCheck(
             availabilityFlag.setOnCheckedChangeListener { _, isChecked ->
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-
                     questionList[position].flag = isChecked
+                    refListener.updateList(questionList)
                 }
             }
         }

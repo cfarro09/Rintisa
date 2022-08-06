@@ -20,6 +20,12 @@ interface Endpoints {
     @POST("main")
     fun getMaterials(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Material>>
 
+    @POST("main")
+    fun getVisit2(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Visit2>>
+
+    @POST("main")
+    fun getUserSup(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<UserSup>>
+
     @POST("main/multi")
     fun mainMulti(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseMulti>
 

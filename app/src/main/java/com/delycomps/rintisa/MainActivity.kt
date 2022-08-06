@@ -26,6 +26,10 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_BREAK_FINISH
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_BREAK_INIT
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_ENTRY
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_EXIT
 import com.delycomps.rintisa.Constants.RETURN_ACTIVITY
 import com.delycomps.rintisa.adapter.AdapterPointsale
 import com.delycomps.rintisa.cache.BDLocal
@@ -37,6 +41,7 @@ import com.delycomps.rintisa.ui.promoter.PromoterViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
 import com.google.gson.Gson
+import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,6 +58,15 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private lateinit var dialogLoading: AlertDialog
     private lateinit var dialogClose: AlertDialog
     private lateinit var dialogGeolocation: AlertDialog
+
+    private lateinit var supervisorViewModel: SupervisorViewModel
+    private lateinit var dialogAssistance: AlertDialog
+    private lateinit var buttonHourEntry: Button
+    private lateinit var buttonSecondHourEntry: Button
+    private lateinit var buttonHourExit: Button
+    private lateinit var buttonHourBreakInit: Button
+    private lateinit var buttonHourBreakFinish: Button
+
     private lateinit var pointSale: PointSale
     private var permissionCamera = false
     private var permissionGPS = false
@@ -67,13 +81,9 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private lateinit var promoterViewModel: PromoterViewModel
     private var currentMerchantPhotoPath: String = ""
     private var typeImage: String = ""
-
     private var mainMenu: Menu? = null
-
     private var listImages: MutableList<resImage> = arrayListOf()
     private var imageIndex: Int = 0
-
-
 
     // The BroadcastReceiver used to listen from broadcasts from the service.
     private var myReceiver: MyReceiver? = null
@@ -135,21 +145,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 dialogGeolocation.show()
             }
             R.id.action_assist -> {
-                if (!permissionGPS || !gpsEnabled || lastLocation == null) {
-                    if (!permissionGPS) {
-                        Toast.makeText(this@MainActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    if (!gpsEnabled) {
-                        Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    if (lastLocation == null) {
-                        Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                }
-                mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
+                validateButtonAssistance()
+                dialogAssistance.show()
             }
             R.id.action_finish -> {
                 dialogClose.show()
@@ -165,6 +162,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         FirebaseApp.initializeApp(this)
         setContentView(R.layout.activity_main)
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        supervisorViewModel = ViewModelProvider(this).get(SupervisorViewModel::class.java)
         promoterViewModel = ViewModelProvider(this).get(PromoterViewModel::class.java)
         merchantViewModel = ViewModelProvider(this).get(MerchantViewModel::class.java)
 
@@ -179,15 +177,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
                 permissionGPS = true
                 mainViewModel.setGPSIsEnabled(true)
-                Log.d("log_carlos", "ACCESS_FINE_LOCATION")
             } else if (permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)) {
                 permissionGPS = true
                 mainViewModel.setGPSIsEnabled(true)
-                Log.d("log_carlos", "ACCESS_COARSE_LOCATION")
             }
             if (permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false)) {
                 permissionCamera = true
-                Log.d("log_carlos", "WRITE_EXTERNAL_STORAGE")
             }
         }
 
@@ -198,9 +193,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 try {
                     locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, locationListener)
                     gpsEnabled = true
-                    Log.d("log_carlos", "CONNECTION UBICATION OK")
                 } catch (e: java.lang.Exception) {
-                    Log.d("log_carlos", "EXCEPTION AL CARGAR LA UBICACION")
                     permissionGPS = false
                 }
             }
@@ -248,10 +241,20 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                 dialogLoading.dismiss()
             }
             if (!it.loading && it.success) {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                SharedPrefsCache(this).set(ASSISTANCE_HOUR_ENTRY, date, "string")
                 Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
-                dialogClose.dismiss()
+                dialogAssistance.dismiss()
+            } else if (!it.loading && !it.success) {
+                Toast.makeText(this, "Hubo un error al registrar la asistencia. Revise su conexión.", Toast.LENGTH_LONG).show()
             }
         }
+
+        val builderDialogAssistance: AlertDialog.Builder = AlertDialog.Builder(this)
+        val dialogAssistanceUI = this.layoutInflater.inflate(R.layout.layout_assistance, null)
+        builderDialogAssistance.setView(dialogAssistanceUI)
+        dialogAssistance = builderDialogAssistance.create()
+        manageDialogAssistance(dialogAssistanceUI)
 
         val builderDialogCloseAssistance: AlertDialog.Builder = AlertDialog.Builder(this)
         val inflater1 = this.layoutInflater
@@ -401,10 +404,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
                 listImages.forEach { r ->
                     try {
-                        val res = File(r.path).delete()
-                        Log.d("file-delete", "${r.path} -> $res")
+                        File(r.path).delete()
                     } catch (e: Exception) {
-                        Log.d("file-delete-error", "${r.path} -> error ${e.message.toString()}")
                     }
                 }
             } else {
@@ -427,10 +428,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
                 listImages.forEach { r ->
                     try {
-                        val res = File(r.path).delete()
-                        Log.d("file-delete", "${r.path} -> $res")
+                        File(r.path).delete()
                     } catch (e: Exception) {
-                        Log.d("file-delete-error", "${r.path} -> error ${e.message.toString()}")
                     }
                 }
             } else {
@@ -438,18 +437,116 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
         }
 
-//        val builderDialogGeo: AlertDialog.Builder = AlertDialog.Builder(this)
-//        val inflater2 = this.layoutInflater
-//        val dialogGeoUI = inflater2.inflate(R.layout.layout_share_location, null)
-//        builderDialogGeo.setView(dialogGeoUI)
-//        dialogGeolocation = builderDialogGeo.create()
-//
-//        mRequestLocationUpdatesButton = dialogGeoUI.findViewById(R.id.request_location_updates_button)
-//        mRemoveLocationUpdatesButton = dialogGeoUI.findViewById(R.id.remove_location_updates_button)
-//
-//        FirebaseApp.initializeApp(this)
+        supervisorViewModel.resExecute.observe(this) {
+            if (it.result == "QUERY_ASSISTANCE_EXIT") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(ASSISTANCE_HOUR_EXIT, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            } else if (it.result == "QUERY_ASSISTANCE_INIT_BREAK") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_INIT, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            } else if (it.result == "QUERY_ASSISTANCE_FINISH_BREAK") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_FINISH, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
+    private fun manageDialogAssistance(view: View) {
+        buttonHourEntry = view.findViewById(R.id.assistance_hour_entry)
+        buttonHourExit = view.findViewById(R.id.assistance_hour_exit)
+        buttonHourBreakInit = view.findViewById(R.id.assistance_hour_break_init)
+        buttonHourBreakFinish = view.findViewById(R.id.assistance_hour_break_finish)
+        buttonSecondHourEntry = view.findViewById(R.id.assistance_second_hour_entry)
+
+        val role = SharedPrefsCache(rv.context).get("type", "string")
+        if (role != "MERCADERISTA") {
+            buttonSecondHourEntry.visibility = View.GONE
+        }
+
+        buttonHourEntry.setOnClickListener {
+            if (!permissionGPS || !gpsEnabled || lastLocation == null) {
+                if (!permissionGPS) {
+                    Toast.makeText(this@MainActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                }
+                if (!gpsEnabled) {
+                    Toast.makeText(this@MainActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                }
+                if (lastLocation == null) {
+                    Toast.makeText(this@MainActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                val location = lastLocation!!
+                mainViewModel.saveAssistance(location.latitude, location.longitude, SharedPrefsCache(view.context).getToken())
+            }
+        }
+        buttonHourExit.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_EXIT", SharedPrefsCache(this).getToken())
+        }
+        buttonHourBreakInit.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_INIT_BREAK", SharedPrefsCache(this).getToken())
+        }
+        buttonHourBreakFinish.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_FINISH_BREAK", SharedPrefsCache(this).getToken())
+        }
+    }
+
+    private fun validateButtonAssistance () {
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+         val hourEntryLocal = SharedPrefsCache(rv.context).get(ASSISTANCE_HOUR_ENTRY, "string")
+         val hourBreakInitLocal = SharedPrefsCache(rv.context).get(ASSISTANCE_HOUR_BREAK_INIT, "string")
+         val hourBreakFinishLocal = SharedPrefsCache(rv.context).get(ASSISTANCE_HOUR_BREAK_FINISH, "string")
+         val hourExitLocal = SharedPrefsCache(rv.context).get(ASSISTANCE_HOUR_EXIT, "string")
+        buttonHourEntry.isEnabled = false
+        buttonHourExit.isEnabled = false
+        buttonHourBreakInit.isEnabled = false
+        buttonHourBreakFinish.isEnabled = false
+
+        if (date == hourEntryLocal) {
+            if (date !=  hourExitLocal) {
+                if (date == hourBreakInitLocal && date != hourBreakFinishLocal) {
+                    buttonHourBreakFinish.isEnabled = true
+                } else if (date != hourBreakInitLocal) {
+                    buttonHourExit.isEnabled = true
+                    buttonHourBreakInit.isEnabled = true
+                    buttonHourExit.isEnabled = true
+                } else {
+                    buttonHourExit.isEnabled = true
+                }
+            }
+        } else {
+            buttonHourEntry.isEnabled = true
+        }
+    }
     private fun manageDialogCloseAssistance (view: View, dialog: AlertDialog) {
         val editQuantityTickets = view.findViewById<EditText>(R.id.quantity_day)
         val editCommentDay = view.findViewById<EditText>(R.id.comment_day)
@@ -628,7 +725,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         override fun onLocationChanged(location: Location) {
             lastLocation = location
 
-            Toast.makeText(this@MainActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this@MainActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
 
@@ -636,13 +733,11 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         override fun onProviderEnabled(provider: String) {
             gpsEnabled = true
             mainViewModel.setGPSIsEnabled(true)
-            Log.d("log_carlos", "PROVIDER ENABLED")
             Snackbar.make(rv, "GPS activado", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
                 R.color.colorPrimary
             )).show()
         }
         override fun onProviderDisabled(provider: String) {
-            Log.d("log_carlos", "PROVIDER DISABLED")
             gpsEnabled = false
             mainViewModel.setGPSIsEnabled(false)
             Snackbar.make(rv, "Debe activar su GPS", Snackbar.LENGTH_LONG).setBackgroundTint(resources.getColor(
@@ -723,10 +818,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         })
         mRemoveLocationUpdatesButton!!.setOnClickListener(View.OnClickListener { mService!!.removeLocationUpdates() })
 
-
         // Restore the state of the buttons when the activity (re)launches.
         setButtonsState(Utils.requestingLocationUpdates(this))
-
         // Bind to the service. If the service is in foreground mode, this signals to the service
         // that since this activity is in the foreground, the service can exit foreground mode.
         bindService(
@@ -749,7 +842,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         }catch (e: Exception) {
 
         }
-
         super.onPause()
     }
 
@@ -762,7 +854,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             mBound = false
         }
         try {
-
             PreferenceManager.getDefaultSharedPreferences(applicationContext).unregisterOnSharedPreferenceChangeListener(this)
         }catch (e: Exception) {
 

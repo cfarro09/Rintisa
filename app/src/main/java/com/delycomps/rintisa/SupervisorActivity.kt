@@ -69,6 +69,12 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private var listImages: MutableList<resImage> = arrayListOf()
     private var imageIndex: Int = 0
 
+    private lateinit var dialogAssistance: AlertDialog
+    private lateinit var buttonHourEntry: Button
+    private lateinit var buttonHourExit: Button
+    private lateinit var buttonHourBreakInit: Button
+    private lateinit var buttonHourBreakFinish: Button
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_supervisor, menu)
@@ -102,39 +108,47 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 alert.show()
             }
             R.id.action_assist -> {
-                if (!permissionGPS || !gpsEnabled || lastLocation == null) {
-                    if (!permissionGPS) {
-                        Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    if (!gpsEnabled) {
-                        Toast.makeText(this@SupervisorActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                    if (lastLocation == null) {
-                        Toast.makeText(this@SupervisorActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
-                }
-                mainViewModel.saveAssistance(lastLocation!!.latitude, lastLocation!!.longitude, SharedPrefsCache(this).getToken())
+                validateButtonAssistance()
+                dialogAssistance.show()
+            }
+            R.id.action_progress -> {
+                startActivity(Intent(this, ProgressActivity::class.java))
             }
             R.id.action_pending -> {
                 val visits = BDLocal(this).getListVisitSupervisor()
                 val context = this
                 rvPending.adapter = AdapterVisitPending(visits, object : AdapterVisitPending.ListAdapterListener {
                     override fun onClickAtDetailVisitSupervisor(ps: VisitSupervisor, position: Int) {
+                        listImages = arrayListOf()
+                        imageIndex = 0
                         visitPending = ps
                         dialogLoading.show()
                         if (ps.createDate.isNullOrEmpty()) {
-                            sendVisitPending()
-                        } else {
-                            listImages = arrayListOf()
-                            if (ps.type == "MERCADERISMO") {
-                                imageIndex = 0
-                                listImages.add(resImage("image1", ps.image1 ?: "", null))
-                                typeUpload = "cacheo"
-                                mainViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(context).getToken())
+                            if (ps.type == "IMPULSADOR") {
+                                if ((visitPending.image2 ?: "") != "") listImages.add(resImage("image2", visitPending.image2 + "", null))
+                                if ((visitPending.image3 ?: "") != "") listImages.add(resImage("image3", visitPending.image3 + "", null))
+                                if ((visitPending.image4 ?: "") != "") listImages.add(resImage("image4", visitPending.image4 + "", null))
+                                if ((visitPending.image5 ?: "") != "") listImages.add(resImage("image5", visitPending.image5 + "", null))
+
+                                if (listImages.isEmpty()) {
+                                    sendVisitPending()
+                                } else {
+                                    typeUpload = "cacheo"
+                                    mainViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(context).getToken())
+                                }
+                            } else {
+                                sendVisitPending()
                             }
+                        } else {
+                            typeUpload = "cacheo"
+                            listImages.add(resImage("image1", ps.image1 ?: "", null))
+                            if (ps.type == "IMPULSADOR") {
+                                if ((visitPending.image2 ?: "") != "") listImages.add(resImage("image2", visitPending.image2 + "", null))
+                                if ((visitPending.image3 ?: "") != "") listImages.add(resImage("image3", visitPending.image3 + "", null))
+                                if ((visitPending.image4 ?: "") != "") listImages.add(resImage("image4", visitPending.image4 + "", null))
+                                if ((visitPending.image5 ?: "") != "") listImages.add(resImage("image5", visitPending.image5 + "", null))
+                            }
+                            mainViewModel.uploadSelfie(File(listImages[imageIndex].path), SharedPrefsCache(context).getToken())
                         }
                     }
                 })
@@ -145,18 +159,43 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     }
 
     fun sendVisitPending() {
-        val ob = JSONObject()
-        ob.put("auditdetail", visitPending.auditjson)
-        ob.put("customerid", visitPending.customerId)
-        ob.put("image1", visitPending.image1)
-        ob.put("initdate", visitPending.createDate)
-        ob.put("latitude", visitPending.latitude)
-        ob.put("longitude", visitPending.longitude)
-        ob.put("aux_userid", visitPending.userId)
-        ob.put("type", visitPending.type)
-        ob.put("visitid", visitPending.visitId)
-        ob.put("comment", visitPending.comment)
-        supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF", SharedPrefsCache(this).getToken())
+        if (visitPending.type == "MERCADERISMO") {
+            val ob = JSONObject()
+            ob.put("auditdetail", visitPending.auditjson)
+            ob.put("customerid", visitPending.customerId)
+            ob.put("image1", visitPending.image1)
+            ob.put("initdate", visitPending.createDate)
+            ob.put("latitude", visitPending.latitude)
+            ob.put("longitude", visitPending.longitude)
+            ob.put("aux_userid", visitPending.userId)
+            ob.put("type", visitPending.type)
+            ob.put("visitid", visitPending.visitId)
+            ob.put("comment", visitPending.comment)
+            supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF", SharedPrefsCache(this).getToken())
+        } else {
+            val ob = JSONObject()
+            ob.put("image2", visitPending.image2)
+            ob.put("image3", visitPending.image3)
+            ob.put("image4", visitPending.image4)
+            ob.put("image5", visitPending.image5)
+            ob.put("speechrcn", visitPending.speechRCN)
+            ob.put("speechrct", visitPending.speechRCT)
+            ob.put("speechscn", visitPending.speechSCN)
+            ob.put("speechsct", visitPending.speechSCT)
+            ob.put("uniformjson", visitPending.uniformJson)
+            ob.put("materialjson", visitPending.materialJson)
+            ob.put("statusjson", visitPending.statusJson)
+            ob.put("aux_userid", visitPending.userIdSelected)
+            ob.put("customerid", visitPending.customerId)
+            ob.put("image1", visitPending.image1)
+            ob.put("initdate", visitPending.createDate)
+            ob.put("latitude", visitPending.latitude)
+            ob.put("longitude", visitPending.longitude)
+            ob.put("type", visitPending.type)
+            ob.put("visitid", visitPending.visitId)
+            ob.put("comment", visitPending.comment)
+            supervisorViewModel.executeSupervisor(ob, "UFN_MANAGE_SUPERVISOR_PROMOTER_OFF", SharedPrefsCache(this).getToken())
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -352,12 +391,23 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                 dialogLoading.dismiss()
             }
             if (!it.loading && it.success) {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                SharedPrefsCache(this).set(Constants.ASSISTANCE_HOUR_ENTRY, date, "string")
                 Toast.makeText(this, "Asistencia registrada", Toast.LENGTH_LONG).show()
+                dialogAssistance.dismiss()
+            } else if (!it.loading && !it.success) {
+                Toast.makeText(this, "Hubo un error al registrar la asistencia. Revise su conexión.", Toast.LENGTH_LONG).show()
             }
         }
 
+        val builderDialogAssistance: AlertDialog.Builder = AlertDialog.Builder(this)
+        val dialogAssistanceUI = this.layoutInflater.inflate(R.layout.layout_assistance, null)
+        builderDialogAssistance.setView(dialogAssistanceUI)
+        dialogAssistance = builderDialogAssistance.create()
+        manageDialogAssistance(dialogAssistanceUI)
+
         supervisorViewModel.resExecute.observe(this) {
-            if ((it.result) == "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF") {
+            if (it.result == "UFN_MANAGE_SUPERVISOR_MERCHANT_OFF" || it.result == "UFN_MANAGE_SUPERVISOR_PROMOTER_OFF") {
                 if (!it.loading && it.success) {
                     BDLocal(this).deleteSupervisorVisit(visitPending.uuid!!)
                     dialogLoading.dismiss()
@@ -368,7 +418,107 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
                 }
+            } else if (it.result == "QUERY_ASSISTANCE_EXIT") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(Constants.ASSISTANCE_HOUR_EXIT, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            } else if (it.result == "QUERY_ASSISTANCE_INIT_BREAK") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(Constants.ASSISTANCE_HOUR_BREAK_INIT, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            } else if (it.result == "QUERY_ASSISTANCE_FINISH_BREAK") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogAssistance.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set(Constants.ASSISTANCE_HOUR_BREAK_FINISH, date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
             }
+        }
+    }
+
+    private fun manageDialogAssistance(view: View) {
+        buttonHourEntry = view.findViewById(R.id.assistance_hour_entry)
+        buttonHourExit = view.findViewById(R.id.assistance_hour_exit)
+        buttonHourBreakInit = view.findViewById(R.id.assistance_hour_break_init)
+        buttonHourBreakFinish = view.findViewById(R.id.assistance_hour_break_finish)
+
+        buttonHourEntry.setOnClickListener {
+            if (!permissionGPS || !gpsEnabled || lastLocation == null) {
+                if (!permissionGPS) {
+                    Toast.makeText(this@SupervisorActivity, "Tiene que conceder permisos de ubicación", Toast.LENGTH_SHORT).show()
+                }
+                if (!gpsEnabled) {
+                    Toast.makeText(this@SupervisorActivity, "Tiene que activar su GPS", Toast.LENGTH_SHORT).show()
+                }
+                if (lastLocation == null) {
+                    Toast.makeText(this@SupervisorActivity, "Estamos mapeando su ubicación", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                val location = lastLocation!!
+                mainViewModel.saveAssistance(location.latitude, location.longitude, SharedPrefsCache(view.context).getToken())
+            }
+        }
+        buttonHourExit.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_EXIT", SharedPrefsCache(this).getToken())
+        }
+        buttonHourBreakInit.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_INIT_BREAK", SharedPrefsCache(this).getToken())
+        }
+        buttonHourBreakFinish.setOnClickListener {
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(JSONObject(), "QUERY_ASSISTANCE_FINISH_BREAK", SharedPrefsCache(this).getToken())
+        }
+    }
+
+    private fun validateButtonAssistance () {
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val hourEntryLocal = SharedPrefsCache(rv.context).get(Constants.ASSISTANCE_HOUR_ENTRY, "string")
+        val hourBreakInitLocal = SharedPrefsCache(rv.context).get(Constants.ASSISTANCE_HOUR_BREAK_INIT, "string")
+        val hourBreakFinishLocal = SharedPrefsCache(rv.context).get(Constants.ASSISTANCE_HOUR_BREAK_FINISH, "string")
+        val hourExitLocal = SharedPrefsCache(rv.context).get(Constants.ASSISTANCE_HOUR_EXIT, "string")
+        buttonHourEntry.isEnabled = false
+        buttonHourExit.isEnabled = false
+        buttonHourBreakInit.isEnabled = false
+        buttonHourBreakFinish.isEnabled = false
+
+        if (date == hourEntryLocal) {
+            if (date !=  hourExitLocal) {
+                if (date == hourBreakInitLocal && date != hourBreakFinishLocal) {
+                    buttonHourBreakFinish.isEnabled = true
+                } else if (date != hourBreakInitLocal) {
+                    buttonHourExit.isEnabled = true
+                    buttonHourBreakInit.isEnabled = true
+                    buttonHourExit.isEnabled = true
+                } else {
+                    buttonHourExit.isEnabled = true
+                }
+            }
+        } else {
+            buttonHourEntry.isEnabled = true
         }
     }
 
@@ -413,7 +563,7 @@ class SupervisorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             lastLocation = location
-            Toast.makeText(this@SupervisorActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this@SupervisorActivity, "Ubicación actualizada: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) { }
         override fun onProviderEnabled(provider: String) {

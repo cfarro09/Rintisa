@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +24,7 @@ import com.delycomps.rintisa.SupervisorViewModel
 import com.delycomps.rintisa.adapter.AdapterCheck
 import com.delycomps.rintisa.cache.Helpers
 import com.delycomps.rintisa.cache.SharedPrefsCache
+import com.delycomps.rintisa.model.CheckSupPromoter
 import com.delycomps.rintisa.model.PointSale
 import org.json.JSONObject
 import java.io.*
@@ -38,6 +40,8 @@ class StatusFragment : Fragment() {
     private var numberImage: String = "0"
     private lateinit var dialogLoading: AlertDialog
     private lateinit var pointSale: PointSale
+    private lateinit var rvStatus: RecyclerView
+    private lateinit var view1: View
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,87 +63,40 @@ class StatusFragment : Fragment() {
 
         pointSale = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)!!
 
-        val button = view.findViewById<ImageButton>(R.id.button_save)
         val editComment = view.findViewById<EditText>(R.id.text_comment)
 
-        button.setOnClickListener {
-            val comment = editComment.text.toString()
-            if (comment != "") {
-                val ob = JSONObject()
-                ob.put("customerid", pointSale.customerId)
-                ob.put("comment", comment)
-                ob.put("type", "IMPULSADOR")
-
-                viewModel.executeSupervisor(ob, "QUERY_UPDATE_COMMENT", SharedPrefsCache(view.context).getToken())
-            }
+        editComment.addTextChangedListener {
+            viewModel.setComment(editComment.text.toString())
         }
-
-        viewModel.resExecute.observe(requireActivity()) {
-            if (it.result == "QUERY_UPDATE_JSON_STATUS1") {
-                if (!it.loading && it.success) {
-//                    dialogLoading.dismiss()
-                    viewModel.initExecute()
-                    val text = "Se actualizó correctmente (ESTADO PDV)"
-                    Toast.makeText(view.context, text, Toast.LENGTH_LONG).show()
-                } else if (!it.loading && !it.success) {
-//                    dialogLoading.dismiss()
-                    viewModel.initExecute()
-                    Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
-                } else if (it.loading) {
-//                    dialogLoading.show()
-                }
-            }
-        }
-
-        viewModel.urlImageWithBD.observe(requireActivity()) {
-            if (!it.loading) {
-                dialogLoading.dismiss()
-                if (it.success) {
-                    when (numberImage) {
-                        "2" -> {
-                            view.findViewById<ImageView>(R.id.status_image1).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                        }
-                        "3" -> {
-                            view.findViewById<ImageView>(R.id.status_image2).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                        }
-                        "4" -> {
-                            view.findViewById<ImageView>(R.id.status_image3).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                        }
-                        "5" -> {
-                            view.findViewById<ImageView>(R.id.status_image4).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
-                        }
-                    }
-                    Toast.makeText(view.context, "Se subió la imagen con exito!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(view.context, Constants.ERROR_MESSAGE, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-        val buttonSaveStatus: ImageButton = view.findViewById(R.id.button_save_status)
 
         view.findViewById<Button>(R.id.upload_image1).setOnClickListener { dispatchTakePictureIntent(view, "2") }
         view.findViewById<Button>(R.id.upload_image2).setOnClickListener { dispatchTakePictureIntent(view, "3") }
         view.findViewById<Button>(R.id.upload_image3).setOnClickListener { dispatchTakePictureIntent(view, "4") }
         view.findViewById<Button>(R.id.upload_image4).setOnClickListener { dispatchTakePictureIntent(view, "5") }
-
-        val rvStatus: RecyclerView = view.findViewById(R.id.main_rv_status)
+        view1 = view
+        rvStatus = view.findViewById(R.id.main_rv_status)
         rvStatus.layoutManager = LinearLayoutManager(view.context)
 
-        rvStatus.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "PDV" }?.toMutableList() ?: ArrayList()))
-
-        buttonSaveStatus.setOnClickListener {
-            val ob = JSONObject()
-            ob.put("customerid", pointSale?.customerId)
-            val ob1 = JSONObject()
-            (rvStatus.adapter as AdapterCheck).getList().forEach {
-                ob1.put(it.key, it.flag)
+        rvStatus.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "PDV" }?.toMutableList() ?: ArrayList()), object : AdapterCheck.ListAdapterListener {
+            override fun updateList(qList: List<CheckSupPromoter>) {
+                val ob1 = JSONObject()
+                qList.forEach { ob1.put(it.key, it.flag) }
+                viewModel.setStatus(ob1.toString())
             }
-            ob.put("json", ob1.toString())
-            ob.put("aux_userid", viewModel.userSelected.value)
+        })
 
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_STATUS1", SharedPrefsCache(view.context).getToken())
-        }
+//        buttonSaveStatus.setOnClickListener {
+//            val ob = JSONObject()
+//            ob.put("customerid", pointSale?.customerId)
+//            val ob1 = JSONObject()
+//            (rvStatus.adapter as AdapterCheck).getList().forEach {
+//                ob1.put(it.key, it.flag)
+//            }
+//            ob.put("json", ob1.toString())
+//            ob.put("aux_userid", viewModel.userSelected.value)
+//
+//            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_STATUS1", SharedPrefsCache(view.context).getToken())
+//        }
     }
 
 
@@ -179,21 +136,23 @@ class StatusFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent)
         when (requestCode) {
             CODE_RESULT_CAMERA -> if (resultCode == AppCompatActivity.RESULT_OK) {
-                dialogLoading.show()
-                val f = Helpers().saveBitmapToFile(File(currentPhotoPath))
-                if (f != null) {
-                    val ob = JSONObject()
-                    ob.put("method", "QUERY_UPDATE_SUP_PROMOTER_IMAGE$numberImage")
-
-                    val ob1 = JSONObject()
-                    ob1.put("customerid", pointSale?.customerId)
-
-                    ob.put("parameters", ob1)
-
-                    viewModel.uploadWithBD(f, ob.toString(), SharedPrefsCache(requireContext()).getToken())
-                } else {
-                    dialogLoading.dismiss()
-                    Toast.makeText(context, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
+                when (numberImage) {
+                    "2" -> {
+                        view1.findViewById<ImageView>(R.id.status_image1).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                        viewModel.setImage2(currentPhotoPath)
+                    }
+                    "3" -> {
+                        viewModel.setImage3(currentPhotoPath)
+                        view1.findViewById<ImageView>(R.id.status_image2).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                    }
+                    "4" -> {
+                        viewModel.setImage4(currentPhotoPath)
+                        view1.findViewById<ImageView>(R.id.status_image3).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                    }
+                    "5" -> {
+                        viewModel.setImage5(currentPhotoPath)
+                        view1.findViewById<ImageView>(R.id.status_image4).setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath))
+                    }
                 }
             }
         }

@@ -32,18 +32,6 @@
                         android:text="@string/uniform"
                         android:layout_marginBottom="8dp"
                         />
-
-                    <ImageButton
-                        android:id="@+id/button_save_uniform"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/back_rounded"
-                        android:backgroundTint="#00A303"
-                        android:contentDescription="@string/button_save"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_baseline_save_24"
-                        app:tint="#FFFFFF" />
                 </RelativeLayout>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/main_rv_uniform"
@@ -76,18 +64,6 @@
                         android:text="@string/material"
                         android:layout_marginBottom="8dp"
                         />
-
-                    <ImageButton
-                        android:id="@+id/button_save_materials"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/back_rounded"
-                        android:backgroundTint="#00A303"
-                        android:contentDescription="@string/button_save"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_baseline_save_24"
-                        app:tint="#FFFFFF" />
                 </RelativeLayout>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/main_rv_materials"

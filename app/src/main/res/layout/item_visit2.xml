@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/visit2_background"
+
+    android:layout_marginBottom="10dp">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/visit2_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="EN CURSO" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/visit2_status"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/visit2_customer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="5dp"
+                android:text="VILLANUEVA ACOSTA VICENTA"
+                app:drawableStartCompat="@drawable/ic_baseline_person_24" />
+
+            <TextView
+                android:id="@+id/visit2_market"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="5dp"
+                android:text="MERCADO MEGA RECORD"
+                app:drawableStartCompat="@drawable/ic_baseline_shopping_cart_24" />
+
+            <TextView
+                android:id="@+id/visit2_semaphore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="5dp"
+                android:text="VERDE"
+                app:drawableStartCompat="@drawable/ic_baseline_color_lens_24" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/visit2_visit_start"
+                    android:layout_width="0dp"
+                    android:layout_weight=".5"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="5dp"
+                    android:text="Inicio 09:04:02"
+                    app:drawableStartCompat="@drawable/ic_baseline_schedule_24" />
+                <TextView
+                    android:id="@+id/visit2_visit_finish"
+                    android:layout_width="0dp"
+                    android:layout_weight=".5"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="5dp"
+                    android:text="Fin 09:04:02"
+                    app:drawableStartCompat="@drawable/ic_baseline_schedule_24" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

@@ -13,18 +13,17 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:text="limpiar puntos de venta" />
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/main_swiper_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/remove_point_sale"
-        >
+        android:layout_below="@+id/remove_point_sale">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/main_rv_point_sale"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-         />
+            android:layout_height="wrap_content" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <TextView

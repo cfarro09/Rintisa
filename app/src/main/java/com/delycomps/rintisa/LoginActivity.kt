@@ -8,6 +8,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_BREAK_FINISH
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_BREAK_INIT
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_ENTRY
+import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_EXIT
 import com.delycomps.rintisa.api.Repository
 import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.model.DataAuditor
@@ -75,6 +79,11 @@ class LoginActivity : AppCompatActivity() {
                 Repository().login(username, password) { isSuccess, result, message ->
                     dialogLoading.dismiss()
                     if (isSuccess) {
+                        SharedPrefsCache(this).set(ASSISTANCE_HOUR_EXIT, "", "string")
+                        SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_INIT, "", "string")
+                        SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_FINISH, "", "string")
+                        SharedPrefsCache(this).set(ASSISTANCE_HOUR_ENTRY, "", "string")
+
                         SharedPrefsCache(this).set("type", result?.role?.uppercase() ?: "", "string")
                         SharedPrefsCache(this).set("token", result?.token, "string")
                         SharedPrefsCache(this).set("fullname", result?.fullname, "string")

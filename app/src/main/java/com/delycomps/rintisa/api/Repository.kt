@@ -93,6 +93,40 @@ class Repository {
         }
     }
 
+    fun getPointsSale2(
+        token: String,
+        userid: Int,
+        onResult: (isSuccess: Boolean, result: List<PointSale>?, message: String?) -> Unit
+    ) {
+        val method = "UFN_CUSTOMER_BY_SUP_USER_SEL"
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+                "userid" to userid
+            )))
+        )
+        try {
+            Connection.instance.getClients(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<PointSale>> {
+                override fun onResponse(
+                    call: Call<ResponseList<PointSale>>?,
+                    response: Response<ResponseList<PointSale>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<PointSale>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
     fun getCustomer(
         token: String,
         marketId: Int = 0,
@@ -266,8 +300,70 @@ class Repository {
             onResult(false, DEFAULT_MESSAGE_ERROR)
         }
     }
-//    QUERY_MATERIALS_SEL
+    fun getVisit2(
+        token: String,
+        onResult: (isSuccess: Boolean, result: List<Visit2>?, message: String?) -> Unit
+    )  {
+        val rb = RequestBodyX("QUERY_VISIT_BY_SUPERVISOR", "QUERY_VISIT_BY_SUPERVISOR", mapOf<String, Any>("visitid" to 0))
 
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(rb)
+        )
+
+        try {
+            Connection.instance.getVisit2(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<Visit2>> {
+                override fun onResponse(
+                    call: Call<ResponseList<Visit2>>?,
+                    response: Response<ResponseList<Visit2>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<Visit2>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+    fun getUserSup(
+        token: String,
+        onResult: (isSuccess: Boolean, result: List<UserSup>?, message: String?) -> Unit
+    )  {
+        val rb = RequestBodyX("QUERY_VISIT_BY_USER_SUPERVISOR", "QUERY_VISIT_BY_USER_SUPERVISOR", mapOf<String, Any>("ii" to 0))
+
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(rb)
+        )
+
+        try {
+            Connection.instance.getUserSup(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<UserSup>> {
+                override fun onResponse(
+                    call: Call<ResponseList<UserSup>>?,
+                    response: Response<ResponseList<UserSup>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<UserSup>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
     fun getMaterials(
         visitId: Int,
         token: String,

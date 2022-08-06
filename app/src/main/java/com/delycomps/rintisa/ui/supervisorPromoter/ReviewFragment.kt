@@ -1,22 +1,17 @@
 package com.delycomps.rintisa.ui.supervisorPromoter
 
-import android.app.AlertDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.delycomps.rintisa.Constants
 import com.delycomps.rintisa.R
 import com.delycomps.rintisa.SupervisorViewModel
 import com.delycomps.rintisa.adapter.AdapterCheck
-import com.delycomps.rintisa.cache.SharedPrefsCache
-import com.delycomps.rintisa.model.PointSale
+import com.delycomps.rintisa.model.CheckSupPromoter
 import org.json.JSONObject
 
 class ReviewFragment : Fragment() {
@@ -35,30 +30,22 @@ class ReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val builderLoading: AlertDialog.Builder = AlertDialog.Builder(view.context)
-        builderLoading.setCancelable(false) // if you want user to wait for some process to finish,
-        builderLoading.setView(R.layout.layout_loading_dialog)
-        val dialogLoading: AlertDialog = builderLoading.create()
-
-        viewModel.resExecute.observe(requireActivity()) {
-            if (it.result == "QUERY_UPDATE_JSON_UNIFORM1" || it.result == "QUERY_UPDATE_JSON_MATERIALS1") {
-                if (!it.loading && it.success) {
-//                    dialogLoading.dismiss()
-                    viewModel.initExecute()
-                    val text = if (it.result == "QUERY_UPDATE_JSON_UNIFORM") "Uniforme actualizado correctamente" else "Materiales actualizado correctamente"
-                    Toast.makeText(view.context, text, Toast.LENGTH_LONG).show()
-                } else if (!it.loading && !it.success) {
-//                    dialogLoading.dismiss()
-                    viewModel.initExecute()
-                    Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
-                } else if (it.loading) {
-//                    dialogLoading.show()
-                }
-            }
-        }
-
-        val buttonSaveUniform: ImageButton = view.findViewById(R.id.button_save_uniform)
-        val buttonSaveMaterials: ImageButton = view.findViewById(R.id.button_save_materials)
+//        viewModel.resExecute.observe(requireActivity()) {
+//            if (it.result == "QUERY_UPDATE_JSON_UNIFORM1" || it.result == "QUERY_UPDATE_JSON_MATERIALS1") {
+//                if (!it.loading && it.success) {
+////                    dialogLoading.dismiss()
+//                    viewModel.initExecute()
+//                    val text = if (it.result == "QUERY_UPDATE_JSON_UNIFORM") "Uniforme actualizado correctamente" else "Materiales actualizado correctamente"
+//                    Toast.makeText(view.context, text, Toast.LENGTH_LONG).show()
+//                } else if (!it.loading && !it.success) {
+////                    dialogLoading.dismiss()
+//                    viewModel.initExecute()
+//                    Toast.makeText(view.context, "Ocurrió un error inesperado", Toast.LENGTH_LONG).show()
+//                } else if (it.loading) {
+////                    dialogLoading.show()
+//                }
+//            }
+//        }
 
         val rvUniform: RecyclerView = view.findViewById(R.id.main_rv_uniform)
         rvUniform.layoutManager = LinearLayoutManager(view.context)
@@ -66,35 +53,20 @@ class ReviewFragment : Fragment() {
         val rvMaterial: RecyclerView = view.findViewById(R.id.main_rv_materials)
         rvMaterial.layoutManager = LinearLayoutManager(view.context)
 
-        val pointSale: PointSale? = activity?.intent?.getParcelableExtra(Constants.POINT_SALE_ITEM)
-
-        rvUniform.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "UNIFORM" }?.toMutableList() ?: ArrayList()))
-        rvMaterial.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "MATERIAL" }?.toMutableList() ?: ArrayList()))
-
-        buttonSaveUniform.setOnClickListener {
-            val ob = JSONObject()
-            ob.put("customerid", pointSale?.customerId)
-            val ob1 = JSONObject()
-            (rvUniform.adapter as AdapterCheck).getList().forEach {
-                ob1.put(it.key, it.flag)
+        rvUniform.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "UNIFORM" }?.toMutableList() ?: ArrayList()), object : AdapterCheck.ListAdapterListener {
+            override fun updateList(qList: List<CheckSupPromoter>) {
+                val ob1 = JSONObject()
+                qList.forEach { ob1.put(it.key, it.flag) }
+                viewModel.setUniform(ob1.toString())
             }
-            ob.put("json", ob1.toString())
-            ob.put("aux_userid", viewModel.userSelected.value)
+        })
 
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_UNIFORM1", SharedPrefsCache(view.context).getToken())
-        }
-
-        buttonSaveMaterials.setOnClickListener {
-            val ob = JSONObject()
-            ob.put("customerid", pointSale?.customerId)
-            ob.put("aux_userid", viewModel.userSelected.value)
-            val ob1 = JSONObject()
-            (rvMaterial.adapter as AdapterCheck).getList().forEach {
-                ob1.put(it.key, it.flag)
+        rvMaterial.adapter = AdapterCheck((viewModel.dataCheckSupPromoter.value?.filter { it.type == "MATERIAL" }?.toMutableList() ?: ArrayList()), object : AdapterCheck.ListAdapterListener {
+            override fun updateList(qList: List<CheckSupPromoter>) {
+                val ob1 = JSONObject()
+                qList.forEach { ob1.put(it.key, it.flag) }
+                viewModel.setMaterial(ob1.toString())
             }
-            ob.put("json", ob1.toString())
-
-            viewModel.executeSupervisor(ob, "QUERY_UPDATE_JSON_MATERIALS1", SharedPrefsCache(view.context).getToken())
-        }
+        })
     }
 }

@@ -63,6 +63,32 @@ open class VisitSupervisor: Parcelable {
     @Expose
     var image5: String? = ""
 
+
+    @SerializedName("speechSCN")
+    @Expose
+    var speechSCN: String? = ""
+    @SerializedName("speechRCN")
+    @Expose
+    var speechRCN: String? = ""
+    @SerializedName("speechRCT")
+    @Expose
+    var speechRCT: String? = ""
+    @SerializedName("speechSCT")
+    @Expose
+    var speechSCT: String? = ""
+    @SerializedName("uniformJson")
+    @Expose
+    var uniformJson: String? = ""
+    @SerializedName("materialJson")
+    @Expose
+    var materialJson: String? = ""
+    @SerializedName("statusJson")
+    @Expose
+    var statusJson: String? = ""
+    @SerializedName("useridselected")
+    @Expose
+    var userIdSelected: Int
+
     var uuid: String?
 
     constructor(
@@ -84,6 +110,14 @@ open class VisitSupervisor: Parcelable {
         image3: String? = "",
         image4: String? = "",
         image5: String? = "",
+        speechSCN: String? = "",
+        speechRCN: String? = "",
+        speechRCT: String? = "",
+        speechSCT: String? = "",
+        uniformJson: String? = "",
+        materialJson: String? = "",
+        statusJson: String? = "",
+        userIdSelected: Int = 0,
         uuid: String? =  UUID.randomUUID().toString()
     ) {
         this.customerId = customerId
@@ -106,6 +140,14 @@ open class VisitSupervisor: Parcelable {
         this.image3 = image3
         this.image4 = image4
         this.image5 = image5
+        this.speechSCN = speechSCN
+        this.speechRCN = speechRCN
+        this.speechRCT = speechRCT
+        this.speechSCT = speechSCT
+        this.uniformJson = uniformJson
+        this.materialJson = materialJson
+        this.statusJson = statusJson
+        this.userIdSelected = userIdSelected
         this.uuid = uuid
     }
 
@@ -128,6 +170,16 @@ open class VisitSupervisor: Parcelable {
         this.image3 = parcel.readString()
         this.image4 = parcel.readString()
         this.image5 = parcel.readString()
+
+        this.speechSCN = parcel.readString()
+        this.speechRCN = parcel.readString()
+        this.speechRCT = parcel.readString()
+        this.speechSCT = parcel.readString()
+        this.uniformJson = parcel.readString()
+        this.materialJson = parcel.readString()
+        this.statusJson = parcel.readString()
+        this.userIdSelected = parcel.readInt()
+
         this.uuid = parcel.readString()
     }
     override fun describeContents(): Int {
@@ -152,6 +204,15 @@ open class VisitSupervisor: Parcelable {
         p0.writeString(image3)
         p0.writeString(image4)
         p0.writeString(image5)
+        p0.writeString(speechSCN)
+        p0.writeString(speechRCN)
+        p0.writeString(speechRCT)
+        p0.writeString(speechSCT)
+        p0.writeString(uniformJson)
+        p0.writeString(materialJson)
+        p0.writeString(statusJson)
+        p0.writeInt(userIdSelected)
+
         p0.writeString(uuid)
 
     }
