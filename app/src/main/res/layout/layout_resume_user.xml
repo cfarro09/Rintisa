@@ -48,7 +48,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="5dp"
-                        android:text="VSITAS EFECTIVAS"
+                        android:text="VISITAS EFECTIVAS"
                         />
                     <TextView
                         android:id="@+id/dialog_team_visited_success"

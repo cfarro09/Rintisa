@@ -583,80 +583,15 @@ class Repository {
         }
     }
 
-    fun getMultiPromoter(
-        visitid: Int,
-        token: String,
-        onResult: (isSuccess: Boolean, result: DataPromoter?, message: String?) -> Unit
-    )  {
-        val multi = listOf(
-            RequestBodyX("UFN_STOCK_SALE_SEL", "UFN_STOCK_SALE_SEL", mapOf<String, Any>("visitid" to visitid)),
-        )
-        val body: RequestBody = RequestBody.create(
-            MediaType.parse("application/json"),
-            Gson().toJson(multi)
-        )
-        try {
-            Connection.instance.mainMulti(body, "Bearer $token").enqueue(object :
-                Callback<ResponseMulti> {
-                override fun onResponse(
-                    call: Call<ResponseMulti>?,
-                    response: Response<ResponseMulti>?
-                ) {
-                    if (response?.isSuccessful == true && response.body().success == true) {
-                        val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
-                        if (response.body().data[0].success == true) {
-                            val listRes = response.body().data[0].data.toList()
-                            if (listRes.count() > 0) {
-                                val stocks = listRes[0]["replace_stock"]
-                                val sales = listRes[0]["sale"]
-                                if (stocks != null) {
-                                    val stocks2 = stocks as List<Map<String, Any>>
-                                    dataPromoter.stocksSelected = stocks2.map { r ->
-                                        Stock(
-                                            r["category"].toString(),
-                                            r["brand"].toString(),
-                                            r["product"].toString()
-                                        )
-                                    }
-                                }
-                                if (sales != null) {
-                                    val sales2 = sales as List<Map<String, Any>>
-                                    dataPromoter.productsSelected = sales2.map { r ->
-                                        val productId = r["productid"]?.toString()?.toDouble()?.toInt() ?: 0
-                                        SurveyProduct(
-                                            productId,
-                                            r["saledetail_description"].toString(),
-                                            r["saledetail_description"].toString(),
-                                            0.00,
-                                            r["measure_unit"].toString(),
-                                            r["quantity"].toString().toDouble(),
-                                            r["merchant"].toString(),
-                                            r["url_evidence"].toString(),
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        onResult(true, dataPromoter, null)
-                    } else {
-                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
-                    }
-                }
-                override fun onFailure(call: Call<ResponseMulti>?, t: Throwable?) {
-                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
-                }
-            })
-        } catch (e: java.lang.Exception){
-            onResult(false, null, DEFAULT_MESSAGE_ERROR)
-        }
-    }
-
     fun getMultiPromoterInitial(
         token: String,
         onResult: (isSuccess: Boolean, result: DataPromoter?, message: String?) -> Unit
     )  {
         val multi = listOf(
-            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MERCHANDISING")),
+            RequestBodyX("UFN_MERCHANDISING_SEL", "UFN_MERCHANDISING_SEL", mapOf<String, Any>(
+                "id" to 0,
+                "all" to true
+            )),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAVENTAS")),
             RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "MARCAPRODUCTO")),
         )
@@ -675,7 +610,7 @@ class Repository {
                         val dataPromoter = DataPromoter(emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
 
                         if (response.body().data[0].success == true) {
-                            dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["domaindesc"].toString()) }
+                            dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["description"].toString(), false, it["brand"].toString(), it["merchandisingid"].toString().toDouble().toInt()) }
                         }
                         if (response.body().data[1].success == true) {
                             dataPromoter.saleBrand = response.body().data[1].data.toList().map { r -> BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList()) }

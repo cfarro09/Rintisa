@@ -11,6 +11,7 @@ import com.delycomps.rintisa.R
 import com.delycomps.rintisa.model.Availability
 import com.delycomps.rintisa.model.UserSup
 import com.google.android.material.switchmaterial.SwitchMaterial
+import kotlin.math.roundToInt
 
 class AdapterUserSup(
     private var userList: List<UserSup>,
@@ -43,7 +44,7 @@ class AdapterUserSup(
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val user: UserSup = userList[position]
 
-        val efectivity = ((user.finishVisit / (user.finishVisit + user.initiatedVisit + user.withoutVisit)) * 100)
+        val efectivity = ((user.finishVisit.toDouble() / (user.finishVisit.toDouble() + user.initiatedVisit.toDouble() + user.withoutVisit.toDouble())) * 100).roundToInt()
 
         holder.user.text = user.User
         holder.efectivity.text = "$efectivity%"

@@ -12,6 +12,11 @@
         android:icon="@drawable/ic_baseline_flag_24"
         app:showAsAction="always"
         android:title="@string/close_day"/>
+    <item
+        android:id="@+id/action_stock"
+        android:icon="@drawable/ic_baseline_list_alt_24"
+        app:showAsAction="always"
+        android:title="Cerrar stock"/>
 
     <item
         android:id="@+id/action_share_location"

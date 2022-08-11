@@ -31,6 +31,7 @@ import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_BREAK_INIT
 import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_ENTRY
 import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_EXIT
 import com.delycomps.rintisa.Constants.RETURN_ACTIVITY
+import com.delycomps.rintisa.adapter.AdapterManageStock
 import com.delycomps.rintisa.adapter.AdapterPointsale
 import com.delycomps.rintisa.cache.BDLocal
 import com.delycomps.rintisa.cache.Helpers
@@ -45,6 +46,7 @@ import org.json.JSONObject
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
 private const val CODE_RESULT_CAMERA_SELFIE = 10001
@@ -58,6 +60,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private lateinit var dialogLoading: AlertDialog
     private lateinit var dialogClose: AlertDialog
     private lateinit var dialogGeolocation: AlertDialog
+
+    private lateinit var dialogManageStock: AlertDialog
 
     private lateinit var supervisorViewModel: SupervisorViewModel
     private lateinit var dialogAssistance: AlertDialog
@@ -114,13 +118,13 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         menu.findItem(R.id.action_finish)?.isVisible = (role == "IMPULSADOR")
+        menu.findItem(R.id.action_stock)?.isVisible = (role == "IMPULSADOR")
 
         mainMenu = menu
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
         when (item.itemId) {
             R.id.action_exit -> {
                 val dialogClickListener = DialogInterface.OnClickListener { _, which ->
@@ -151,6 +155,15 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             R.id.action_finish -> {
                 dialogClose.show()
             }
+            R.id.action_stock -> {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val dateLocal = SharedPrefsCache(rv.context).get("MANAGE-STOCK", "string")
+                if (date != dateLocal) {
+                    dialogManageStock.show()
+                } else {
+                    Toast.makeText(this, "Ya envió el stock.", Toast.LENGTH_LONG).show()
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -169,6 +182,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         val role = SharedPrefsCache(this).get("type", "string")
 
         mainMenu?.findItem(R.id.action_finish)?.isVisible = (role == "IMPULSADOR")
+        mainMenu?.findItem(R.id.action_stock)?.isVisible = (role == "IMPULSADOR")
 
         //PERMISOS
         val locationPermissionRequest = registerForActivityResult(
@@ -209,10 +223,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         rv = findViewById(R.id.main_rv_point_sale)
         rv.layoutManager = LinearLayoutManager(this)
-
-        findViewById<Button>(R.id.remove_point_sale).setOnClickListener {
-            BDLocal(this).deleteAllPointSale()
-        }
 
         val swiper: SwipeRefreshLayout = findViewById(R.id.main_swiper_refresh)
         swiper.setOnRefreshListener {
@@ -257,17 +267,35 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         manageDialogAssistance(dialogAssistanceUI)
 
         val builderDialogCloseAssistance: AlertDialog.Builder = AlertDialog.Builder(this)
-        val inflater1 = this.layoutInflater
-        val dialogCloseAssistanceUI = inflater1.inflate(R.layout.layout_close_assistance, null)
+        val dialogCloseAssistanceUI = this.layoutInflater.inflate(R.layout.layout_close_assistance, null)
         builderDialogCloseAssistance.setView(dialogCloseAssistanceUI)
         dialogClose = builderDialogCloseAssistance.create()
         manageDialogCloseAssistance(dialogCloseAssistanceUI, dialogClose)
 
+        val builderManageStock: AlertDialog.Builder = AlertDialog.Builder(this)
+        val dialogManageStockUI = this.layoutInflater.inflate(R.layout.layout_manage_stock, null)
+        builderManageStock.setView(dialogManageStockUI)
+        dialogManageStock = builderManageStock.create()
+        if (role == "IMPULSADOR") {
+            manageDialogManageStock(dialogManageStockUI)
+        }
+
         mainViewModel.listPointSale.observe(this) {
             dialogLoading.dismiss()
+            val countWaiting = it.filter { x -> x.management == "EN ESPERA" }.toList().count()
+            val countInitiated = it.filter { x -> x.management == "INICIADO" }.toList().count()
+            val countVisited = it.filter { x -> x.management == "VISITADO" }.toList().count()
+
+            val totalCount = countWaiting + countInitiated + countVisited
+            val efec = if (totalCount > 0) (countVisited * 100) / totalCount else 0
+
+            findViewById<TextView>(R.id.main_waiting).text = countWaiting.toString()
+            findViewById<TextView>(R.id.main_initiated).text = countInitiated.toString()
+            findViewById<TextView>(R.id.main_visited).text = countVisited.toString()
+            findViewById<TextView>(R.id.main_efectivity).text = "$efec%"
+
             rv.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
-//                    pointSale1.management = "EN ESPERA"
                     indexPosition = position
                     if (pointSale1.management == "VISITADO") {
                         if (!pointSale1.wasSaveOnBD) {
@@ -474,7 +502,84 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
                 }
+            } else if (it.result == "UFN_KARDEX_INS_ARRAY_MOVIL") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogManageStock.dismiss()
+                    val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                    SharedPrefsCache(this).set("MANAGE-STOCK", date, "string")
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
             }
+        }
+    }
+    private fun manageDialogManageStock(view: View) {
+        val outMerchandise: MutableList<Merchandise> = ArrayList()
+        val buttonSave: Button = view.findViewById(R.id.dialog_stock_save)
+        val spinnerBrand: Spinner = view.findViewById(R.id.dialog_stock_brand)
+        val rvStock: RecyclerView = view.findViewById(R.id.dialog_stock_rv)
+        rvStock.layoutManager = LinearLayoutManager(this)
+
+        val jsonPromoter = SharedPrefsCache(this).get("data-promoter", "string")
+        val dataPromoter = Gson().fromJson(jsonPromoter.toString(), DataPromoter::class.java)
+        val aa = ""
+        val listBrand = dataPromoter.merchandises.map { it.brand }.distinct().toList()
+
+        spinnerBrand.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand)
+
+        spinnerBrand.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (rvStock.adapter != null) {
+                    val newMerchandise = (rvStock.adapter as AdapterManageStock).getList()
+                    newMerchandise.forEach {
+                        val posibleIndex = outMerchandise.indexOfFirst { x -> x.merchandisingid == it.merchandisingid }
+                        if (posibleIndex > -1) {
+                            outMerchandise[posibleIndex].quantity = it.quantity
+                        } else {
+                            outMerchandise.add(it)
+                        }
+                    }
+                }
+                val brand = spinnerBrand.selectedItem.toString()
+                val list = dataPromoter.merchandises.filter { it.brand == brand }.toList()
+
+                rvStock.adapter = AdapterManageStock(list)
+            }
+        }
+
+        buttonSave.setOnClickListener {
+            val newMerchandise = (rvStock.adapter as AdapterManageStock).getList()
+            newMerchandise.forEach {
+                val posibleIndex = outMerchandise.indexOfFirst { x -> x.merchandisingid == it.merchandisingid }
+                if (posibleIndex > -1) {
+                    outMerchandise[posibleIndex].quantity = it.quantity
+                } else {
+                    outMerchandise.add(it)
+                }
+            }
+            val resumeString = outMerchandise.filter { (it.quantity ?: 0) > 0 }.toList().fold("") { acc, pair -> acc + "<br>• ${pair.description}: ${pair.quantity}" }
+            val dialogClickListener = DialogInterface.OnClickListener { _, which ->
+                when (which) {
+                    DialogInterface.BUTTON_POSITIVE -> {
+                        dialogLoading.show()
+                        val ob = JSONObject()
+                        ob.put("table", Gson().toJson(outMerchandise.filter { (it.quantity ?: 0) > 0 }.toList()))
+                        supervisorViewModel.executeSupervisor(ob, "UFN_KARDEX_INS_ARRAY_MOVIL", SharedPrefsCache(this).getToken())
+                    }
+                }
+            }
+            val builder = AlertDialog.Builder(this)
+            builder.setMessage(Html.fromHtml("¿Está seguro de cerrar su stock?<br>$resumeString"))
+                .setPositiveButton(Html.fromHtml("<b>Continuar<b>"), dialogClickListener)
+                .setNegativeButton(Html.fromHtml("<b>Cancelar<b>"), dialogClickListener)
+            val alert = builder.create()
+            alert.show()
+            Log.d("outmerchandising", Gson().toJson(outMerchandise.filter { (it.quantity ?: 0) > 0 }.toList()))
         }
     }
 
@@ -486,7 +591,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         buttonSecondHourEntry = view.findViewById(R.id.assistance_second_hour_entry)
 
         val role = SharedPrefsCache(rv.context).get("type", "string")
-        if (role != "MERCADERISTA") {
+        if (role == "MERCADERISTA") {
             buttonSecondHourEntry.visibility = View.GONE
         }
 
@@ -803,8 +908,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             .registerOnSharedPreferenceChangeListener(this)
 
         val builderDialogGeo: AlertDialog.Builder = AlertDialog.Builder(this)
-        val inflater2 = this.layoutInflater
-        val dialogGeoUI = inflater2.inflate(R.layout.layout_share_location, null)
+        val dialogGeoUI = this.layoutInflater.inflate(R.layout.layout_share_location, null)
         builderDialogGeo.setView(dialogGeoUI)
         dialogGeolocation = builderDialogGeo.create()
 

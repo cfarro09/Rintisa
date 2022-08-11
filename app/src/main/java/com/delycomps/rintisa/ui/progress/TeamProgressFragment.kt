@@ -20,6 +20,7 @@ import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.databinding.FragmentTeamprogressBinding
 import com.delycomps.rintisa.model.PointSale
 import com.delycomps.rintisa.model.UserSup
+import kotlin.math.roundToInt
 
 class TeamProgressFragment : Fragment() {
 
@@ -43,6 +44,7 @@ class TeamProgressFragment : Fragment() {
         rv.layoutManager = LinearLayoutManager(rv.context)
 
         val efectivity: TextView = binding.teamprogressEfectivity
+        val totalT: TextView = binding.teamprogressTotal
         val visited: TextView = binding.teamprogressVisited
         val waiting: TextView = binding.teamprogressWaiting
         val initiates: TextView = binding.teamprogressInitiates
@@ -75,19 +77,20 @@ class TeamProgressFragment : Fragment() {
             val finishFailVisit = finishVisit - finishSuccessVisit
             val initiatedVisit = it.fold(0) { acc, item -> item.initiatedVisit + acc }
             val withoutVisit = it.fold(0) { acc, item -> item.withoutVisit + acc }
-
-            val efect = if  ((finishVisit + initiatedVisit + withoutVisit)  > 0) finishVisit / (finishVisit + initiatedVisit + withoutVisit) else 0
+            val totalValue = finishVisit + initiatedVisit + withoutVisit
+            val efect = if  ((totalValue)  > 0) (finishVisit * 100) / totalValue else 0.0
 
             visited.text = finishVisit.toString()
             initiates.text = initiatedVisit.toString()
+            totalT.text = totalValue.toString()
             waiting.text = withoutVisit.toString()
-            efectivity.text = "$efect%"
+            efectivity.text = "${efect}%"
 
             rv.adapter = AdapterUserSup(it, object : AdapterUserSup.ListAdapterListener {
                 override fun clickItem(user: UserSup) {
-                    val efectivity = ((user.finishVisit / (user.finishVisit + user.initiatedVisit + user.withoutVisit)) * 100)
+                    val efectivity = ((user.finishVisit.toDouble() / (user.finishVisit.toDouble() + user.initiatedVisit.toDouble() + user.withoutVisit.toDouble())) * 100)
 
-                    dialogEfectivity.text = "$efectivity%"
+                    dialogEfectivity.text = "${efectivity.roundToInt()}%"
                     dialogVisitedSuccess.text = user.finishSuccessVisit.toString()
                     dialogVisitedFail.text = (user.finishVisit - user.finishSuccessVisit).toString()
                     dialogTotalVisit.text = (user.finishVisit).toString()
@@ -106,7 +109,10 @@ class TeamProgressFragment : Fragment() {
             })
         }
         viewModel.listPointSale.observe(viewLifecycleOwner) {
-            rvResumeVisit.adapter = AdapterPointsale(it, object : AdapterPointsale.ListAdapterListener {
+            rvResumeVisit.adapter = AdapterPointsale(it.map { x ->
+                x.wasSaveOnBD = true
+                x
+            }, object : AdapterPointsale.ListAdapterListener {
                 override fun onClickAtDetailPointSale(pointSale1: PointSale, position: Int) {
 
                 }

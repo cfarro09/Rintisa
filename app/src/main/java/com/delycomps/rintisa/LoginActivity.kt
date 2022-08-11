@@ -83,6 +83,7 @@ class LoginActivity : AppCompatActivity() {
                         SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_INIT, "", "string")
                         SharedPrefsCache(this).set(ASSISTANCE_HOUR_BREAK_FINISH, "", "string")
                         SharedPrefsCache(this).set(ASSISTANCE_HOUR_ENTRY, "", "string")
+                        SharedPrefsCache(this).set("MANAGE-STOCK", "", "string")
 
                         SharedPrefsCache(this).set("type", result?.role?.uppercase() ?: "", "string")
                         SharedPrefsCache(this).set("token", result?.token, "string")

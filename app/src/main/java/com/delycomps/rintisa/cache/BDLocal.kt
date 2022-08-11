@@ -22,8 +22,6 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
-        p0?.execSQL(SQL_CREATE_TABLE_PDV)
-        p0?.execSQL(SQL_CREATE_TABLE_SUPERVISOR_VISIT)
     }
 
     fun getPointSale(): List<PointSale> {
