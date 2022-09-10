@@ -100,17 +100,23 @@ class SalesFragment : Fragment() {
             override fun onClickAtDetailProduct(sp: SurveyProduct, position: Int, type: String) {
                 indexSelected = position
                 if (type == "UPDATE") {
-
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(listBrand.indexOf(sp.brand))
 
                     val measures: List<String> = listBrandSale.find { it.brand == sp.brand }?.listMeasure ?: emptyList()
-
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, measures)
 
-
+                    var categories = listOf(sp.measureUnit)
+                    val cc = listBrandSale.find { it.brand == sp.brand }
+                    if (cc?.categories?.containsKey(sp.measureUnit) == true) {
+                        categories = cc.categories!![sp.measureUnit]?.split(",") ?: emptyList()
+                    }
                     Handler().postDelayed({
                         dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(measures.indexOfFirst { it == sp.measureUnit })
-                    }, 100)
+                        dialogProductUI.findViewById<Spinner>(R.id.spinner_category).adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, categories)
+                        Handler().postDelayed({
+                            dialogProductUI.findViewById<Spinner>(R.id.spinner_category).setSelection(categories.indexOfFirst { it == sp.category })
+                        }, 100)
+                  }, 200)
 
                     dialogProductUI.findViewById<Spinner>(R.id.spinner_count_rows).visibility = View.GONE
                     dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("" + sp.quantity)
@@ -142,6 +148,8 @@ class SalesFragment : Fragment() {
             dialogProductUI.findViewById<Spinner>(R.id.spinner_brand).setSelection(1)
             dialogProductUI.findViewById<Spinner>(R.id.spinner_measure_unit).setSelection(0)
             dialogProductUI.findViewById<EditText>(R.id.dialog_quantity).text = Editable.Factory.getInstance().newEditable("1")
+
+            dialogProductUI.findViewById<Spinner>(R.id.spinner_category).adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, emptyList<String>())
             lastpath = ""
             imageRegister.setImageDrawable(null);
             dialogMaterial.show()
@@ -152,6 +160,7 @@ class SalesFragment : Fragment() {
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
         val spinnerCountRows = view.findViewById<Spinner>(R.id.spinner_count_rows)
         val spinnerMeasureUnit = view.findViewById<Spinner>(R.id.spinner_measure_unit)
+        val spinnerCategory = view.findViewById<Spinner>(R.id.spinner_category)
         val editTextQuantity = view.findViewById<EditText>(R.id.dialog_quantity)
         val buttonTakePhoto = view.findViewById<Button>(R.id.dialog_take_photo_product)
 
@@ -160,7 +169,7 @@ class SalesFragment : Fragment() {
         buttonTakePhoto.setOnClickListener {
             dispatchTakePictureIntent(view)
         }
-        spinnerCountRows.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listRows)
+        spinnerCountRows.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listRows)
         spinnerBrand.adapter = object : ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand) {
             override fun isEnabled(position: Int): Boolean {
                 return position != 0
@@ -169,10 +178,24 @@ class SalesFragment : Fragment() {
 
         spinnerBrand.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
                 val brand = spinnerBrand.selectedItem.toString()
                 val measures: List<String> = listBrandSale.find { it.brand == brand }?.listMeasure ?: emptyList()
-                spinnerMeasureUnit.adapter = ArrayAdapter(view!!.context, android.R.layout.simple_list_item_1, measures)
+                spinnerMeasureUnit.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, measures)
+            }
+        }
+
+        spinnerMeasureUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                val measure = spinnerMeasureUnit.selectedItem.toString()
+                val brand = spinnerBrand.selectedItem.toString()
+                var categories = listOf(measure)
+                val cc = listBrandSale.find { it.brand == brand }
+                if (cc?.categories?.containsKey(measure) == true) {
+                    categories = cc.categories!![measure]?.split(",") ?: emptyList()
+                }
+                spinnerCategory.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, categories)
             }
         }
 
@@ -187,6 +210,7 @@ class SalesFragment : Fragment() {
             val brand = spinnerBrand.selectedItem?.toString() ?: ""
             val countRow = spinnerCountRows.selectedItemPosition
             val measureUnit = spinnerMeasureUnit.selectedItem?.toString() ?: ""
+            val category = spinnerCategory.selectedItem?.toString() ?: measureUnit
             val quantityString = editTextQuantity.text.toString()
             val quantity = if (quantityString == "") 0.0 else quantityString.toDouble()
 
@@ -195,6 +219,7 @@ class SalesFragment : Fragment() {
                     var listProducts1 = emptyList<SurveyProduct>()
                     for (i in 0..countRow) {
                         val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
+                        surveyProduct.category = category
                         surveyProduct.imageEvidenceLocal = lastpath
                         listProducts1 = viewModel.addProduct(surveyProduct, pointSale.visitId, view.context)
                         (rv.adapter as AdapterSale).addProduct(surveyProduct)
@@ -204,6 +229,7 @@ class SalesFragment : Fragment() {
                 else {
                     val surveyProduct = SurveyProduct(0, brand, brand, 0.0, measureUnit, quantity, "", "")
                     surveyProduct.imageEvidenceLocal = lastpath
+                    surveyProduct.category = category
                     (rv.adapter as AdapterSale).updateItemProduct(surveyProduct, indexSelected)
                     val listProducts = viewModel.updateProduct(surveyProduct, indexSelected, view.context)
                     viewModel.updateSales(pointSale.visitId, listProducts, SharedPrefsCache(view.context).getToken())

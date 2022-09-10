@@ -2,6 +2,7 @@ package com.delycomps.rintisa.ui.progress
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.databinding.FragmentTeamprogressBinding
 import com.delycomps.rintisa.model.PointSale
 import com.delycomps.rintisa.model.UserSup
+import com.google.gson.Gson
 import kotlin.math.roundToInt
 
 class TeamProgressFragment : Fragment() {
@@ -85,8 +87,9 @@ class TeamProgressFragment : Fragment() {
             totalT.text = totalValue.toString()
             waiting.text = withoutVisit.toString()
             efectivity.text = "${efect}%"
-
+            Log.d("aaaa", Gson().toJson(it))
             rv.adapter = AdapterUserSup(it, object : AdapterUserSup.ListAdapterListener {
+
                 override fun clickItem(user: UserSup) {
                     val efectivity = ((user.finishVisit.toDouble() / (user.finishVisit.toDouble() + user.initiatedVisit.toDouble() + user.withoutVisit.toDouble())) * 100)
 

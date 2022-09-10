@@ -161,7 +161,7 @@ class PromoterViewModel : ViewModel() {
             "total_detail" to 0,
             "description_detail" to (it.description ?: ""),
             "status_detail" to "ACTIVO",
-            "type_detail" to "NINGUNO",
+            "type_detail" to (it.category ?: ""),
             "operation" to "INSERT",
         ) }.toList())
         Log.d("davidddd", toSend)

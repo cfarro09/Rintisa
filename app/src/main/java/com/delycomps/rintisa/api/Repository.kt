@@ -10,6 +10,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.lang.Exception
 import java.util.*
 
 const val DEFAULT_MESSAGE_ERROR = "Hubo un error vuelva a intentarlo, o vuelva a iniciar sesión"
@@ -613,7 +614,13 @@ class Repository {
                             dataPromoter.merchandises = response.body().data[0].data.toList().map { Merchandise(it["description"].toString(), false, it["brand"].toString(), it["merchandisingid"].toString().toDouble().toInt()) }
                         }
                         if (response.body().data[1].success == true) {
-                            dataPromoter.saleBrand = response.body().data[1].data.toList().map { r -> BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList()) }
+                            dataPromoter.saleBrand = response.body().data[1].data.toList().map { r ->
+                                var map: Map<String, String> = HashMap()
+                                try {
+                                    map = Gson().fromJson(r["type"].toString(), map.javaClass)
+                                } catch (e: Exception) { }
+                                BrandSale(r["domainvalue"].toString(), r["domaindesc"].toString().split(",").toList(), map)
+                            }
                         }
                         if (response.body().data[2].success == true) {
                             dataPromoter.stocks = response.body().data[2].data.toList().map { r -> Stock(r["type"].toString(), r["domaindesc"].toString(), r["domainvalue"].toString()) }

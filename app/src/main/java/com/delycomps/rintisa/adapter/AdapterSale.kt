@@ -47,6 +47,7 @@ class AdapterSale(
     fun updateItemProduct(surveyProduct: SurveyProduct, index: Int) {
         listSurveyProduct[index].measureUnit = surveyProduct.measureUnit
         listSurveyProduct[index].brand = surveyProduct.brand
+        listSurveyProduct[index].category = surveyProduct.category
 //        listSurveyProduct[index].merchant = surveyProduct.merchant
         listSurveyProduct[index].imageEvidence = surveyProduct.imageEvidence
         listSurveyProduct[index].imageEvidenceLocal = surveyProduct.imageEvidenceLocal

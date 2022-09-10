@@ -585,7 +585,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         val db = readableDatabase
         val listStock = ArrayList<SurveyProduct>()
 
-        val select = arrayOf(SALES_BRAND, SALES_QUANTITY, SALES_MEASURE_UNIT, SALES_MERCHANT, SALES_IMAGE_EVIDENCE, UUID, SALES_IMAGE_EVIDENCE_LOCAL)
+        val select = arrayOf(SALES_BRAND, SALES_QUANTITY, SALES_MEASURE_UNIT, SALES_MERCHANT, SALES_IMAGE_EVIDENCE, UUID, SALES_IMAGE_EVIDENCE_LOCAL, SALES_CATEGORY)
 
         val c = db.query(TABLE_SALES, select, "$VISIT_ID = $visitID", null, null, null, null, null)
 
@@ -594,6 +594,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
             do {
                 val sv = SurveyProduct(0, c.getString(0), c.getString(0), 0.00, c.getString(2), c.getDouble(1), c.getString(3), c.getString(4), c.getString(5))
                 sv.imageEvidenceLocal = c.getString(6) ?: ""
+                sv.category = c.getString(7) ?: ""
                 listStock.add(sv)
             } while (c.moveToNext())
         }
@@ -611,6 +612,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         values.put(SALES_QUANTITY, product.quantity)
         values.put(SALES_MEASURE_UNIT, product.measureUnit)
         values.put(SALES_MERCHANT, product.merchant)
+        values.put(SALES_CATEGORY, product.category)
         values.put(SALES_IMAGE_EVIDENCE, product.imageEvidence)
         values.put(SALES_IMAGE_EVIDENCE_LOCAL, product.imageEvidenceLocal)
         values.put(VISIT_ID, visitID)
@@ -640,6 +642,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         values.put(SALES_QUANTITY, product.quantity)
         values.put(SALES_MEASURE_UNIT, product.measureUnit)
         values.put(SALES_MERCHANT, product.merchant)
+        values.put(SALES_CATEGORY, product.category)
         values.put(SALES_IMAGE_EVIDENCE, product.imageEvidence)
         values.put(SALES_IMAGE_EVIDENCE_LOCAL, product.imageEvidenceLocal)
 
@@ -734,6 +737,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val SALES_BRAND = "brand"
         private const val SALES_QUANTITY = "quantity"
         private const val SALES_MEASURE_UNIT = "measure_unit"
+        private const val SALES_CATEGORY = "category"
         private const val SALES_MERCHANT = "merchant"
         private const val SALES_IMAGE_EVIDENCE = "image_evidence"
         private const val SALES_IMAGE_EVIDENCE_LOCAL = "image_evidence_local"
@@ -889,6 +893,7 @@ class BDLocal(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null
                 "   $SALES_BRAND text," +
                 "   $SALES_QUANTITY double," +
                 "   $SALES_MEASURE_UNIT text," +
+                "   $SALES_CATEGORY text," +
                 "   $SALES_MERCHANT text," +
                 "   $SALES_IMAGE_EVIDENCE text," +
                 "   $UUID text," +

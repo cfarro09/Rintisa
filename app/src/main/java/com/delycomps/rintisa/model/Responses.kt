@@ -78,9 +78,11 @@ data class DataMerchant(
     var products: List<SurveyProduct>
 )
 
+
 data class BrandSale (
     var brand: String,
-    var listMeasure: List<String>
+    var listMeasure: List<String>,
+    var categories: Map<String, String>?
 )
 
 data class Question (

@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.Html
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -75,6 +76,7 @@ class MerchantSupervisorActivity : AppCompatActivity() {
                 ob.put("visitid", pointSale.visitId)
                 ob.put("comment", comment)
 
+                Log.d("jsonaa", ob.toString())
                 val dialogClickListener = DialogInterface.OnClickListener { _, which ->
                     when (which) {
                         DialogInterface.BUTTON_POSITIVE -> {

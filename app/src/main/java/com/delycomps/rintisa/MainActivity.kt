@@ -526,9 +526,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         val jsonPromoter = SharedPrefsCache(this).get("data-promoter", "string")
         val dataPromoter = Gson().fromJson(jsonPromoter.toString(), DataPromoter::class.java)
-        val aa = ""
+
         val listBrand = dataPromoter.merchandises.map { it.brand }.distinct().toList()
 
+        Log.d("dataPromoter", Gson().toJson(dataPromoter.saleBrand))
         spinnerBrand.adapter = ArrayAdapter<String?>(view.context, android.R.layout.simple_list_item_1, listBrand)
 
         spinnerBrand.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -810,7 +811,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             "total_detail" to 0,
             "description_detail" to (it.description ?: ""),
             "status_detail" to "ACTIVO",
-            "type_detail" to "NINGUNO",
+            "type_detail" to (it.category ?: ""),
             "operation" to "INSERT",
         ) }.toList()
 

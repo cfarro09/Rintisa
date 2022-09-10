@@ -44,7 +44,7 @@ class AdapterUserSup(
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val user: UserSup = userList[position]
 
-        val efectivity = ((user.finishVisit.toDouble() / (user.finishVisit.toDouble() + user.initiatedVisit.toDouble() + user.withoutVisit.toDouble())) * 100).roundToInt()
+        val efectivity = if (user.finishVisit == 0) 0 else ((user.finishVisit.toDouble() / (user.finishVisit.toDouble() + user.initiatedVisit.toDouble() + user.withoutVisit.toDouble())) * 100).roundToInt()
 
         holder.user.text = user.User
         holder.efectivity.text = "$efectivity%"
