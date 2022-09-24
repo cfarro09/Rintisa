@@ -21,6 +21,9 @@ interface Endpoints {
     fun getMaterials(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Material>>
 
     @POST("main")
+    fun getUserFromAuditor(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<UserFromAuditor>>
+
+    @POST("main")
     fun getVisit2(@Body body: RequestBody, @Header("Authorization") authHeader: String): Call<ResponseList<Visit2>>
 
     @POST("main")

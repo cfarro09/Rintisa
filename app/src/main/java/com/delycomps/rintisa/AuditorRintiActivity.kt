@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Html
 import android.view.Menu
@@ -12,35 +13,33 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.delycomps.rintisa.adapter.AdapterCustomer
+import com.delycomps.rintisa.adapter.AdapterUserAuditor
 import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.model.Customer
-import com.delycomps.rintisa.model.DataAuditor
+import com.delycomps.rintisa.model.DataAuditorRinti
+import com.delycomps.rintisa.model.UserFromAuditor
 import com.google.gson.Gson
-import java.io.*
 import java.lang.Exception
-import java.util.*
-import kotlin.collections.ArrayList
 
-
-class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
+class AuditorRintiActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     private lateinit var auditorViewModel: AuditorViewModel
     private var currentPhotoPath: String = ""
     private var dialogFilter: AlertDialog? = null
     private lateinit var dialogLoading: AlertDialog
     private lateinit var rv: RecyclerView
+    private lateinit var rv1: RecyclerView
 
     private var marketIdG: Int? = 0
     private var positionG: Int? = 0
-
+    private var typeService = "PUNTO DE VENTA"
+    private var serviceUser = "MERCADERISTA"
 
     private lateinit var mainViewModel: MainViewModel
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -83,29 +82,38 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auditor)
+        setContentView(R.layout.activity_auditor_rinti)
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         rv = findViewById(R.id.main_rv_point_sale)
         rv.layoutManager = LinearLayoutManager(this)
 
+        rv1 = findViewById(R.id.main_rv_point_user)
+        rv1.layoutManager = LinearLayoutManager(this)
+
         auditorViewModel = ViewModelProvider(this).get(AuditorViewModel::class.java)
 
         val swiper: SwipeRefreshLayout = findViewById(R.id.main_swiper_refresh)
         swiper.setOnRefreshListener {
-            if (marketIdG != null) {
-                auditorViewModel.getCustomer(marketIdG!!, false, SharedPrefsCache(this).getToken())
-                swiper.isRefreshing = false
+
+            if (typeService == "PUNTO DE VENTA") {
+                if (marketIdG != null) {
+                    auditorViewModel.getCustomer(marketIdG!!, true, SharedPrefsCache(this).getToken())
+                }
+            } else {
+                dialogFilter?.dismiss()
+                auditorViewModel.getUser(serviceUser, SharedPrefsCache(this).getToken())
             }
+            swiper.isRefreshing = false
         }
 
-        val jsonMerchant = SharedPrefsCache(this).get("data-auditor", "string")
-        val dataAuditor = Gson().fromJson(jsonMerchant.toString(), DataAuditor::class.java)
-        auditorViewModel.setMultiInitial(dataAuditor)
+        val jsonMerchant = SharedPrefsCache(this).get("data-auditorrinti", "string")
+        val dataAuditor = Gson().fromJson(jsonMerchant.toString(), DataAuditorRinti::class.java)
+        auditorViewModel.setMultiInitialRinti(dataAuditor)
 
         val builderFilter: AlertDialog.Builder = AlertDialog.Builder(this)
         val inflater = this.layoutInflater
-        val dialogFilterView = inflater.inflate(R.layout.layout_auditor_filter, null)
+        val dialogFilterView = inflater.inflate(R.layout.layout_auditor_rinti_filter, null)
         builderFilter.setView(dialogFilterView)
         dialogFilter = builderFilter.create()
         manageDialogFilter(dialogFilterView)
@@ -131,17 +139,35 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
             val a = this
             rv.adapter = AdapterCustomer(it, object : AdapterCustomer.ListAdapterListener {
                 override fun onClickAtDetailCustomer(pointSale1: Customer, position: Int) {
-                    if (pointSale1.status == "EN ESPERA") {
-                        positionG = position
-                        val intent = Intent(
-                            rv.context,
-                            AuditorDetailActivity::class.java
-                        )
-                        intent.putExtra(Constants.POINT_CUSTOMER, pointSale1)
-                        startActivityForResult(intent, Constants.RETURN_ACTIVITY)
-                    } else {
+                    if (pointSale1.status != "EN ESPERA") {
                         Toast.makeText(a, "El cliente ${pointSale1.client} ya fue gestionado", Toast.LENGTH_LONG).show()
                     }
+                    positionG = position
+                    val intent = Intent(
+                        rv.context,
+                        AuditorRintiDetailActivity::class.java
+                    )
+                    intent.putExtra("TYPE", "CLIENT")
+                    intent.putExtra(Constants.POINT_CUSTOMER, pointSale1)
+                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
+                }
+            })
+        }
+        auditorViewModel.listUser.observe(this) {
+            val a = this
+            rv1.adapter = AdapterUserAuditor(it, object : AdapterUserAuditor.ListAdapterListener {
+                override fun onClickAtDetailUserFromAuditor(pointSale1: UserFromAuditor, position: Int) {
+                    if (pointSale1.status != "EN ESPERA") {
+                        Toast.makeText(a, "El usuario ${pointSale1.description} ya fue gestionado", Toast.LENGTH_LONG).show()
+                    }
+                    positionG = position
+                    val intent = Intent(
+                        rv1.context,
+                        AuditorRintiDetailActivity::class.java
+                    )
+                    intent.putExtra(Constants.POINT_CUSTOMER, pointSale1)
+                    intent.putExtra("TYPE", "USER")
+                    startActivityForResult(intent, Constants.RETURN_ACTIVITY)
                 }
             })
         }
@@ -167,7 +193,11 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
         when (requestCode) {
             Constants.RETURN_ACTIVITY -> {
                 if ((imageReturnedIntent?.getStringExtra("status") ?: "") != "") {
-                    (rv.adapter as AdapterCustomer).updateStatus(positionG ?: 0, imageReturnedIntent?.getStringExtra("status") ?: "")
+                    if (typeService == "PUNTO DE VENTA") {
+                        (rv.adapter as AdapterCustomer).updateStatus(positionG ?: 0, imageReturnedIntent?.getStringExtra("status") ?: "")
+                    } else {
+                        (rv1.adapter as AdapterUserAuditor).updateStatus(positionG ?: 0, imageReturnedIntent?.getStringExtra("status") ?: "")
+                    }
                 }
             }
         }
@@ -199,9 +229,12 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
     }
 
     private fun manageDialogFilter(view: View) {
-
         val spinnerMarket = view.findViewById<AutoCompleteTextView>(R.id.spinner_market)
+        val spinnerType = view.findViewById<Spinner>(R.id.spinner_type)
+        val spinnerService = view.findViewById<Spinner>(R.id.spinner_service)
 
+        val descriptionService = view.findViewById<TextView>(R.id.description_service)
+        val descriptionMarket = view.findViewById<TextView>(R.id.description_market)
         val buttonSearch = view.findViewById<Button>(R.id.dialog_search)
         val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel)
 
@@ -209,21 +242,59 @@ class AuditorActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
 
         spinnerMarket.setAdapter(arrayAdapter)
 
+        spinnerType.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("PUNTO DE VENTA", "USUARIO"))
+        spinnerService.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("MERCADERISTA", "IMPULSADOR"))
+
+        spinnerService.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val valueSelected = spinnerService.selectedItem.toString()
+                serviceUser = valueSelected
+            }
+        }
+
+        spinnerType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val valueSelected = spinnerType.selectedItem.toString()
+                if (valueSelected == "PUNTO DE VENTA") {
+                    descriptionService.visibility = View.GONE
+                    spinnerService.visibility = View.GONE
+                    descriptionMarket.visibility = View.VISIBLE
+                    spinnerMarket.visibility = View.VISIBLE
+                } else {
+                    descriptionService.visibility = View.VISIBLE
+                    spinnerService.visibility = View.VISIBLE
+                    descriptionMarket.visibility = View.GONE
+                    spinnerMarket.visibility = View.GONE
+                }
+            }
+        }
+
         buttonCancel.setOnClickListener {
             dialogFilter?.dismiss()
         }
         buttonSearch.setOnClickListener {
-            val market = spinnerMarket.text.toString()
-
-            if (market != "") {
-                try {
-                    val marketId = market.split(")")[0].replace("(", "").toDouble().toInt()
-                    marketIdG = marketId
-                    dialogFilter?.dismiss()
-                    auditorViewModel.getCustomer(marketId, false, SharedPrefsCache(view.context).getToken())
-                } catch (e: Exception) {
-                    Toast.makeText(this, "No es un mercado valido", Toast.LENGTH_LONG).show()
+            typeService = spinnerType.selectedItem.toString()
+            if (typeService == "PUNTO DE VENTA") {
+                rv1.visibility = View.GONE
+                rv.visibility = View.VISIBLE
+                val market = spinnerMarket.text.toString()
+                if (market != "") {
+                    try {
+                        val marketId = market.split(")")[0].replace("(", "").toDouble().toInt()
+                        marketIdG = marketId
+                        dialogFilter?.dismiss()
+                        auditorViewModel.getCustomer(marketId, true, SharedPrefsCache(view.context).getToken())
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "No es un mercado valido", Toast.LENGTH_LONG).show()
+                    }
                 }
+            } else {
+                rv.visibility = View.GONE
+                rv1.visibility = View.VISIBLE
+                dialogFilter?.dismiss()
+                auditorViewModel.getUser(serviceUser, SharedPrefsCache(view.context).getToken())
             }
         }
     }

@@ -17,7 +17,6 @@ class AdapterBins(
 ) : RecyclerView.Adapter<AdapterBins.OrderViewHolder>() {
     private lateinit var mContext: Context
 
-
     override fun getItemCount(): Int {
         return questionList.size
     }

@@ -13,7 +13,6 @@ import java.util.ArrayList
 class AdapterCustomer(
     private var listCustomer: List<Customer>,
     private val refListener: ListAdapterListener,
-    private val supervisor: Boolean = false
 ) : RecyclerView.Adapter<AdapterCustomer.OrderViewHolder>() {
     private lateinit var mContext: Context
 

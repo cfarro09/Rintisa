@@ -108,6 +108,12 @@ data class DataPromoter(
     var productsSelected: List<SurveyProduct>,
 )
 
+data class DataAuditorRinti(
+    var clients: List<CheckSupPromoter>,
+    var users: List<CheckSupPromoter>,
+    var markets: List<Market>,
+)
+
 data class UserZyx (
     var userid: Int,
     var description: String,

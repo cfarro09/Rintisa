@@ -1,22 +1,23 @@
 package com.delycomps.rintisa
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import com.google.android.material.tabs.TabLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.delycomps.rintisa.cache.SharedPrefsCache
 import com.delycomps.rintisa.databinding.ActivityPromoterBinding
 import com.delycomps.rintisa.model.Customer
 import com.delycomps.rintisa.model.DataAuditor
+import com.delycomps.rintisa.model.DataAuditorRinti
+import com.delycomps.rintisa.model.UserFromAuditor
+import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 
-class AuditorDetailActivity : AppCompatActivity() {
+class AuditorRintiDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPromoterBinding
     private lateinit var tabs: TabLayout
-    private lateinit var customer: Customer
     private lateinit var auditorViewModel: AuditorViewModel
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -47,20 +48,26 @@ class AuditorDetailActivity : AppCompatActivity() {
         binding = ActivityPromoterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        customer = intent.getParcelableExtra(Constants.POINT_CUSTOMER)!!
+        val type = intent.getStringExtra("TYPE") ?: ""
 
-        val jsonMerchant = SharedPrefsCache(this).get("data-auditor", "string")
-        val dataSupervisor = Gson().fromJson(jsonMerchant.toString(), DataAuditor::class.java)
-        auditorViewModel.setMultiInitial(dataSupervisor)
+        val jsonMerchant = SharedPrefsCache(this).get("data-auditorrinti", "string")
+        val dataSupervisor = Gson().fromJson(jsonMerchant.toString(), DataAuditorRinti::class.java)
+        auditorViewModel.setMultiInitialRinti(dataSupervisor)
 
-        val sectionsPagerAdapter = com.delycomps.rintisa.ui.auditor.SectionsPagerAdapter(this, supportFragmentManager, "AUDITOR")
+        val sectionsPagerAdapter = com.delycomps.rintisa.ui.auditor.SectionsPagerAdapter(this, supportFragmentManager, type)
         val viewPager: ViewPager = binding.promoterViewPager
         viewPager.adapter = sectionsPagerAdapter
         tabs = binding.promoterTabs
         tabs.setupWithViewPager(viewPager)
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = customer.client
+        if (type == "CLIENT") {
+            val customer: Customer = intent.getParcelableExtra(Constants.POINT_CUSTOMER)!!
+            supportActionBar?.title = customer.client
+        } else {
+            val customer: UserFromAuditor = intent.getParcelableExtra(Constants.POINT_CUSTOMER)!!
+            supportActionBar?.title = customer.description
+        }
     }
 
     override fun onBackPressed() {
@@ -71,8 +78,6 @@ class AuditorDetailActivity : AppCompatActivity() {
             } else {
                 output.putExtra("status", "EN ESPERA")
             }
-        } else {
-            output.putExtra("status", "GESTIONADO")
         }
         setResult(RESULT_OK, output);
         finish()

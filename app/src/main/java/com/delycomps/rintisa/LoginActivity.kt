@@ -14,10 +14,7 @@ import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_ENTRY
 import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_EXIT
 import com.delycomps.rintisa.api.Repository
 import com.delycomps.rintisa.cache.SharedPrefsCache
-import com.delycomps.rintisa.model.DataAuditor
-import com.delycomps.rintisa.model.DataMerchant
-import com.delycomps.rintisa.model.DataPromoter
-import com.delycomps.rintisa.model.DataSupervisor
+import com.delycomps.rintisa.model.*
 import com.delycomps.rintisa.ui.merchant.MerchantViewModel
 import com.delycomps.rintisa.ui.promoter.PromoterViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -69,6 +66,13 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
+        auditorViewModel.questionUsers.observe(this) {
+            val data = DataAuditorRinti(auditorViewModel.questionClients.value ?: emptyList(), it, auditorViewModel.dataMarket.value ?: emptyList())
+            SharedPrefsCache(this).set("data-auditorrinti", Gson().toJson(data), "string")
+            startActivity(Intent(this, AuditorRintiActivity::class.java))
+            finish()
+        }
+
         findViewById<Button>(R.id.login_access).setOnClickListener {
             val username = findViewById<EditText>(R.id.login_username).text.toString()
             val password = findViewById<EditText>(R.id.login_password).text.toString()
@@ -103,6 +107,9 @@ class LoginActivity : AppCompatActivity() {
                             }
                             result?.role?.uppercase() == "SUPERVISOR RINTI" -> {
                                 supervisorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())
+                            }
+                            result?.role?.uppercase() == "AUDITOR_RINTI" -> {
+                                auditorViewModel.getMainMultiRintiInitial(SharedPrefsCache(this).getToken())
                             }
                             else -> {
                                 auditorViewModel.getMainMultiInitial(SharedPrefsCache(this).getToken())

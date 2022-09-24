@@ -106,9 +106,16 @@
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/drawable/ic_baseline_flag_24.xml" value="0.2525" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.258" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/drawable/ic_baseline_shopping_cart_24.xml" value="0.258" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_auditor.xml" value="0.1125" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_auditor_rinti.xml" value="0.2" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_auditor_rinti_detail.xml" value="0.12135416666666667" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_progress.xml" value="0.264" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/activity_promoter.xml" value="0.12135416666666667" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_audit.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_auditor_client.xml" value="0.24010416666666667" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_auditor_user.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_bins.xml" value="0.12135416666666667" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_dashboard.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_home.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_materials.xml" value="0.36666666666666664" />
@@ -117,21 +124,26 @@
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_notifications.xml" value="0.1125" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_review.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_sales.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_status.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_status.xml" value="0.1" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/fragment_teamprogress.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_availability.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_bins.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_close_stock.xml" value="0.264" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_customer.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_merchandise.xml" value="0.18229166666666666" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_point_sale.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_price_product.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_product.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_questiondynamic.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_stock.xml" value="0.18229166666666666" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_stock_product.xml" value="0.18229166666666666" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_userauditor.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_usersup.xml" value="0.264" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_visit2.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/item_visit_pending.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_assistance.xml" value="0.264" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_auditor_filter.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_auditor_rinti_filter.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_close_assistance.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_loading_dialog.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/user/StudioProjects/Rintisa/app/src/main/res/layout/layout_manage_stock.xml" value="0.264" />

@@ -131,9 +131,10 @@ class Repository {
     fun getCustomer(
         token: String,
         marketId: Int = 0,
+        isRinti: Boolean = false,
         onResult: (isSuccess: Boolean, result: List<Customer>?, message: String?) -> Unit
     ) {
-        val method = "UFN_CUSTOMER_BY_AUDITOR"
+        val method = if (isRinti) "UFN_CUSTOMER_BY_AUDITORRINTI" else "UFN_CUSTOMER_BY_AUDITOR"
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"),
             Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
@@ -154,6 +155,40 @@ class Repository {
                     }
                 }
                 override fun onFailure(call: Call<ResponseList<Customer>>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
+    fun getUserFromAuditorRinti(
+        role: String,
+        token: String,
+        onResult: (isSuccess: Boolean, result: List<UserFromAuditor>?, message: String?) -> Unit
+    ) {
+        val method = "QUERY_AUDITORRINTI_USER"
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(RequestBodyX(method, method, mapOf<String, Any>(
+                "role" to role
+            )))
+        )
+        try {
+            Connection.instance.getUserFromAuditor(body, "Bearer $token").enqueue(object :
+                Callback<ResponseList<UserFromAuditor>> {
+                override fun onResponse(
+                    call: Call<ResponseList<UserFromAuditor>>?,
+                    response: Response<ResponseList<UserFromAuditor>>?
+                ) {
+                    if (response!!.isSuccessful) {
+                        onResult(true, response.body()!!.data, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseList<UserFromAuditor>>?, t: Throwable?) {
                     onResult(false, null, DEFAULT_MESSAGE_ERROR)
                 }
             })
@@ -638,6 +673,55 @@ class Repository {
             onResult(false, null, DEFAULT_MESSAGE_ERROR)
         }
     }
+
+
+    fun getMultiAuditorRintiInitial(
+        token: String,
+        onResult: (isSuccess: Boolean, result: DataAuditorRinti?, message: String?) -> Unit
+    )  {
+        val multi = listOf(
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "AUDITORRINTI_CLIENTES")),
+            RequestBodyX("UFN_DOMAIN_LST_VALORES", "UFN_DOMAIN_LST_VALORES", mapOf<String, Any>("domainname" to "AUDITORRINTI_USUARIOS")),
+            RequestBodyX("QUERY_MARKET_SEL", "QUERY_MARKET_SEL", mapOf<String, Any>()),
+        )
+        val body: RequestBody = RequestBody.create(
+            MediaType.parse("application/json"),
+            Gson().toJson(multi)
+        )
+        try {
+            Connection.instance.mainMulti(body, "Bearer $token").enqueue(object :
+                Callback<ResponseMulti> {
+                override fun onResponse(
+                    call: Call<ResponseMulti>?,
+                    response: Response<ResponseMulti>?
+                ) {
+                    if (response?.isSuccessful == true && response.body().success == true) {
+                        val dataAuditor = DataAuditorRinti(emptyList(), emptyList(), emptyList())
+
+                        if (response.body().data[0].success == true) {
+                            dataAuditor.clients = response.body().data[0].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString(), false) }
+                        }
+                        if (response.body().data[1].success == true) {
+                            dataAuditor.users = response.body().data[1].data.toList().map { CheckSupPromoter(it["domainvalue"].toString(), it["domaindesc"].toString(), it["type"].toString(), false) }
+                        }
+                        if (response.body().data[2].success == true) {
+                            dataAuditor.markets = response.body().data[2].data.toList().map { Market("(" + it["marketid"].toString() + ") " + it["description"].toString(), it["marketid"].toString().toDouble().toInt()) }
+                        }
+                        onResult(true, dataAuditor, null)
+                    } else {
+                        onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                    }
+                }
+                override fun onFailure(call: Call<ResponseMulti>?, t: Throwable?) {
+                    onResult(false, null, DEFAULT_MESSAGE_ERROR)
+                }
+            })
+        } catch (e: java.lang.Exception){
+            onResult(false, null, DEFAULT_MESSAGE_ERROR)
+        }
+    }
+
+
 
     fun getMultiSupervisorInitial(
         token: String,
