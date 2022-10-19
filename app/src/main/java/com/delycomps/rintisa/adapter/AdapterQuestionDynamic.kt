@@ -42,8 +42,10 @@ class AdapterQuestionDynamic(
         holder.questionDescription.text = question.decription
         if (question.type == "") {
             holder.questionType.visibility = View.GONE
+            holder.questionLine.visibility = View.GONE
         } else {
             holder.questionType.text = question.type
+            holder.questionLine.visibility = View.VISIBLE
         }
         val type = question.key.split("||")[1]
         val key = question.key.split("||")[0]
@@ -78,6 +80,7 @@ class AdapterQuestionDynamic(
         var questionText: EditText = itemView.findViewById(R.id.question_text)
         var questionType: TextView = itemView.findViewById(R.id.question_type)
         var questionSelect: Spinner = itemView.findViewById(R.id.question_select)
+        var questionLine: View = itemView.findViewById(R.id.question_line)
 
         init {
             questionSelect.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

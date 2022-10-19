@@ -2,47 +2,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:padding="15dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="10dp"
     android:orientation="vertical">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ENCUESTA DE PRECIOS"
-        android:textSize="20sp"
-        android:textStyle="bold"
-    />
-    <LinearLayout
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:orientation="horizontal"
-        android:layout_marginTop="10dp"
         android:layout_height="wrap_content">
-        <Button
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ENCUESTA DE PRECIOS"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            />
+        <ImageButton
             android:id="@+id/dialog_save_product"
-            android:background="@drawable/back_primary"
-            android:textColor="#FFF"
-            android:layout_width="0dp"
-            android:layout_weight=".5"
-            android:layout_marginEnd="20dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/save"
-            />
-        <Button
-            android:id="@+id/dialog_cancel_product"
-            android:background="@drawable/back_primary"
-            android:backgroundTint="@color/colorSecondary"
-            android:textColor="#FFF"
-            android:layout_width="0dp"
-            android:layout_weight=".5"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/cancel"
-            />
-    </LinearLayout>
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/back_rounded"
+            android:backgroundTint="#00A303"
+            android:contentDescription="@string/button_save"
+            android:padding="5dp"
+            android:src="@drawable/ic_baseline_save_24"
+            app:tint="#FFFFFF" />
+    </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="10dp"
         android:layout_height="wrap_content">
         <TextView
             android:layout_width="wrap_content"
@@ -58,7 +47,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="10dp"
         android:layout_height="wrap_content">
         <TextView
             android:layout_width="wrap_content"
@@ -67,6 +55,37 @@
             android:text="@string/brand" />
         <Spinner
             android:id="@+id/spinner_brand"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/spinner_product"
+            android:text="@string/category" />
+        <Spinner
+            android:id="@+id/spinner_category"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@+id/spinner_product"
+            android:text="@string/pet" />
+        <Spinner
+            android:id="@+id/spinner_pet"
             android:spinnerMode="dialog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -114,6 +133,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_products"
             android:layout_width="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:layout_height="wrap_content"
             tools:listitem="@layout/item_price_product"
         />

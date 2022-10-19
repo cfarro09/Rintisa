@@ -603,7 +603,7 @@ class Repository {
                         }
                         if (response.body().data[2].success == true) {
                             resultMerchant.products = response.body().data[2].data.toList().map { r -> SurveyProduct(
-                                r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0.0, null, null, UUID.randomUUID().toString(), r["competence"].toString()) }
+                                r["productid"].toString().toDouble().toInt(), r["description"].toString(), r["brand"].toString(), 0.00, "", 0.0, null, null, UUID.randomUUID().toString(), r["competence"].toString(), "", r["type"].toString(), r["pet"].toString()) }
                         }
                         onResult(true, resultMerchant, null)
                     } else {

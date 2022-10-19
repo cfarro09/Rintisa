@@ -37,6 +37,7 @@ open class SurveyProduct: Parcelable {
     var competence: String?
     var imageEvidenceLocal: String? = ""
     var category: String? = ""
+    var pet: String? = ""
 
     constructor(
         productId: Int,
@@ -51,6 +52,7 @@ open class SurveyProduct: Parcelable {
         competence: String? = "",
         imageEvidenceLocal: String? = "",
         category: String? = "",
+        pet: String? = "",
     ) {
         this.productId = productId
         this.description = description
@@ -64,6 +66,7 @@ open class SurveyProduct: Parcelable {
         this.competence = competence
         this.imageEvidenceLocal = imageEvidenceLocal
         this.category = category
+        this.pet = pet
     }
     protected constructor(parcel: Parcel) {
         this.productId = parcel.readInt()
@@ -78,6 +81,7 @@ open class SurveyProduct: Parcelable {
         this.competence = parcel.readString()
         this.imageEvidenceLocal = parcel.readString()
         this.category = parcel.readString()
+        this.pet = parcel.readString()
     }
     override fun describeContents(): Int {
         return 0
@@ -95,6 +99,7 @@ open class SurveyProduct: Parcelable {
         p0.writeString(competence)
         p0.writeString(imageEvidenceLocal)
         p0.writeString(category)
+        p0.writeString(pet)
     }
     companion object CREATOR : Parcelable.Creator<SurveyProduct> {
         override fun createFromParcel(parcel: Parcel): SurveyProduct {

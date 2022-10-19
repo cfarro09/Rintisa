@@ -165,14 +165,15 @@ class PriceFragment : Fragment() {
 
     }
 
-
     private fun manageDialogMaterialAll (view: View, dialog: AlertDialog) {
         val spinnerCompetence = view.findViewById<Spinner>(R.id.spinner_competence)
         spinnerCompetence.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listOf("RINTI", "COMPETENCIA"))
 
         val spinnerBrand = view.findViewById<Spinner>(R.id.spinner_brand)
+        val spinnerCategory = view.findViewById<Spinner>(R.id.spinner_category)
+        val spinnerPet = view.findViewById<Spinner>(R.id.spinner_pet)
         val rvProduct = view.findViewById<RecyclerView>(R.id.rv_products)
-        rvProduct.layoutManager = LinearLayoutManager(view.context)
+        val buttonSave = view.findViewById<ImageButton>(R.id.dialog_save_product)
 
         spinnerCompetence.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
@@ -187,19 +188,35 @@ class PriceFragment : Fragment() {
                 return position != 0
             }
         }
+
         spinnerBrand.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
                 val valueSelected = spinnerBrand.selectedItem.toString()
-                val listProduct = listProduct.filter { it.brand == valueSelected }.map { PriceProduct(it.productId, it.description ?: "", 0.0, 0.0) }.toMutableList()
-                rvProduct.adapter = AdapterPriceProduct(listProduct)
+                val competence = spinnerCompetence.selectedItem.toString()
+                spinnerCategory.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.brand == valueSelected && it.competence == competence }.map { it.category }.distinct())
             }
         }
-        val buttonSave = view.findViewById<Button>(R.id.dialog_save_product)
-        val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel_product)
 
-        buttonCancel.setOnClickListener {
-            dialog.dismiss()
+        spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
+                val valueSelected = spinnerCategory.selectedItem.toString()
+                val brand = spinnerBrand.selectedItem.toString()
+
+                spinnerPet.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, listProduct.filter { it.category == valueSelected && it.brand == brand }.map { it.pet }.distinct())
+            }
+        }
+
+        spinnerPet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val category = spinnerCategory.selectedItem.toString()
+                val brand = spinnerBrand.selectedItem.toString()
+                val pet = spinnerPet.selectedItem.toString()
+                val listProduct = listProduct.filter { it.category == category && it.brand == brand && it.pet == pet }.map { PriceProduct(it.productId, it.description ?: "", 0.0, 0.0) }.toMutableList()
+                rvProduct.adapter = AdapterPriceProduct(listProduct)
+            }
         }
 
         buttonSave.setOnClickListener {

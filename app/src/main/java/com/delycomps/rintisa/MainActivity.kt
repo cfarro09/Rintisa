@@ -5,13 +5,17 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.IBinder
 import android.preference.PreferenceManager
+import android.provider.MediaStore
 import android.text.Html
 import android.util.Log
 import android.view.Menu
@@ -21,6 +25,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,6 +38,7 @@ import com.delycomps.rintisa.Constants.ASSISTANCE_HOUR_EXIT
 import com.delycomps.rintisa.Constants.RETURN_ACTIVITY
 import com.delycomps.rintisa.adapter.AdapterManageStock
 import com.delycomps.rintisa.adapter.AdapterPointsale
+import com.delycomps.rintisa.adapter.AdapterQuestionDynamic
 import com.delycomps.rintisa.cache.BDLocal
 import com.delycomps.rintisa.cache.Helpers
 import com.delycomps.rintisa.cache.SharedPrefsCache
@@ -51,8 +57,22 @@ import kotlin.collections.ArrayList
 private const val WRITE_EXTERNAL_STORAGE_PERMISSION = 10220
 private const val CODE_RESULT_CAMERA_SELFIE = 10001
 private const val CODE_RESULT_CAMERA_MERCHANT_VISITED = 10021
+private const val CODE_RESULT_CAMERA_EPP = 10023
 private const val TAG: String = "STRING_PRUEBAENTREGAS_YA"
-private const val REQUEST_PERMISSIONS_REQUEST_CODE = 34
+
+private val listEPP = listOf(
+    CheckSupPromoter("alcohol||switch", "Alcohol" , "", false),
+    CheckSupPromoter("mascarilla||switch", "Mascarilla" , "", false),
+    CheckSupPromoter("casco||switch", "Casco" , "", false),
+    CheckSupPromoter("guantes||switch", "Guantes" , "", false),
+    CheckSupPromoter("botas_seguridad||switch", "Botas de seguridad" , "", false),
+    CheckSupPromoter("arnés_linea_vida||switch", "Arnés y linea de vida" , "", false),
+    CheckSupPromoter("faja||switch", "Faja" , "", false),
+    CheckSupPromoter("protector_solar||switch", "Protector solar" , "", false),
+    CheckSupPromoter("gorra||switch", "Gorra" , "", false),
+    CheckSupPromoter("polo||switch", "Polo" , "", false),
+    CheckSupPromoter("pantalon||switch", "Pantalón" , "", false),
+)
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
     private lateinit var rv: RecyclerView
@@ -60,9 +80,9 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private lateinit var dialogLoading: AlertDialog
     private lateinit var dialogClose: AlertDialog
     private lateinit var dialogGeolocation: AlertDialog
-
     private lateinit var dialogManageStock: AlertDialog
-
+    private lateinit var dialogEPP: AlertDialog
+    private lateinit var dialogEPPUI: View
     private lateinit var supervisorViewModel: SupervisorViewModel
     private lateinit var dialogAssistance: AlertDialog
     private lateinit var buttonHourEntry: Button
@@ -70,7 +90,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private lateinit var buttonHourExit: Button
     private lateinit var buttonHourBreakInit: Button
     private lateinit var buttonHourBreakFinish: Button
-
     private lateinit var pointSale: PointSale
     private var permissionCamera = false
     private var permissionGPS = false
@@ -88,6 +107,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private var mainMenu: Menu? = null
     private var listImages: MutableList<resImage> = arrayListOf()
     private var imageIndex: Int = 0
+    private var image1EPP = ""
+    private var image2EPP = ""
 
     // The BroadcastReceiver used to listen from broadcasts from the service.
     private var myReceiver: MyReceiver? = null
@@ -147,6 +168,9 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
             R.id.action_share_location -> {
                 dialogGeolocation.show()
+            }
+            R.id.action_epp -> {
+                dialogEPP.show()
             }
             R.id.action_assist -> {
                 validateButtonAssistance()
@@ -279,6 +303,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         if (role == "IMPULSADOR") {
             manageDialogManageStock(dialogManageStockUI)
         }
+
+        val builderEPP: AlertDialog.Builder = AlertDialog.Builder(this)
+        dialogEPPUI = this.layoutInflater.inflate(R.layout.layout_epp, null)
+        builderEPP.setView(dialogEPPUI)
+        dialogEPP = builderEPP.create()
+        manageDialogEPP(dialogEPPUI, dialogEPP)
 
         mainViewModel.listPointSale.observe(this) {
             dialogLoading.dismiss()
@@ -514,9 +544,73 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                     dialogLoading.dismiss()
                     Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
                 }
+            } else if (it.result == "UFN_EPP_INS") {
+                if (!it.loading && it.success) {
+                    dialogLoading.dismiss()
+                    dialogEPP.dismiss()
+                    Toast.makeText(this, "Se registró correctamente", Toast.LENGTH_LONG).show()
+                    supervisorViewModel.initExecute()
+                } else if (!it.loading && !it.success) {
+                    dialogLoading.dismiss()
+                    Toast.makeText(this, "Hay problema de conexión, cuando haya internet proceder a volver a guardar", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        mainViewModel.loadingSelfie.observe(this) {
+            if (it) {
+                dialogLoading.show()
+            } else {
+                dialogLoading.dismiss()
+            }
+        }
+
+        mainViewModel.urlSelfie.observe(this) {
+            if (imageIndex == 1) {
+                image1EPP = it
+            } else {
+                image2EPP = it
             }
         }
     }
+
+    private fun manageDialogEPP (view: View, dialog: AlertDialog) {
+        val rvEPP = view.findViewById<RecyclerView>(R.id.rv_epp)
+        val buttonSave = view.findViewById<Button>(R.id.dialog_save)
+        val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel)
+
+        rvEPP.layoutManager = LinearLayoutManager(view.context)
+        rvEPP.adapter = AdapterQuestionDynamic(listEPP.toMutableList())
+
+        view.findViewById<Button>(R.id.upload_image1).setOnClickListener { dispatchTakePictureIntent(view, 1) }
+        view.findViewById<Button>(R.id.upload_image2).setOnClickListener { dispatchTakePictureIntent(view, 2) }
+
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        buttonSave.setOnClickListener {
+
+            val ob = JSONObject()
+            ob.put("image1", image1EPP)
+            ob.put("image2", image2EPP)
+
+            val ob1 = JSONObject()
+            (rvEPP.adapter as AdapterQuestionDynamic).getList().forEach {
+                val key = it.key.split("||")[0]
+                val type = it.key.split("||")[1]
+                if (type == "switch") {
+                    ob1.put(key, if (it.flag) "SI" else "NO")
+                } else {
+                    ob1.put(key, it.value)
+                }
+            }
+            ob.put("json_content", ob1.toString())
+            dialogLoading.show()
+            supervisorViewModel.executeSupervisor(ob, "UFN_EPP_INS", SharedPrefsCache(this).getToken())
+        }
+    }
+
     private fun manageDialogManageStock(view: View) {
         val outMerchandise: MutableList<Merchandise> = ArrayList()
         val buttonSave: Button = view.findViewById(R.id.dialog_stock_save)
@@ -653,6 +747,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             buttonHourEntry.isEnabled = true
         }
     }
+
     private fun manageDialogCloseAssistance (view: View, dialog: AlertDialog) {
         val editQuantityTickets = view.findViewById<EditText>(R.id.quantity_day)
         val editCommentDay = view.findViewById<EditText>(R.id.comment_day)
@@ -884,6 +979,19 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                     Toast.makeText(this, "Hubo un error al procesar la foto", Toast.LENGTH_SHORT).show()
                 }
             }
+            CODE_RESULT_CAMERA_EPP -> if (resultCode == AppCompatActivity.RESULT_OK) {
+                when (imageIndex) {
+                    1 -> {
+                        dialogEPPUI.findViewById<ImageView>(R.id.status_image1).setImageBitmap(
+                            BitmapFactory.decodeFile(currentPhotoPath))
+                    }
+                    2 -> {
+                        dialogEPPUI.findViewById<ImageView>(R.id.status_image2).setImageBitmap(
+                            BitmapFactory.decodeFile(currentPhotoPath))
+                    }
+                }
+                mainViewModel.uploadSelfie(Helpers().saveBitmapToFile(File(currentPhotoPath))!!, SharedPrefsCache(dialogEPPUI.context).getToken())
+            }
         }
     }
 
@@ -998,6 +1106,47 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         } else {
             mRequestLocationUpdatesButton?.isEnabled = true
             mRemoveLocationUpdatesButton?.isEnabled = false
+        }
+    }
+
+    private fun dispatchTakePictureIntent(view: View, image: Int) {
+        imageIndex = image
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
+            takePictureIntent.resolveActivity(view.context.packageManager).also {
+                // Create the File where the photo should go
+                val photoFile: File? = try {
+                    createImageFile(view)
+                } catch (ex: IOException) {
+                    null
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    val photoURI: Uri = FileProvider.getUriForFile(
+                        view.context,
+                        "com.delycomps.rintisa.provider",
+                        photoFile
+                    )
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    startActivityForResult(takePictureIntent,
+                        CODE_RESULT_CAMERA_EPP
+                    )
+                }
+            }
+        }
+    }
+
+    private fun createImageFile(view: View): File {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val storageDir: File = view.context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
+            currentPhotoPath = absolutePath
         }
     }
 }

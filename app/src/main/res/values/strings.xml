@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">2.4.1</string>
+    <string name="version">2.4.4</string>
     <string name="app_name">Rintisa</string>
 
     <string name="email">Correo electronico</string>
@@ -77,5 +77,6 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="pet">Mascota</string>
 
 </resources>
