@@ -33,12 +33,6 @@
             android:id="@+id/description_service"
             android:labelFor="@+id/spinner_service"
             android:text="Tipo de servicio" />
-        <Spinner
-                android:id="@+id/spinner_service"
-            android:spinnerMode="dialog"
-            android:layout_width="match_parent"
-            android:visibility="gone"
-            android:layout_height="wrap_content" />
 
         <TextView
             android:layout_width="wrap_content"

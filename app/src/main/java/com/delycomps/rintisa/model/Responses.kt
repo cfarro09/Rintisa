@@ -58,7 +58,8 @@ data class PriceProduct(
     var productId: Int,
     var description: String,
     var price_k: Double,
-    var price_s: Double
+    var price_s: Double,
+    var category: String = ""
 )
 
 data class ResUploader(

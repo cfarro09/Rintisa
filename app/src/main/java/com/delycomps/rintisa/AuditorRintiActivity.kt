@@ -231,9 +231,9 @@ class AuditorRintiActivity : AppCompatActivity(), SearchView.OnQueryTextListener
     private fun manageDialogFilter(view: View) {
         val spinnerMarket = view.findViewById<AutoCompleteTextView>(R.id.spinner_market)
         val spinnerType = view.findViewById<Spinner>(R.id.spinner_type)
-        val spinnerService = view.findViewById<Spinner>(R.id.spinner_service)
+//        val spinnerService = view.findViewById<Spinner>(R.id.spinner_service)
 
-        val descriptionService = view.findViewById<TextView>(R.id.description_service)
+//        val descriptionService = view.findViewById<TextView>(R.id.description_service)
         val descriptionMarket = view.findViewById<TextView>(R.id.description_market)
         val buttonSearch = view.findViewById<Button>(R.id.dialog_search)
         val buttonCancel = view.findViewById<Button>(R.id.dialog_cancel)
@@ -242,29 +242,30 @@ class AuditorRintiActivity : AppCompatActivity(), SearchView.OnQueryTextListener
 
         spinnerMarket.setAdapter(arrayAdapter)
 
-        spinnerType.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("PUNTO DE VENTA", "USUARIO"))
-        spinnerService.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("MERCADERISTA", "IMPULSADOR"))
-
-        spinnerService.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) { }
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val valueSelected = spinnerService.selectedItem.toString()
-                serviceUser = valueSelected
-            }
-        }
+        spinnerType.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("PUNTO DE VENTA", "IMPULSADOR"))
+//        spinnerService.adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listOf("MERCADERISTA", "IMPULSADOR"))
+//
+//        spinnerService.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//            override fun onNothingSelected(parent: AdapterView<*>?) { }
+//            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+//                val valueSelected = spinnerService.selectedItem.toString()
+//                serviceUser = valueSelected
+//            }
+//        }
 
         spinnerType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val valueSelected = spinnerType.selectedItem.toString()
                 if (valueSelected == "PUNTO DE VENTA") {
-                    descriptionService.visibility = View.GONE
-                    spinnerService.visibility = View.GONE
+//                    descriptionService.visibility = View.GONE
+//                    spinnerService.visibility = View.GONE
                     descriptionMarket.visibility = View.VISIBLE
                     spinnerMarket.visibility = View.VISIBLE
                 } else {
-                    descriptionService.visibility = View.VISIBLE
-                    spinnerService.visibility = View.VISIBLE
+                    serviceUser = "IMPULSADOR"
+//                    descriptionService.visibility = View.VISIBLE
+//                    spinnerService.visibility = View.VISIBLE
                     descriptionMarket.visibility = View.GONE
                     spinnerMarket.visibility = View.GONE
                 }

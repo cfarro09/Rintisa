@@ -119,6 +119,7 @@
                 android:layout_weight=".25"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
+                android:id="@+id/text_kilo"
                 android:text="KILO"/>
             <View
                 android:layout_width="5dp"
@@ -126,6 +127,7 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight=".25"
+                android:id="@+id/text_saco"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:text="SACO"/>

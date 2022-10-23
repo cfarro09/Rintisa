@@ -28,7 +28,7 @@ class PriceFragment : Fragment() {
     private lateinit var listProduct: List<SurveyProduct>
     private lateinit var listBrand: List<String>
     private lateinit var pointSale: PointSale
-    private val listMeasureUnit = listOf("KILO", "SACO")
+    private val listMeasureUnit = listOf("KILO", "SACO", "UNIDAD")
 
     private var indexSelected = 0
 
@@ -175,6 +175,9 @@ class PriceFragment : Fragment() {
         val rvProduct = view.findViewById<RecyclerView>(R.id.rv_products)
         val buttonSave = view.findViewById<ImageButton>(R.id.dialog_save_product)
 
+        val textKilo = view.findViewById<TextView>(R.id.text_kilo)
+        val textSaco = view.findViewById<TextView>(R.id.text_saco)
+
         spinnerCompetence.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) { }
             override fun onItemSelected(parent: AdapterView<*>?, view1: View?, position: Int, id: Long) {
@@ -214,7 +217,14 @@ class PriceFragment : Fragment() {
                 val category = spinnerCategory.selectedItem.toString()
                 val brand = spinnerBrand.selectedItem.toString()
                 val pet = spinnerPet.selectedItem.toString()
-                val listProduct = listProduct.filter { it.category == category && it.brand == brand && it.pet == pet }.map { PriceProduct(it.productId, it.description ?: "", 0.0, 0.0) }.toMutableList()
+                if (category == "SECOS") {
+                    textKilo.text = "Kilo"
+                    textSaco.visibility = View.VISIBLE
+                } else {
+                    textKilo.text = "Unidad"
+                    textSaco.visibility = View.GONE
+                }
+                val listProduct = listProduct.filter { it.category == category && it.brand == brand && it.pet == pet }.map { PriceProduct(it.productId, it.description ?: "", 0.0, 0.0, it.category ?: "") }.toMutableList()
                 rvProduct.adapter = AdapterPriceProduct(listProduct)
             }
         }
@@ -224,13 +234,13 @@ class PriceFragment : Fragment() {
             val listProduct: MutableList<SurveyProduct> = ArrayList()
             (rvProduct.adapter as AdapterPriceProduct).getList().forEach {
                 if (it.price_k > 0) {
-                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_k, "KILO", 0.0))
+                    listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_k, if (it.category == "SECOS") "KILO" else "UNIDAD", 0.0))
                 }
                 if (it.price_s > 0) {
                     listProduct.add(SurveyProduct(it.productId, it.description, brand, it.price_s, "SACO", 0.0))
                 }
             }
-            if (listProduct.count() > 0) {
+            if (listProduct.isNotEmpty()) {
                 viewModel.addProduct(listProduct)
                 listProduct.forEach {
                     val insert = (rv.adapter as AdapterProductSurvey).addProduct(it)

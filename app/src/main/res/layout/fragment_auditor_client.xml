@@ -45,8 +45,51 @@
                         android:layout_height="wrap_content"
                         tools:listitem="@layout/item_bins"
                         />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight=".5"
+                            android:padding="5dp"
+                            android:orientation="vertical">
+                            <Button
+                                android:layout_width="match_parent"
+                                android:text="Tomar imagen 1"
+                                android:id="@+id/upload_image1"
+                                android:layout_height="match_parent"/>
+                            <ImageView
+                                android:id="@+id/status_image1"
+                                android:layout_width="match_parent"
+                                android:layout_height="150dp"
+                                android:adjustViewBounds="true"
+                                android:scaleType="fitXY" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:padding="5dp"
+                            android:layout_weight=".5"
+                            android:orientation="vertical">
+                            <Button
+                                android:layout_width="match_parent"
+                                android:text="Tomar imagen 2"
+                                android:id="@+id/upload_image2"
+                                android:layout_height="match_parent"/>
+                            <ImageView
+                                android:id="@+id/status_image2"
+                                android:layout_width="match_parent"
+                                android:layout_height="150dp"
+                                android:adjustViewBounds="true"
+                                android:scaleType="fitXY" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

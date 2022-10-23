@@ -38,12 +38,17 @@ class AdapterPriceProduct(
         val product: PriceProduct = listProduct[position]
 
         holder.itemProduct.text = product.description
+        if (product.category == "SECOS") {
+            holder.itemS.visibility = View.VISIBLE
+        } else {
+            holder.itemS.visibility = View.GONE
+        }
     }
 
     inner class OrderViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
         internal var itemProduct: TextView = itemView.findViewById(R.id.item_name)
         private var itemK: EditText = itemView.findViewById(R.id.item_k)
-        private var itemS: EditText = itemView.findViewById(R.id.item_s)
+        internal var itemS: EditText = itemView.findViewById(R.id.item_s)
 //        private var itemCheckbox: CheckBox = itemView.findViewById(R.id.item_checkbox)
 
         init {
@@ -66,7 +71,6 @@ class AdapterPriceProduct(
                     } catch (e: Exception) {
 
                     }
-
                 }
             }
         }
